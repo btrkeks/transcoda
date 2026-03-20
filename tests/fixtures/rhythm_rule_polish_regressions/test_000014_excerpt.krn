@@ -1,0 +1,12 @@
+!! expected_failure_line=11
+*clefF4	*clefG2
+*k[f#c#g#]	*k[f#c#g#]
+16F#LL	8f#( 8ff#L
+16A	.
+16F#	8e 8ee
+16BBJJ	.
+16G#LL	8.d 8.dd
+16A	.
+16F#	.
+16BBJJ	8c# 8cc#J
+=	=

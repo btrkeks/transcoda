@@ -1,0 +1,49 @@
+{
+  "data": {
+    "train_path": "./data/datasets/train_full",
+    "validation_paths": {
+      "synth": "./data/datasets/validation/synth"
+    },
+    "vocab_name": "synthetic-bpe4k",
+    "image_width": 1050
+  },
+  "model": {
+    "d_model": 256,
+    "dim_ff": 1024,
+    "num_hidden_layers": 8,
+    "num_attn_heads": 4,
+    "encoder_model_name_or_path": "facebook/convnextv2-tiny-22k-224",
+    "encoder_provider": "transformers",
+    "freeze_encoder_stages": 0,
+    "max_image_height": 2512,
+    "max_image_width": 2512,
+    "max_seq_len": 8000
+  },
+  "optimizer": {
+    "learning_rate": 0.002,
+    "encoder_lr_factor": 0.04,
+    "weight_decay": 0.01,
+    "warmup_steps": 500,
+    "cosine_eta_min_factor": 0.02
+  },
+  "checkpoint": {
+    "filename": "profile",
+    "monitor": "val/synth/SER"
+  },
+  "training": {
+    "batch_size": 5,
+    "val_batch_size": 28,
+    "num_workers": 12,
+    "max_epochs": 1,
+    "val_check_interval": 2000,
+    "limit_train_batches": 500,
+    "limit_val_batches": 0,
+    "accumulate_grad_batches": 1,
+    "gradient_clip_val": 2.0,
+    "gradient_clip_algorithm": "norm",
+    "enable_profiling": true,
+    "log_example_images": false,
+    "compile_model": false,
+    "compute_omr_ned": false
+  }
+}

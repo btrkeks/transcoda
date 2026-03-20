@@ -1,0 +1,322 @@
+{
+  "version": "1.0",
+  "truncation": null,
+  "padding": null,
+  "added_tokens": [
+    {
+      "id": 0,
+      "content": "<pad>",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": false,
+      "special": true
+    },
+    {
+      "id": 1,
+      "content": "<bos>",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": false,
+      "special": true
+    },
+    {
+      "id": 2,
+      "content": "<eos>",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": false,
+      "special": true
+    },
+    {
+      "id": 3,
+      "content": "<unk>",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": false,
+      "special": true
+    }
+  ],
+  "normalizer": {
+    "type": "Sequence",
+    "normalizers": [
+      {
+        "type": "NFKC"
+      }
+    ]
+  },
+  "pre_tokenizer": null,
+  "post_processor": {
+    "type": "TemplateProcessing",
+    "single": [
+      {
+        "SpecialToken": {
+          "id": "<bos>",
+          "type_id": 0
+        }
+      },
+      {
+        "Sequence": {
+          "id": "A",
+          "type_id": 0
+        }
+      },
+      {
+        "SpecialToken": {
+          "id": "<eos>",
+          "type_id": 0
+        }
+      }
+    ],
+    "pair": [
+      {
+        "SpecialToken": {
+          "id": "<bos>",
+          "type_id": 0
+        }
+      },
+      {
+        "Sequence": {
+          "id": "A",
+          "type_id": 0
+        }
+      },
+      {
+        "SpecialToken": {
+          "id": "<eos>",
+          "type_id": 0
+        }
+      },
+      {
+        "SpecialToken": {
+          "id": "<bos>",
+          "type_id": 0
+        }
+      },
+      {
+        "Sequence": {
+          "id": "B",
+          "type_id": 0
+        }
+      },
+      {
+        "SpecialToken": {
+          "id": "<eos>",
+          "type_id": 0
+        }
+      }
+    ],
+    "special_tokens": {
+      "<bos>": {
+        "id": "<bos>",
+        "ids": [
+          1
+        ],
+        "tokens": [
+          "<bos>"
+        ]
+      },
+      "<eos>": {
+        "id": "<eos>",
+        "ids": [
+          2
+        ],
+        "tokens": [
+          "<eos>"
+        ]
+      }
+    }
+  },
+  "decoder": null,
+  "model": {
+    "type": "WordLevel",
+    "vocab": {
+      "<pad>": 0,
+      "<bos>": 1,
+      "<eos>": 2,
+      "<unk>": 3,
+      "dddd": 4,
+      "16": 5,
+      "==:|!": 6,
+      "BBB": 7,
+      "dd": 8,
+      "*k[f#c#]": 9,
+      "*M12/8": 10,
+      "*M17/16": 11,
+      "GGG": 12,
+      "=!|:": 13,
+      "12": 14,
+      "a": 15,
+      "-y": 16,
+      "*M2/2": 17,
+      "K": 18,
+      "=|!": 19,
+      "C": 20,
+      "-Z": 21,
+      "##": 22,
+      "4": 23,
+      "20": 24,
+      "CCC": 25,
+      "*M9/8": 26,
+      "ggg": 27,
+      "80": 28,
+      "*k[b-e-a-d-]": 29,
+      "[": 30,
+      "=||": 31,
+      "E": 32,
+      "1": 33,
+      "*^": 34,
+      "=": 35,
+      "c": 36,
+      "*staff+1": 37,
+      "ny": 38,
+      "F": 39,
+      "<": 40,
+      "*M2/4": 41,
+      "f": 42,
+      "8": 43,
+      "FF": 44,
+      "2": 45,
+      "EEE": 46,
+      "-x": 47,
+      "gggg": 48,
+      "--": 49,
+      "--y": 50,
+      "*k[b-]": 51,
+      "*M6/4": 52,
+      "*M4/4": 53,
+      "*clefG2": 54,
+      "aaaa": 55,
+      "##j": 56,
+      "aaa": 57,
+      "AA": 58,
+      "nj": 59,
+      "*k[f#c#g#d#a#]": 60,
+      "BB": 61,
+      "--X": 62,
+      "-": 63,
+      ".": 64,
+      "6": 65,
+      "FFF": 66,
+      "*k[]": 67,
+      ":": 68,
+      "*": 69,
+      "e": 70,
+      "-j": 71,
+      "*k[b-e-a-d-g-c-f-]": 72,
+      "64": 73,
+      "36": 74,
+      "*k[f#c#g#d#]": 76,
+      "*k[b-e-a-d-g-]": 77,
+      ">": 78,
+      "##X": 79,
+      "r": 80,
+      "*k[f#c#g#d#a#e#]": 81,
+      "AAA": 82,
+      "_>": 83,
+      "K<": 84,
+      "<s>": 85,
+      "24": 86,
+      "L<": 87,
+      "*M3/8": 88,
+      "*M10/4": 89,
+      "g": 90,
+      "k": 91,
+      "96": 92,
+      "*met(C|)": 93,
+      "#j": 94,
+      "-X": 95,
+      "L>": 96,
+      "eee": 97,
+      "EE": 98,
+      "bbb": 99,
+      "=:|!": 100,
+      "q": 101,
+      "ddd": 102,
+      "aa": 103,
+      "22": 104,
+      "BBBB": 105,
+      "28": 106,
+      "ccc": 107,
+      "34": 108,
+      "A": 109,
+      "cccc": 110,
+      "88": 111,
+      "ffff": 112,
+      "*-": 113,
+      "*met(C)": 114,
+      "K>": 115,
+      "56": 116,
+      "bb": 117,
+      "*staff0": 118,
+      "*M8/2": 119,
+      "DD": 120,
+      "<b>": 121,
+      "_": 122,
+      "128": 123,
+      "]": 124,
+      "cc": 125,
+      "[>": 126,
+      "#y": 127,
+      "==": 128,
+      "*k[f#]": 129,
+      "*k[f#c#g#d#a#e#b#]": 130,
+      "ff": 131,
+      "*M9/16": 132,
+      "nX": 133,
+      "[y": 134,
+      "40": 135,
+      "*met(c|)": 136,
+      "*M6/16": 137,
+      "*clefF4": 138,
+      "#": 139,
+      "*k[b-e-]": 140,
+      "-i": 141,
+      "*M12/32": 142,
+      "ee": 143,
+      "G": 144,
+      "*M5/4": 145,
+      "<t>": 146,
+      "fff": 147,
+      "b": 148,
+      "--j": 149,
+      "#X": 150,
+      "*k[b-e-a-]": 151,
+      "48": 152,
+      "_<": 153,
+      "n": 154,
+      "32": 155,
+      "*k[f#c#g#]": 156,
+      "*M3/4": 157,
+      "*met(c)": 158,
+      "<>": 159,
+      "L": 160,
+      "B": 161,
+      "*k[b-e-a-d-g-c-]": 162,
+      "#i": 163,
+      "GG": 164,
+      "[<": 165,
+      "ni": 166,
+      "AAAA": 167,
+      "d": 168,
+      "=:|!|:": 169,
+      "*M12/16": 170,
+      "DDD": 171,
+      "*M7/4": 173,
+      "J": 174,
+      "30": 175,
+      "*v": 176,
+      "*M6/8": 177,
+      "10": 178,
+      "D": 179,
+      "eeee": 180,
+      "--x": 181,
+      "CC": 182,
+      "gg": 183
+    },
+    "unk_token": "<unk>"
+  }
+}

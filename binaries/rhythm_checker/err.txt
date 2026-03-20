@@ -1,0 +1,553 @@
+../../data/interim/pdmx/train/QmPRAPputMepGS7kY4hChcHwucYJE9uYgwBgKHSA8kHo4b.krn:31:1: error: measure 4 duration mismatch
+  expected: 3/2 (6/4)
+  actual:   15/8
+  diff:     +3/8
+../../data/interim/pdmx/train/QmPRAPputMepGS7kY4hChcHwucYJE9uYgwBgKHSA8kHo4b.krn:64:1: error: measure 9 duration mismatch
+  expected: 3/2 (6/4)
+  actual:   1
+  diff:     -1/2
+../../data/interim/pdmx/train/QmSeY51dJsgE24Nv9M4QmrqYv7xjKDmUrurpysHCDJPRsR.krn:65:1: error: measure 9 duration mismatch
+  expected: 3/4 (6/8)
+  actual:   5/8
+  diff:     -1/8
+../../data/interim/pdmx/train/QmSeY51dJsgE24Nv9M4QmrqYv7xjKDmUrurpysHCDJPRsR.krn:67:1: error: measure 10 duration mismatch
+  expected: 3/4 (6/8)
+  actual:   1/8
+  diff:     -5/8
+../../data/interim/pdmx/train/QmSeY51dJsgE24Nv9M4QmrqYv7xjKDmUrurpysHCDJPRsR.krn:112:1: error: measure 18 duration mismatch
+  expected: 3/4 (6/8)
+  actual:   5/8
+  diff:     -1/8
+../../data/interim/pdmx/train/QmNLf65tX69kbDKg8qxrgasFXPmsgKdmMQKVu7H8JY6165.krn:61:1: error: measure 9 duration mismatch
+  expected: 3/4 (6/8)
+  actual:   5/8
+  diff:     -1/8
+../../data/interim/pdmx/train/QmNLf65tX69kbDKg8qxrgasFXPmsgKdmMQKVu7H8JY6165.krn:63:1: error: measure 10 duration mismatch
+  expected: 3/4 (6/8)
+  actual:   1/8
+  diff:     -5/8
+../../data/interim/pdmx/train/QmNLf65tX69kbDKg8qxrgasFXPmsgKdmMQKVu7H8JY6165.krn:116:1: error: measure 18 duration mismatch
+  expected: 3/4 (6/8)
+  actual:   5/8
+  diff:     -1/8
+../../data/interim/pdmx/train/QmWwyaiiPYWhSsP5GPf9w4wVZKBBkvGvDYzPEZ15VgvNus.krn:64:1: error: measure 9 duration mismatch
+  expected: 1 (4/4)
+  actual:   3/4
+  diff:     -1/4
+../../data/interim/pdmx/train/QmWwyaiiPYWhSsP5GPf9w4wVZKBBkvGvDYzPEZ15VgvNus.krn:64:3: error: measure 9 duration mismatch
+  expected: 1 (4/4)
+  actual:   3/4
+  diff:     -1/4
+../../data/interim/pdmx/train/QmWwyaiiPYWhSsP5GPf9w4wVZKBBkvGvDYzPEZ15VgvNus.krn:68:1: error: measure 10 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/4
+  diff:     -3/4
+../../data/interim/pdmx/train/QmWwyaiiPYWhSsP5GPf9w4wVZKBBkvGvDYzPEZ15VgvNus.krn:68:3: error: measure 10 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/4
+  diff:     -3/4
+../../data/interim/pdmx/train/QmPHFcosAZ3ubn9jESyNxGED4YDBotihXuwqB1m9UFCnWd.krn:84:1: error: measure 9 duration mismatch
+  expected: 3/4 (3/4)
+  actual:   5/8
+  diff:     -1/8
+../../data/interim/pdmx/train/QmPHFcosAZ3ubn9jESyNxGED4YDBotihXuwqB1m9UFCnWd.krn:84:2: error: measure 9 duration mismatch
+  expected: 3/4 (3/4)
+  actual:   5/8
+  diff:     -1/8
+../../data/interim/pdmx/train/QmPHFcosAZ3ubn9jESyNxGED4YDBotihXuwqB1m9UFCnWd.krn:86:1: error: measure 10 duration mismatch
+  expected: 3/4 (3/4)
+  actual:   1/8
+  diff:     -5/8
+../../data/interim/pdmx/train/QmPHFcosAZ3ubn9jESyNxGED4YDBotihXuwqB1m9UFCnWd.krn:86:2: error: measure 10 duration mismatch
+  expected: 3/4 (3/4)
+  actual:   1/8
+  diff:     -5/8
+../../data/interim/pdmx/train/QmPHFcosAZ3ubn9jESyNxGED4YDBotihXuwqB1m9UFCnWd.krn:168:1: error: measure 20 duration mismatch
+  expected: 3/4 (3/4)
+  actual:   5/8
+  diff:     -1/8
+../../data/interim/pdmx/train/QmPHFcosAZ3ubn9jESyNxGED4YDBotihXuwqB1m9UFCnWd.krn:168:2: error: measure 20 duration mismatch
+  expected: 3/4 (3/4)
+  actual:   5/8
+  diff:     -1/8
+../../data/interim/pdmx/train/QmP9Hd7XKn1BHwD69e19gyv6eegw51pnAUWwxKAAnmPL5E.krn:814:1: error: measure 77 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+../../data/interim/pdmx/train/QmP9Hd7XKn1BHwD69e19gyv6eegw51pnAUWwxKAAnmPL5E.krn:814:2: error: measure 77 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+../../data/interim/pdmx/train/QmP9Hd7XKn1BHwD69e19gyv6eegw51pnAUWwxKAAnmPL5E.krn:814:3: error: measure 77 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+../../data/interim/pdmx/train/QmP9Hd7XKn1BHwD69e19gyv6eegw51pnAUWwxKAAnmPL5E.krn:814:4: error: measure 77 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+../../data/interim/pdmx/train/QmP9Hd7XKn1BHwD69e19gyv6eegw51pnAUWwxKAAnmPL5E.krn:822:1: error: measure 78 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   1
+  diff:     +1/2
+../../data/interim/pdmx/train/QmP9Hd7XKn1BHwD69e19gyv6eegw51pnAUWwxKAAnmPL5E.krn:822:2: error: measure 78 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   1
+  diff:     +1/2
+../../data/interim/pdmx/train/QmP9Hd7XKn1BHwD69e19gyv6eegw51pnAUWwxKAAnmPL5E.krn:822:3: error: measure 78 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   1
+  diff:     +1/2
+../../data/interim/pdmx/train/QmP9Hd7XKn1BHwD69e19gyv6eegw51pnAUWwxKAAnmPL5E.krn:822:4: error: measure 78 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   1
+  diff:     +1/2
+../../data/interim/pdmx/train/QmP9Hd7XKn1BHwD69e19gyv6eegw51pnAUWwxKAAnmPL5E.krn:822:5: error: measure 78 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   1
+  diff:     +1/2
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:28:1: error: measure 2 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:28:2: error: measure 2 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:28:4: error: measure 2 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:28:6: error: measure 2 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:28:7: error: measure 2 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:36:1: error: measure 3 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:36:2: error: measure 3 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:36:4: error: measure 3 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:36:6: error: measure 3 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:36:7: error: measure 3 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:46:1: error: measure 4 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:46:2: error: measure 4 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:46:4: error: measure 4 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:46:6: error: measure 4 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:46:7: error: measure 4 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:63:2: error: measure 5 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:63:4: error: measure 5 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:63:6: error: measure 5 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:63:7: error: measure 5 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:74:2: error: measure 6 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:74:6: error: measure 6 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:74:7: error: measure 6 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:85:2: error: measure 7 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:85:6: error: measure 7 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:85:7: error: measure 7 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:97:2: error: measure 8 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:97:6: error: measure 8 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:97:7: error: measure 8 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:109:2: error: measure 9 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:109:6: error: measure 9 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:109:7: error: measure 9 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:120:2: error: measure 10 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:120:6: error: measure 10 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:120:7: error: measure 10 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:131:2: error: measure 11 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:131:6: error: measure 11 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:131:7: error: measure 11 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:143:2: error: measure 12 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:143:6: error: measure 12 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:143:7: error: measure 12 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:155:2: error: measure 13 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:155:6: error: measure 13 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:155:7: error: measure 13 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:160:2: error: measure 14 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:160:4: error: measure 14 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:160:6: error: measure 14 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:160:7: error: measure 14 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:162:1: error: measure 15 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:162:2: error: measure 15 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:162:3: error: measure 15 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:162:4: error: measure 15 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:162:6: error: measure 15 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:162:7: error: measure 15 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:164:1: error: measure 16 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:164:2: error: measure 16 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:164:3: error: measure 16 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:164:4: error: measure 16 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:164:6: error: measure 16 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:164:7: error: measure 16 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   1/4
+  diff:     -1
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:174:1: error: measure 17 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   5/8
+  diff:     -5/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:174:2: error: measure 17 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   5/8
+  diff:     -5/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:174:3: error: measure 17 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   5/8
+  diff:     -5/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:174:4: error: measure 17 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   5/8
+  diff:     -5/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:174:6: error: measure 17 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   5/8
+  diff:     -5/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:174:7: error: measure 17 duration mismatch
+  expected: 5/4 (5/4)
+  actual:   5/8
+  diff:     -5/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:262:1: error: measure 29 duration mismatch
+  expected: 5/8 (5/8)
+  actual:   1
+  diff:     +3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:262:2: error: measure 29 duration mismatch
+  expected: 5/8 (5/8)
+  actual:   1
+  diff:     +3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:262:3: error: measure 29 duration mismatch
+  expected: 5/8 (5/8)
+  actual:   1
+  diff:     +3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:262:4: error: measure 29 duration mismatch
+  expected: 5/8 (5/8)
+  actual:   1
+  diff:     +3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:262:6: error: measure 29 duration mismatch
+  expected: 5/8 (5/8)
+  actual:   1
+  diff:     +3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:262:7: error: measure 29 duration mismatch
+  expected: 5/8 (5/8)
+  actual:   1
+  diff:     +3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:1221:1: error: measure 136 duration mismatch
+  expected: 1 (4/4)
+  actual:   5/8
+  diff:     -3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:1221:2: error: measure 136 duration mismatch
+  expected: 1 (4/4)
+  actual:   5/8
+  diff:     -3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:1221:3: error: measure 136 duration mismatch
+  expected: 1 (4/4)
+  actual:   5/8
+  diff:     -3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:1221:4: error: measure 136 duration mismatch
+  expected: 1 (4/4)
+  actual:   5/8
+  diff:     -3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:1221:6: error: measure 136 duration mismatch
+  expected: 1 (4/4)
+  actual:   5/8
+  diff:     -3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:1221:7: error: measure 136 duration mismatch
+  expected: 1 (4/4)
+  actual:   5/8
+  diff:     -3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:1309:1: error: measure 148 duration mismatch
+  expected: 5/8 (5/8)
+  actual:   1
+  diff:     +3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:1309:2: error: measure 148 duration mismatch
+  expected: 5/8 (5/8)
+  actual:   1
+  diff:     +3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:1309:3: error: measure 148 duration mismatch
+  expected: 5/8 (5/8)
+  actual:   1
+  diff:     +3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:1309:4: error: measure 148 duration mismatch
+  expected: 5/8 (5/8)
+  actual:   1
+  diff:     +3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:1309:6: error: measure 148 duration mismatch
+  expected: 5/8 (5/8)
+  actual:   1
+  diff:     +3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:1309:7: error: measure 148 duration mismatch
+  expected: 5/8 (5/8)
+  actual:   1
+  diff:     +3/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2263:1: error: measure 255 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2263:2: error: measure 255 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2263:3: error: measure 255 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2263:4: error: measure 255 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2263:6: error: measure 255 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2263:7: error: measure 255 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2268:1: error: measure 256 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   3/8
+  diff:     -1/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2268:2: error: measure 256 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   3/8
+  diff:     -1/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2268:3: error: measure 256 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   3/8
+  diff:     -1/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2268:4: error: measure 256 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   3/8
+  diff:     -1/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2268:6: error: measure 256 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   3/8
+  diff:     -1/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2268:7: error: measure 256 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   3/8
+  diff:     -1/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2279:1: error: measure 257 duration mismatch
+  expected: 3/8 (3/8)
+  actual:   1
+  diff:     +5/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2279:2: error: measure 257 duration mismatch
+  expected: 3/8 (3/8)
+  actual:   1
+  diff:     +5/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2279:3: error: measure 257 duration mismatch
+  expected: 3/8 (3/8)
+  actual:   1
+  diff:     +5/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2279:4: error: measure 257 duration mismatch
+  expected: 3/8 (3/8)
+  actual:   1
+  diff:     +5/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2279:6: error: measure 257 duration mismatch
+  expected: 3/8 (3/8)
+  actual:   1
+  diff:     +5/8
+../../data/interim/pdmx/train/QmbGdyrRbvbDQKcD3XNWAE1vZoZiN7eQ5XD1L8J8JovWL7.krn:2279:7: error: measure 257 duration mismatch
+  expected: 3/8 (3/8)
+  actual:   1
+  diff:     +5/8
+../../data/interim/pdmx/train/QmPMEhD8nrgfEksCjKWbLbC8Kq1K3VjwhT3MK3rKRxeavU.krn:24:1: error: measure 2 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   1
+  diff:     +1/2
+../../data/interim/pdmx/train/QmPMEhD8nrgfEksCjKWbLbC8Kq1K3VjwhT3MK3rKRxeavU.krn:24:2: error: measure 2 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   1
+  diff:     +1/2
+../../data/interim/pdmx/train/QmPMEhD8nrgfEksCjKWbLbC8Kq1K3VjwhT3MK3rKRxeavU.krn:24:3: error: measure 2 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   1
+  diff:     +1/2
+../../data/interim/pdmx/train/QmPMEhD8nrgfEksCjKWbLbC8Kq1K3VjwhT3MK3rKRxeavU.krn:24:4: error: measure 2 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   1
+  diff:     +1/2
+../../data/interim/pdmx/train/QmPMEhD8nrgfEksCjKWbLbC8Kq1K3VjwhT3MK3rKRxeavU.krn:24:5: error: measure 2 duration mismatch
+  expected: 1/2 (2/4)
+  actual:   1
+  diff:     +1/2
+../../data/interim/pdmx/train/QmPMEhD8nrgfEksCjKWbLbC8Kq1K3VjwhT3MK3rKRxeavU.krn:368:1: error: measure 43 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+../../data/interim/pdmx/train/QmPMEhD8nrgfEksCjKWbLbC8Kq1K3VjwhT3MK3rKRxeavU.krn:368:2: error: measure 43 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+../../data/interim/pdmx/train/QmPMEhD8nrgfEksCjKWbLbC8Kq1K3VjwhT3MK3rKRxeavU.krn:368:3: error: measure 43 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+../../data/interim/pdmx/train/QmPMEhD8nrgfEksCjKWbLbC8Kq1K3VjwhT3MK3rKRxeavU.krn:368:4: error: measure 43 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+../../data/interim/pdmx/train/QmPMEhD8nrgfEksCjKWbLbC8Kq1K3VjwhT3MK3rKRxeavU.krn:368:5: error: measure 43 duration mismatch
+  expected: 1 (4/4)
+  actual:   1/2
+  diff:     -1/2
+

@@ -1,0 +1,94 @@
+[project]
+name = "smt"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "augraphy>=8.2.6",
+    "datasets>=4.4.1",
+    "fire>=0.7.0",
+    "kornia>=0.8.2",
+    "lightning>=2.6.0",
+    "loguru>=0.7.3",
+    "opencv-python>=4.11.0.86",
+    "pytest>=9.0.2",
+    "rich>=14.2.0",
+    "scikit-image>=0.25.2",
+    "tokenizers>=0.22.1",
+    "torch==2.9.1",
+    "torchinfo>=1.8.0",
+    "torchvision==0.24.1",
+    "transformers>=4.57.3",
+    "verovio>=6.0.1",
+    "wandb==0.22.3",
+    "cairosvg>=2.8.0",
+    "names>=0.3.0",
+    "wonderwords>=3.0.1",
+    "rapidfuzz>=3.14.3",
+    "zss>=1.2.0",
+    "pyvips>=3.1.1",
+    "pydantic>=2.12.5",
+    "torchtune>=0.6.1",
+    "torchao==0.15.0",
+    "pebble>=5.0.0",
+    "xgrammar>=0.1.31"
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"notebooks/*.ipynb" = ["E402"]  # Allow imports after sys.path modifications in notebooks
+"tests/normalization/test_remove_overwritten_interpretations.py" = ["F841"]  # Ignore unused variables in placeholder tests
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = [
+    "augraphy.*",
+    "cv2.*",
+    "verovio.*",
+    "cairosvg.*",
+    "names.*",
+    "wonderwords.*",
+    "datasets.*",
+    "kornia.*",
+    "musicdiff.*",
+    "music21.*",
+    "converter21.*",
+    "xgrammar.*",
+]
+ignore_missing_imports = true
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.4.0",
+    "ipykernel>=7.1.0",
+    "matplotlib>=3.8.0",
+    "ipywidgets>=8.1.8",
+]
+omr-ned = [
+    "musicdiff>=5.0.0",
+    "music21>=9.7.0",
+    "converter21>=3.5.0",
+]
+grammar = [
+    "xgrammar>=0.1.29",
+]

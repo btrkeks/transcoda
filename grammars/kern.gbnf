@@ -1,0 +1,394 @@
+# GBNF Grammar for Humdrum **kern Representation
+#
+# This grammar enforces a strict canonical structure for **kern notation
+# as used in OMR (Optical Music Recognition) transcription output.
+#
+# Based on analysis of the SMT training dataset and Humdrum **kern specification.
+# Designed for constrained decoding in sequence-to-sequence models.
+
+# =============================================================================
+# ROOT: Complete **kern transcription structure
+# =============================================================================
+
+# Note: The dataset format omits the **kern exclusive interpretation line
+# and starts directly with clef, key signature, and meter interpretations.
+root ::= header data-section
+
+# =============================================================================
+# FILE HEADER
+# =============================================================================
+
+# Header: tandem interpretations (clef, key, meter)
+# Note: The exclusive interpretation "**kern" is omitted in dataset format
+# Some samples may have initial spine splits (*^) before clef/key/meter lines
+header ::= (stria-line nl)? (staff-line nl)? clef-line nl key-line nl (meter-line nl)?
+
+# Staff line count (stria) interpretation
+stria-line ::= (stria | "*") (tab (stria | "*"))*
+stria ::= "*stria1" | "*stria2" | "*stria3" | "*stria4" | "*stria5" | "*stria6" | "*stria7" | "*stria8" | "*stria9"
+
+# Staff number interpretation
+staff-line ::= (staff | "*") (tab (staff | "*"))*
+staff ::= "*staff" [1-9] [0-9]*
+
+# Clef line
+clef-line ::= clef (tab clef)*
+clef ::= "*clefF3" | "*clefF4" | "*clefF^4" | "*clefF^^4" | "*clefFv4" | "*clefFvv4" | "*clefF5" | "*clefG1" | "*clefG2" | "*clefGv2" | "*clefGvv2" | "*clefG^2" | "*clefG^^2" | "*clefTAB5" | "*clefX" | "*clefC1" | "*clefC2" | "*clefC3" | "*clefC4" | "*clefC5"
+
+# Key signature line
+key-line ::= keysig (tab keysig)*
+keysig ::= "*k[" key-accidentals "]"
+key-accidentals ::=
+    "" |
+    # Flat keys (circle of fifths order)
+    "b-" | "b-e-" | "b-e-a-" | "b-e-a-d-" | "b-e-a-d-g-" | "b-e-a-d-g-c-" | "b-e-a-d-g-c-f-" |
+    # Sharp keys (circle of fifths order)
+    "f#" | "f#c#" | "f#c#g#" | "f#c#g#d#" | "f#c#g#d#a#" | "f#c#g#d#a#e#" | "f#c#g#d#a#e#b#" |
+    # Dataset-observed visible courtesy/mixed key signatures
+    "bef#" | "bnenandngnf#c#"
+
+# Meter/time signature line (includes mensuration signs)
+meter-line ::= meter (tab meter)*
+meter ::= "*M" time-num "/" time-denom | "*met(" mensuration ")"
+time-num ::= [1-9] [0-9]? [0-9]?
+time-denom ::= "1" | "2" | "4" | "6" | "8" | "9" | "12" | "16" | "32" | "64" |
+    # TODO: Review
+    "44" | "84" | "3" | "444"
+mensuration ::= "C" | "C|" | "c" | "c|"
+
+# =============================================================================
+# DATA SECTION
+# =============================================================================
+
+# Data section: sequence of data lines with optional final terminator.
+# A page-faithful sample may end on content without an explicit *- line.
+data-section ::= (data-line nl)* ending-line
+
+# Ending line accepts either:
+# - a final content line (optionally followed by a terminator line), or
+# - a standalone terminator line.
+ending-line ::= data-line (nl term-line)? nl? | term-line nl?
+
+# A data line can be various types
+data-line ::=
+    barline-line |
+    record-line |
+    spine-op-line |
+    interp-line |
+    null-line
+
+# Barline line: all spines have barlines
+barline-line ::= barline (tab barline)*
+barline ::= "=" barline-suffix?
+barline-suffix ::=
+    "=" |                                   # final barline (==)
+    [1-9] [0-9]* |                          # numbered barline (=1, =12)
+    barline-style                           # styled barline (=||, =:|!, etc.)
+# Barline style: combination of repeat dots (:), thick (!), and thin (|) lines
+barline-style ::=
+    ":|!" |                                 # end repeat
+    "!|:" |                                 # start repeat
+    ":!|:" |                                # end and start repeat
+    ":|!|:" |                               # end and start repeat (variant)
+    "||"                                    # double barline
+
+# Final barline line: all spines have == (end of piece)
+final-barline-line ::= final-barline (tab final-barline)*
+final-barline ::= "==" | "=:|!"
+
+# Spine manipulation line (splits and joins only, no mixing with other interpretations)
+spine-op-line ::= spine-op (tab spine-op)*
+spine-op ::= "*" | "*^" | "*v"
+
+# Tandem interpretation line (inline changes, no spine splits/joins)
+interp-line ::= interp (tab interp)*
+interp ::=
+    "*" |                                   # null interpretation
+    clef |                                  # clef change
+    keysig |                                # key change
+    meter |                                 # meter change
+    "*met(" mensuration ")" |               # mensuration sign
+    "*Xtuplet" |                            # tuplet marker
+    "*lig" | "*Xlig" |                      # ligature
+    "*col" | "*Xcol" |                      # Coloration brackets
+    "*tremolo" | "*Xtremolo" |              # tremolo marker
+    ottava                                  # ottava marker
+
+ottava ::= "*8va" | "*X8va" | "*8ba" | "*X8ba" | "*15va" | "*X15va" | "*15ba" | "*X15ba" | "*15ma" | "*X15ma"
+
+# Note/rest record line
+record-line ::= spine-content (tab spine-content)*
+
+# Null continuation line (all dots)
+null-line ::= "." (tab ".")*
+
+# =============================================================================
+# SPINE CONTENT (per-spine tokens)
+# =============================================================================
+
+# Content of a single spine
+spine-content ::= null-token | chord | note | rest | grace-group
+
+# Null token (sustain)
+null-token ::= "."
+
+# Chord (multiple stop): space-separated notes
+chord ::= note (" " note)+
+
+# Grace note group
+grace-group ::= grace (" " grace)*
+
+# Grace notes: canonical order is duration? pitch accidental? q slur? tie? beam?
+# Groupetto (qq) keeps qq before pitch as it's semantically different
+grace ::=
+    duration? pitch accidental? "q" slur? tie-mark? beam? |   # Standard grace
+    duration "qq" pitch accidental? beam?                      # Groupetto
+
+# =============================================================================
+# NOTE TOKEN
+# =============================================================================
+
+# Canonical order: duration, pitch, accidental, pause?, ornaments, harmonic?, articulation*, arpeggio, slur, breath?, tie, beam, editorial
+note ::= duration pitch accidental? pause? ornaments harmonic? articulation* arpeggio? slur? breath? tie-mark? beam? editorial?
+
+# =============================================================================
+# REST TOKEN
+# =============================================================================
+
+rest ::= duration "r" ("yy")?
+
+# =============================================================================
+# DURATION
+# =============================================================================
+
+# Duration with optional augmentation dots
+duration ::= dur-value dots?
+
+# Base duration values: rational notation or reciprocal notation
+dur-value ::= rational-dur | reciprocal-dur
+
+# Rational duration (e.g., 3%5 = 3/5 of a whole note)
+rational-dur ::= [1-9] [0-9]* "%" [1-9] [0-9]*
+
+# Reciprocal duration values (standard notation + tuplet variants)
+reciprocal-dur ::=
+    "000" |         # maxima
+    "00" |          # longa
+    "0" |           # breve
+    "1" |           # whole
+    "2" |           # half
+    "3" |           # half triplet
+    "4" |           # quarter
+    "5" |           # quintuplet
+    "6" |           # quarter triplet
+    "7" |           # septuplet
+    "8" |           # eighth
+    "9" |
+    "10" |          # tuplet
+    "12" |          # eighth triplet
+    "13" |          # tuplet
+    "14" |          # septuplet
+    "15" |
+    "16" |          # sixteenth
+    "18" |
+    "20" |          # tuplet
+    "22" |          # tuplet
+    "24" |          # sixteenth triplet
+    "25" |          # tuplet (25:16)
+    "26" |
+    "28" |          # septuplet
+    "30" |
+    "32" |          # thirty-second
+    "34" |
+    "36" |          # tuplet
+    "40" |          # tuplet
+    "44" |
+    "48" |          # thirty-second triplet
+    "52" |
+    "56" |          # septuplet
+    "60" |
+    "64" |          # sixty-fourth
+    "70" |
+    "72" |          # novemtuplet (9x8)
+    "80" |          # tuplet (5x sixteenth)
+    "88" |
+    "96" |          # tuplet
+    "108" |         # tuplet (27x4)
+    "112" |         # septuplet (16x7)
+    "116" |
+    "128" |
+    "144" |
+    "160" |
+    "176" |
+    "192" |
+    "256" |
+    "272" |
+    "512" |         # 512th note (tremolo)
+    "1024"
+
+# Augmentation dots (single, double, triple, or quadruple)
+# Longest-first ordering for unambiguous parsing
+# Note: Quadruple dots are extremely rare and typically indicate MIDI quantization
+# artifacts rather than intentional notation, but we allow them for compatibility.
+dots ::= "...." | "..." | ".." | "."
+
+# =============================================================================
+# PITCH
+# =============================================================================
+
+# Pitch uses repeated letters for octave indication
+# Lowercase: middle C and above (c=C4, cc=C5, ccc=C6, cccc=C7, ccccc=C8, cccccc=C9)
+# Uppercase: below middle C (C=C3, CC=C2, CCC=C1, CCCC=C0)
+pitch ::=
+    # Pitch A
+    "a" | "aa" | "aaa" | "aaaa" | "aaaaa" | "aaaaaa" |
+    "A" | "AA" | "AAA" | "AAAA" | "AAAAA" | "AAAAAA" |
+    # Pitch B
+    "b" | "bb" | "bbb" | "bbbb" | "bbbbb" | "bbbbbb" |
+    "B" | "BB" | "BBB" | "BBBB" | "BBBBB" | "BBBBBB" |
+    # Pitch C
+    "c" | "cc" | "ccc" | "cccc" | "ccccc" | "cccccc" |
+    "C" | "CC" | "CCC" | "CCCC" | "CCCCC" | "CCCCCC" |
+    # Pitch D
+    "d" | "dd" | "ddd" | "dddd" | "ddddd" | "dddddd" |
+    "D" | "DD" | "DDD" | "DDDD" | "DDDDD" | "DDDDDD" |
+    # Pitch E
+    "e" | "ee" | "eee" | "eeee" | "eeeee" | "eeeeee" |
+    "E" | "EE" | "EEE" | "EEEE" | "EEEEE" | "EEEEEE" |
+    # Pitch F
+    "f" | "ff" | "fff" | "ffff" | "fffff" | "ffffff" |
+    "F" | "FF" | "FFF" | "FFFF" | "FFFFF" |
+    # Pitch G
+    "g" | "gg" | "ggg" | "gggg" | "ggggg" | "gggggg" |
+    "G" | "GG" | "GGG" | "GGGG" | "GGGGG" | "GGGGGG"
+
+# =============================================================================
+# ACCIDENTALS
+# =============================================================================
+
+accidental ::=
+    "##" |          # double sharp
+    "#" |           # sharp
+    "--" |          # double flat
+    "-" |           # flat
+    "n"             # natural
+
+# =============================================================================
+# PAUSE (FERMATA)
+# =============================================================================
+
+# Pause/fermata marker
+pause ::= ";"
+
+# =============================================================================
+# ORNAMENTS
+# =============================================================================
+
+# Ornament markers in canonical order (each optional, but must appear in this order)
+# This enforces: at most one of each, and strict ordering when multiple present
+ornaments ::= "T"? "t"? "M"? "m"? "W"? "w"? "S"? "$"? "R"? "O"?
+#              ^trill^  ^mordent^  ^inv.mord^  ^turns^   ^generic
+
+# =============================================================================
+# HARMONIC
+# =============================================================================
+
+# Harmonic marker (natural harmonic on string instruments, shown as small circle above note)
+harmonic ::= "o"
+
+# =============================================================================
+# ARTICULATIONS
+# =============================================================================
+
+# Articulation markers
+articulation ::=
+    "'" |           # staccato
+    "`" |           # staccatissimo/attacca
+    "~" |           # tenuto
+    "^" |           # accent
+    "i" |           # generic articulation (dataset variant)
+    "I" |           # generic articulation
+    "v" |           # up-bow
+    "u"             # down-bow
+
+# =============================================================================
+# ARPEGGIATION
+# =============================================================================
+
+# Arpeggiation marker
+arpeggio ::= ":"
+
+# =============================================================================
+# SLURS
+# =============================================================================
+
+# Slur markers (can be nested, indicated by repetition)
+slur ::=
+    "((" |          # double slur open (nested)
+    "(" |           # slur open
+    "))" |          # double slur close (nested)
+    ")"             # slur close
+
+# =============================================================================
+# BREATH MARK
+# =============================================================================
+
+# Breath mark
+breath ::= ","
+
+# =============================================================================
+# TIES
+# =============================================================================
+
+# Tie markers appear after pitch/accidental
+tie-mark ::=
+    "[" |           # tie start
+    "]" |           # tie end
+    "_"             # tie continuation
+
+# =============================================================================
+# BEAMING
+# =============================================================================
+
+# Beam markers (can stack for multiple levels)
+beam ::=
+    # Single level
+    "L" | "J" | "K" | "k" |
+    # Double level
+    "LL" | "JJ" | "LK" | "Jk" | "kk" | "KK" | "kL" | "JK" | "KL" |
+    # Triple level
+    "LLL" | "JJJ" | "LLK" | "LKK" | "JJK" | "JJk" | "Jkk" | "kkk" | "JKK" |
+    "KLL" | "KKL" | "KKK" | "JJL" | "JLLL" | "LLKK" | "JKKK" | "JJJK" |
+    # Quadruple level
+    "LLLL" | "JJJJ" | "JJJk" | "kkkk" | "JJkk" | "Jkkk" | "JJJkk" | "JJkkk" |
+    "KKLL" | "KLLL" | "KKKL" | "KKKK" | "KKKKL" |
+    # Quintuple level
+    "LLLLL" | "JJJJJ" | "JJJJk" | "kkkkk" | "Jkkkk" |
+    "KLLLL" | "KKLLL" | "KKKLL" |
+    # Sextuple level
+    "LLLLLL" | "JJJJJJ" |
+    # Possibly wrong
+    "Lk"
+
+# =============================================================================
+# EDITORIAL MARKS
+# =============================================================================
+
+editorial ::=
+    "y" |           # implied accidental
+    "yy" |          # implied note
+    "x"             # editorial interpretation
+
+# =============================================================================
+# TERMINATION (optional at end of transcription)
+# =============================================================================
+
+termination ::= term-line nl?
+term-line ::= "*-" (tab "*-")*
+
+# =============================================================================
+# BASIC TOKENS
+# =============================================================================
+
+nl ::= "\n"
+tab ::= "\t"

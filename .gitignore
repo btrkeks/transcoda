@@ -1,0 +1,98 @@
+# Local secrets and machine-specific config
+.env
+.env.*
+*.env
+*.env.*
+!.env.example
+!.env.sample
+.cloud.env.example
+.cloud.env
+.python-version
+.netrc
+*.pem
+*.key
+*.p12
+*.pfx
+*.secret
+*.secrets
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.claude/
+*.swp
+*.swo
+*~
+
+# Python caches and build outputs
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/
+site/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+.ipynb_checkpoints/
+
+# Local environments and package caches
+.venv/
+venv/
+env/
+.uv-cache/
+.uv_cache/
+.cache/
+
+# Logs and temporary artifacts
+logs/
+*.log
+*.out
+*.err
+output.log
+
+# Data, experiments, and generated artifacts
+data/
+outputs/
+analysis/
+reports/
+wandb/
+weights/
+augraphy_cache/
+
+# Model and dataset caches / binary artifacts
+*.arrow
+*.parquet
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.h5
+*.ckpt
+*.pt
+*.onnx
+*.npy
+*.npz
+
+# Rust build outputs
+**/target/
+
+# Nested tool-specific local config
+**/.claude/
+
+CLAUDE.md
+AGENTS.md
+
+/docs/
+/external/
+/examples/
+cloud
