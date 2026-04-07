@@ -61,7 +61,7 @@ logs/
 output.log
 
 # Data, experiments, and generated artifacts
-data/
+/data/
 outputs/
 analysis/
 reports/

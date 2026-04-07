@@ -939,7 +939,10 @@ for segment in "${WRAP_SEGMENTS[@]}"; do
   WRAP_CMD="${WRAP_CMD}${segment}"
 done
 
-SBATCH_CMD+=("--wrap=${WRAP_CMD}")
+# sbatch --wrap defaults to /bin/sh on some clusters, so run through bash
+# explicitly before sourcing the venv activation script.
+printf -v WRAP_CMD_BASH 'bash -lc %q' "${WRAP_CMD}"
+SBATCH_CMD+=("--wrap=${WRAP_CMD_BASH}")
 
 if [ "${DRY_RUN}" = true ]; then
   printf 'Dry run: '
