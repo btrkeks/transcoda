@@ -87,6 +87,12 @@ def build_info_summary(
     prefilter_summary: dict[str, object] | None = None,
     resumable_state: dict[str, object] | None = None,
 ) -> dict[str, object]:
+    effective_variants_per_file = int(
+        (variant_policy_summary or {}).get("mean_variants_per_file", config.variants_per_file)
+    )
+    adaptive_variants_enabled = bool(
+        (variant_policy_summary or {}).get("enabled", config.adaptive_variants_enabled)
+    )
     return {
         "generation_timestamp": time.time(),
         "run_started_at": run_context.run_started_at,
@@ -120,8 +126,8 @@ def build_info_summary(
             "effective_target_accepted_samples": config.effective_target_accepted_samples,
             "max_scheduled_tasks": config.max_scheduled_tasks,
             "effective_max_scheduled_tasks": config.effective_max_scheduled_tasks,
-            "variants_per_file": config.variants_per_file,
-            "adaptive_variants_enabled": config.adaptive_variants_enabled,
+            "variants_per_file": effective_variants_per_file,
+            "adaptive_variants_enabled": adaptive_variants_enabled,
             "overflow_truncation_enabled": config.overflow_truncation_enabled,
             "overflow_truncation_max_trials": config.overflow_truncation_max_trials,
             "variant_policy_summary": variant_policy_summary,

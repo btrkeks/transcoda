@@ -32,7 +32,7 @@ from scripts.dataset_generation.dataset_generation.source_stats import (
     compute_kern_source_stats,
 )
 from scripts.dataset_generation.dataset_generation.variant_policy import (
-    build_adaptive_variant_plan,
+    FIXED_VARIANTS_PER_FILE,
     build_fixed_variant_plan,
 )
 from scripts.dataset_generation.dataset_generation.worker import (
@@ -563,9 +563,10 @@ class FileDataGenerator:
             image_width: Target image width in pixels (default: 1050).
             image_height: Target image height in pixels (default: None, content-determined).
             num_workers: Number of worker processes (default: min(4, CPU count - 1)).
-            variants_per_file: Number of augmented variants generated per source file.
-            adaptive_variants_enabled: Whether to adapt variants-per-file by
-                transcription line count bins.
+            variants_per_file: Legacy CLI/config knob. The current scheduler
+                uses a fixed 3 variants per source file.
+            adaptive_variants_enabled: Legacy knob retained for CLI
+                compatibility. Adaptive planning is currently disabled.
             augment_seed: Optional seed for deterministic augmentation.
             deterministic_seed_salt: Optional salt used to derive stable
                 per-sample RNG seeds across resume sessions.
@@ -665,8 +666,8 @@ class FileDataGenerator:
 
         self.kern_dirs = [Path(d) for d in kern_dirs]
         self.num_workers = num_workers or min(4, max(1, cpu_count() - 1))
-        self.variants_per_file = variants_per_file
-        self.adaptive_variants_enabled = coerce_boolish(adaptive_variants_enabled)
+        self.variants_per_file = FIXED_VARIANTS_PER_FILE
+        self.adaptive_variants_enabled = False
         self.worker_config = WorkerInitConfig(
             image_width=image_width,
             image_height=image_height,
@@ -989,15 +990,10 @@ class FileDataGenerator:
         if not self.file_paths:
             raise ValueError(f"No .krn files found in {kern_dirs}")
 
-        if self.adaptive_variants_enabled:
-            self.variant_count_by_file, self.variant_policy_summary = build_adaptive_variant_plan(
-                self.file_paths
-            )
-        else:
-            self.variant_count_by_file, self.variant_policy_summary = build_fixed_variant_plan(
-                self.file_paths,
-                self.variants_per_file,
-            )
+        self.variant_count_by_file, self.variant_policy_summary = build_fixed_variant_plan(
+            self.file_paths,
+            FIXED_VARIANTS_PER_FILE,
+        )
         self.total_available_tasks = int(sum(self.variant_count_by_file.values()))
 
     def _record_failure_from_code(self, code: WorkerFailureReason, detail: str | None = None) -> None:

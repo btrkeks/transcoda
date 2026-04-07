@@ -19,6 +19,7 @@ from datasets.splits import SplitInfo
 
 from scripts.dataset_generation.dataset_generation.config import GenerationRunConfig
 from scripts.dataset_generation.dataset_generation.run_context import RunContext
+from scripts.dataset_generation.dataset_generation.variant_policy import FIXED_VARIANTS_PER_FILE
 
 
 @dataclass(frozen=True)
@@ -47,8 +48,8 @@ def compute_generation_config_fingerprint(
         "num_samples": int(config.effective_num_samples),
         "target_accepted_samples": config.effective_target_accepted_samples,
         "max_scheduled_tasks": config.effective_max_scheduled_tasks,
-        "variants_per_file": int(config.variants_per_file),
-        "adaptive_variants_enabled": bool(config.adaptive_variants_enabled),
+        "variants_per_file": FIXED_VARIANTS_PER_FILE,
+        "adaptive_variants_enabled": False,
         "overflow_truncation_enabled": bool(config.overflow_truncation_enabled),
         "overflow_truncation_max_trials": int(config.overflow_truncation_max_trials),
         "augment_seed": config.augment_seed,

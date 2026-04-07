@@ -30,6 +30,7 @@ from scripts.dataset_generation.dataset_generation.reporting import (
     write_profile_artifacts,
 )
 from scripts.dataset_generation.dataset_generation.run_context import RunContext, build_run_context
+from scripts.dataset_generation.dataset_generation.variant_policy import FIXED_VARIANTS_PER_FILE
 
 
 @dataclass(frozen=True)
@@ -109,8 +110,8 @@ def _print_run_configuration(
     else:
         console.print(f"Preloaded quarantined files: {len(preloaded_quarantine_files):,}")
     console.print(f"Multiprocessing start method: {configured_start_method}")
-    console.print(f"Variants per file: {config.variants_per_file}")
-    console.print(f"Adaptive variants enabled: {config.adaptive_variants_enabled}")
+    console.print(f"Variants per file: fixed at {FIXED_VARIANTS_PER_FILE}")
+    console.print("Adaptive variants enabled: False (simplified fixed policy)")
     console.print(f"Courtesy naturals (label-side): {worker_config.courtesy_naturals_probability}")
     console.print(
         "Overflow truncation rescue: "
