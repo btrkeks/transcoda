@@ -9,11 +9,11 @@ from scripts.dataset_generation.dataset_generation.image_augmentation.offline_au
     passes_quality_gate,
     passes_transform_consistency,
 )
-from scripts.dataset_generation.dataset_generation_new.recipe import (
+from scripts.dataset_generation.dataset_generation.recipe import (
     OfflineAugmentationBandPolicy,
     ProductionRecipe,
 )
-from scripts.dataset_generation.dataset_generation_new.types import (
+from scripts.dataset_generation.dataset_generation.types import (
     AugmentationBand,
     RenderResult,
     SamplePlan,

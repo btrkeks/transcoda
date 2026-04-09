@@ -145,16 +145,12 @@ def main(
     *kern_dirs: str,
     output_root: str = "/tmp/dataset_generation_profiles",
     dataset_output_dir: str | None = None,
-    num_samples: int = 500,
+    target_samples: int = 500,
     num_workers: int = 4,
-    variants_per_file: int = 1,
-    augment_seed: int | None = None,
-    profile_log_every: int = 100,
-    profile_capture_per_sample: bool = False,
+    base_seed: int | None = None,
     failure_policy: str = "throughput",
     quarantine_in: str | None = None,
     quarantine_out: str | None = None,
-    start_method: str = "auto",
     vmstat_interval: int = 1,
     pyspy_enabled: bool = True,
     pyspy_format: str = "flamegraph",
@@ -191,25 +187,12 @@ def main(
         *[str(path) for path in kern_dir_paths],
         "--output_dir",
         str(dataset_out),
-        "--num_samples",
-        str(num_samples),
+        "--target_samples",
+        str(target_samples),
         "--num_workers",
         str(num_workers),
-        "--variants_per_file",
-        str(variants_per_file),
-        "--profile_enabled=True",
-        "--profile_out_dir",
-        str(profile_out),
-        "--profile_log_every",
-        str(profile_log_every),
-        "--profile_sample_limit",
-        str(num_samples),
-        "--profile_capture_per_sample",
-        str(profile_capture_per_sample),
         "--failure_policy",
         str(failure_policy),
-        "--start_method",
-        str(start_method),
         "--quiet",
         str(quiet),
     ]
@@ -217,8 +200,8 @@ def main(
         generation_cmd.extend(["--quarantine_in", str(quarantine_in)])
     if quarantine_out is not None:
         generation_cmd.extend(["--quarantine_out", str(quarantine_out)])
-    if augment_seed is not None:
-        generation_cmd.extend(["--augment_seed", str(augment_seed)])
+    if base_seed is not None:
+        generation_cmd.extend(["--base_seed", str(base_seed)])
 
     datasets_cache_dir = run_dir / "hf_datasets_cache"
     datasets_cache_dir.mkdir(parents=True, exist_ok=True)

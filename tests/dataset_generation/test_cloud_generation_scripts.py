@@ -43,7 +43,7 @@ def _setup_fake_cloud_repo(tmp_path: Path) -> tuple[Path, Path]:
     return repo_root, script_target
 
 
-def test_generate_synth_data_defaults_to_legacy_cloud_preset(tmp_path):
+def test_generate_synth_data_uses_rewrite_contract_defaults(tmp_path):
     repo_root, script_path = _setup_fake_cloud_repo(tmp_path)
     capture_path = repo_root / "captured-args.txt"
 
@@ -55,6 +55,7 @@ def test_generate_synth_data_defaults_to_legacy_cloud_preset(tmp_path):
             "CAPTURE_ARGS_PATH": str(capture_path),
             "OUTPUT_DIR": "data/datasets/test_default",
             "NUM_WORKERS": "7",
+            "TARGET_SAMPLES": "55",
         }
     )
 
@@ -66,13 +67,15 @@ def test_generate_synth_data_defaults_to_legacy_cloud_preset(tmp_path):
     )
 
     args = capture_path.read_text(encoding="utf-8").splitlines()
-    assert "--dataset_preset" in args
-    assert "legacy_cloud_default" in args
+    assert "data/interim/train/grandstaff/3_normalized" in args
+    assert "data/interim/train/pdmx/3_normalized" in args
     assert "--num_workers" in args
     assert "7" in args
+    assert "--target_samples" in args
+    assert "55" in args
 
 
-def test_generate_synth_data_forwards_cloud_overrides(tmp_path):
+def test_generate_synth_data_forwards_supported_overrides(tmp_path):
     repo_root, script_path = _setup_fake_cloud_repo(tmp_path)
     capture_path = repo_root / "captured-args.txt"
 
@@ -83,11 +86,11 @@ def test_generate_synth_data_forwards_cloud_overrides(tmp_path):
             "SKIP_RUNTIME_DEPENDENCY_PROBE": "true",
             "CAPTURE_ARGS_PATH": str(capture_path),
             "OUTPUT_DIR": "data/datasets/test_overrides",
-            "CLOUD_DATASET_PRESET": "ablation_no_render_or_gt_aug",
-            "CLOUD_DISABLE_OFFLINE_IMAGE_AUGMENTATIONS": "true",
-            "CLOUD_COURTESY_NATURALS_PROBABILITY": "0.0",
-            "CLOUD_RENDER_PEDALS_ENABLED": "true",
-            "CLOUD_VARIANTS_PER_FILE": "9",
+            "TARGET_SAMPLES": "9",
+            "CLOUD_FAILURE_POLICY": "coverage",
+            "BASE_SEED": "17",
+            "MAX_ATTEMPTS": "21",
+            "QUIET": "true",
         }
     )
 
@@ -99,12 +102,41 @@ def test_generate_synth_data_forwards_cloud_overrides(tmp_path):
     )
 
     args = capture_path.read_text(encoding="utf-8").splitlines()
-    assert "--dataset_preset" in args
-    assert "ablation_no_render_or_gt_aug" in args
-    assert "--disable_offline_image_augmentations" in args
-    assert "true" in args
-    assert "--courtesy_naturals_probability" in args
-    assert "0.0" in args
-    assert "--render_pedals_enabled" in args
-    assert "--variants_per_file" in args
+    assert "--target_samples" in args
     assert "9" in args
+    assert "--failure_policy" in args
+    assert "coverage" in args
+    assert "--base_seed" in args
+    assert "17" in args
+    assert "--max_attempts" in args
+    assert "21" in args
+    assert "--quiet" in args
+    assert "true" in args
+
+
+def test_generate_synth_data_rejects_legacy_cloud_overrides(tmp_path):
+    repo_root, script_path = _setup_fake_cloud_repo(tmp_path)
+    capture_path = repo_root / "captured-args.txt"
+
+    env = os.environ.copy()
+    env.update(
+        {
+            "SKIP_PY_SETUP": "true",
+            "SKIP_RUNTIME_DEPENDENCY_PROBE": "true",
+            "CAPTURE_ARGS_PATH": str(capture_path),
+            "OUTPUT_DIR": "data/datasets/test_legacy_override",
+            "CLOUD_DATASET_PRESET": "legacy_cloud_default",
+        }
+    )
+
+    result = subprocess.run(
+        ["bash", str(script_path)],
+        cwd=repo_root,
+        env=env,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode != 0
+    assert "Unsupported legacy setting" in result.stderr

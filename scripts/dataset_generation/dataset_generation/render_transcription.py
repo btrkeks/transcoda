@@ -13,7 +13,7 @@ from scripts.dataset_generation.augmentation.instrument_label import apply_instr
 from scripts.dataset_generation.augmentation.pedaling import apply_pedaling
 from scripts.dataset_generation.augmentation.render_dynamic_marks import apply_render_dynamic_marks
 from scripts.dataset_generation.augmentation.tempo_markings import apply_tempo_markings
-from scripts.dataset_generation.dataset_generation_new.recipe import ProductionRecipe
+from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from src.core.kern_postprocess import append_terminator_if_missing
 
 

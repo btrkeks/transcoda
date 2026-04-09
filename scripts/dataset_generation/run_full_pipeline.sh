@@ -5,6 +5,7 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 DATA_SPEC_PATH="config/data_spec.json"
 WORKERS="${WORKERS:-4}"
 TRAIN_OUTPUT_DIR="${TRAIN_OUTPUT_DIR:-data/datasets/train_medium}"
+VALIDATION_SYNTH_TARGET_SAMPLES="${VALIDATION_SYNTH_TARGET_SAMPLES:-1000}"
 TRAIN_DATASETS_CSV="pdmx,musetrainer,grandstaff,openscore-lieder,openscore-stringquartets"
 PIPELINE_TARGET="${PIPELINE_TARGET:-train_full}"
 POLISH_MANUAL_FIXES_REFRESH="${POLISH_MANUAL_FIXES_REFRESH:-0}"
@@ -127,21 +128,15 @@ generate_train_dataset() {
 
   ## 5 - Dataset generation
   # python -m scripts.dataset_generation.dataset_generation.main \
+  #   data/interim/train/pdmx/3_normalized \
+  #   data/interim/train/grandstaff/3_normalized \
+  #   data/interim/train/openscore-lieder/3_normalized \
+  #   data/interim/train/openscore-stringquartets/3_normalized \
+  #   --target_samples 1000 \
   #   --num_workers "${WORKERS}" \
   #   --output_dir "${TRAIN_OUTPUT_DIR}" \
-  #   --render_instrument_piano_enabled=True \
-  #   --render_instrument_piano_probability=0.15 \
-  #   --render_sforzando_enabled=True \
-  #   --render_sforzando_probability=0.20 \
-  #   --render_sforzando_per_note_probability=0.03 \
-  #   --render_accent_enabled=True \
-  #   --render_accent_probability=0.10 \
-  #   --render_accent_per_note_probability=0.015 \
-  #   --render_tempo_enabled=True \
-  #   --render_tempo_probability=0.12 \
-  #   --render_tempo_include_mm_probability=0.35 \
-  #   --adaptive_variants_enabled=True \
-  #   --data_spec_path "${DATA_SPEC_PATH}"
+  #   --failure_policy balanced \
+  #   --quiet false
 
   ## 6 - Filter outliers
 }
@@ -199,16 +194,10 @@ generate_validation_datasets() {
     data/interim/val/grandstaff/3_normalized \
     data/interim/val/pdmx/3_normalized \
     data/interim/val/polish-scores/4_manual_fixes \
+    --target_samples "${VALIDATION_SYNTH_TARGET_SAMPLES}" \
     --num_workers 4 \
     --output_dir data/datasets/validation/synth \
-    --data_spec_path "${DATA_SPEC_PATH}" \
-    --render_pedals_enabled=False \
-    --render_instrument_piano_enabled=False \
-    --render_sforzando_enabled=False \
-    --render_accent_enabled=False \
-    --render_tempo_enabled=False \
-    --variants_per_file 1 \
-    --overflow_truncation_enabled=False
+    --quiet false
 
   ## polish
   python -m scripts.dataset_generation.assemble_polish_validation \

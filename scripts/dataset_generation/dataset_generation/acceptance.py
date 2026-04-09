@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from scripts.dataset_generation.dataset_generation_new.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation_new.truncation import classify_truncation_mode
-from scripts.dataset_generation.dataset_generation_new.types import AcceptanceDecision, RenderResult
+from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
+from scripts.dataset_generation.dataset_generation.truncation import classify_truncation_mode
+from scripts.dataset_generation.dataset_generation.types import AcceptanceDecision, RenderResult
 
 
 def decide_acceptance(

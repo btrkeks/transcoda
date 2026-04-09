@@ -92,6 +92,7 @@ class AcceptedSample:
     sample_id: str
     label_transcription: str
     image_bytes: bytes
+    initial_kern_spine_count: int
     segment_count: int
     source_ids: tuple[str, ...]
     source_measure_count: int

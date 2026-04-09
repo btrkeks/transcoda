@@ -136,8 +136,8 @@
     "/home/daniel/.local/share/src/Transcoda/data/interim/train/musetrainer/3_normalized"
   ],
   "mode": "length_proxy",
-  "recipe_fingerprint": "6f424a3080abc3c668654ee6ed1a19d11f9f8d43bf945d4a12f9468093419ab0",
-  "recipe_version": "dataset_generation_new_v1",
+  "recipe_fingerprint": "e642d5ff661cad20a88c4060b464aa79cc08fead07db6e437bbaeddc62fde8be",
+  "recipe_version": "dataset_generation_v1",
   "recommended_token_length_ranges": {
     "1": {
       "center": 189.0,

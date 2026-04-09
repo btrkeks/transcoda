@@ -2,28 +2,33 @@
 
 from __future__ import annotations
 
+import os
+import re
+import sys
+from contextlib import contextmanager
 from typing import Callable
 
 from scripts.dataset_generation.dataset_generation.image_generation.rendering.verovio_backend import (
     VerovioRenderer,
 )
-from scripts.dataset_generation.dataset_generation_new.acceptance import decide_acceptance
-from scripts.dataset_generation.dataset_generation_new.augmentation import augment_accepted_render
-from scripts.dataset_generation.dataset_generation_new.io import encode_jpeg_image
-from scripts.dataset_generation.dataset_generation_new.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation_new.records import build_dataset_row
-from scripts.dataset_generation.dataset_generation_new.render_transcription import (
+from scripts.dataset_generation.dataset_generation.acceptance import decide_acceptance
+from scripts.dataset_generation.dataset_generation.augmentation import augment_accepted_render
+from scripts.dataset_generation.dataset_generation.io import encode_jpeg_image
+from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
+from scripts.dataset_generation.dataset_generation.records import build_dataset_row
+from scripts.dataset_generation.dataset_generation.render_transcription import (
     build_render_transcription,
+    ensure_render_header,
 )
-from scripts.dataset_generation.dataset_generation_new.renderer import render_sample
-from scripts.dataset_generation.dataset_generation_new.renderer import (
+from scripts.dataset_generation.dataset_generation.renderer import render_sample
+from scripts.dataset_generation.dataset_generation.renderer import (
     render_sample_with_layout_rescue,
 )
-from scripts.dataset_generation.dataset_generation_new.truncation import (
+from scripts.dataset_generation.dataset_generation.truncation import (
     build_prefix_candidates,
     classify_truncation_mode,
 )
-from scripts.dataset_generation.dataset_generation_new.types import (
+from scripts.dataset_generation.dataset_generation.types import (
     AcceptedSample,
     RenderResult,
     SamplePlan,
@@ -34,6 +39,56 @@ from scripts.dataset_generation.dataset_generation_new.types import (
 
 _WORKER_RECIPE: ProductionRecipe | None = None
 _WORKER_RENDERER: VerovioRenderer | None = None
+_RATIONAL_DURATION_PATTERN = re.compile(r"\d%-?\d")
+
+
+def compute_initial_kern_spine_count(transcription: str) -> int:
+    for raw_line in transcription.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("!!"):
+            continue
+        return raw_line.count("\t") + 1
+    raise ValueError("Cannot infer initial kern spine count from empty transcription")
+
+
+def is_valid_kern(content: str) -> tuple[bool, str | None]:
+    if _RATIONAL_DURATION_PATTERN.search(content):
+        return False, "rational duration (corrupted source)"
+    return True, None
+
+
+def ensure_kern_header(content: str) -> str:
+    return ensure_render_header(content)
+
+
+@contextmanager
+def _capture_stderr_fd():
+    stderr_fd = sys.stderr.fileno()
+    saved_stderr_fd = os.dup(stderr_fd)
+    read_fd, write_fd = os.pipe()
+
+    try:
+        os.dup2(write_fd, stderr_fd)
+        os.close(write_fd)
+
+        captured: list[str] = []
+        yield captured
+
+        sys.stderr.flush()
+        os.dup2(saved_stderr_fd, stderr_fd)
+
+        os.set_blocking(read_fd, False)
+        try:
+            while True:
+                data = os.read(read_fd, 4096)
+                if not data:
+                    break
+                captured.append(data.decode("utf-8", errors="replace"))
+        except BlockingIOError:
+            pass
+    finally:
+        os.close(saved_stderr_fd)
+        os.close(read_fd)
 
 
 def init_generation_worker(recipe: ProductionRecipe) -> None:
@@ -234,6 +289,7 @@ def _finalize_sample(
         sample_id=plan.sample_id,
         label_transcription=transcription,
         image_bytes=image_bytes,
+        initial_kern_spine_count=compute_initial_kern_spine_count(transcription),
         segment_count=plan.segment_count,
         source_ids=tuple(segment.source_id for segment in plan.segments),
         source_measure_count=plan.source_measure_count,

@@ -17,8 +17,8 @@ from scripts.dataset_generation.dataset_generation.image_generation.rendering.ve
     count_nr_of_systems_in_svg,
 )
 from scripts.dataset_generation.dataset_generation.image_generation.types import RenderedPage
-from scripts.dataset_generation.dataset_generation_new.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation_new.types import RenderResult, SvgLayoutDiagnostics
+from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
+from scripts.dataset_generation.dataset_generation.types import RenderResult, SvgLayoutDiagnostics
 
 _RETRYABLE_REJECTION_REASONS = {
     "top_clearance",

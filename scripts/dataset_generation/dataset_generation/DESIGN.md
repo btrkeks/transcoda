@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document defines the target design for a rewrite of the synthetic dataset generation pipeline in `scripts/dataset_generation/dataset_generation_new/`.
+This document defines the target design for a rewrite of the synthetic dataset generation pipeline in `scripts/dataset_generation/dataset_generation/`.
 
 The rewrite should optimize for:
 
@@ -69,7 +69,7 @@ and not only raw token length.
 Suggested layout:
 
 ```text
-scripts/dataset_generation/dataset_generation_new/
+scripts/dataset_generation/dataset_generation/
   __init__.py
   main.py
   recipe.py

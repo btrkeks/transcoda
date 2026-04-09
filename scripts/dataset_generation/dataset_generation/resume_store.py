@@ -15,10 +15,10 @@ from typing import Any
 from datasets import DatasetInfo, Features
 from datasets.arrow_writer import ArrowWriter
 
-from scripts.dataset_generation.dataset_generation_new.io import write_json
-from scripts.dataset_generation.dataset_generation_new.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation_new.run_context import RunContext
-from scripts.dataset_generation.dataset_generation_new.types import ResumeSnapshot
+from scripts.dataset_generation.dataset_generation.io import write_json
+from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
+from scripts.dataset_generation.dataset_generation.run_context import RunContext
+from scripts.dataset_generation.dataset_generation.types import ResumeSnapshot
 
 
 def compute_config_fingerprint(
@@ -297,8 +297,8 @@ class ResumableShardStore:
         )
 
         info = DatasetInfo(
-            builder_name="dataset_generation_new",
-            dataset_name="dataset_generation_new",
+            builder_name="dataset_generation",
+            dataset_name="dataset_generation",
             config_name="default",
             features=self.features,
             splits={
@@ -307,7 +307,7 @@ class ResumableShardStore:
                     "num_bytes": total_size_bytes,
                     "num_examples": total_examples,
                     "shard_lengths": shard_lengths,
-                    "dataset_name": "dataset_generation_new",
+                    "dataset_name": "dataset_generation",
                 }
             },
             dataset_size=total_size_bytes,

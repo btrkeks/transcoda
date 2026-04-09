@@ -17,24 +17,24 @@ from pebble import ProcessExpired, ProcessPool
 from scripts.dataset_generation.dataset_generation.image_generation.rendering.verovio_backend import (
     VerovioRenderer,
 )
-from scripts.dataset_generation.dataset_generation_new.augmentation import augment_accepted_render
-from scripts.dataset_generation.dataset_generation_new.crash_repro import write_crash_artifact
-from scripts.dataset_generation.dataset_generation_new.failure_policy import (
+from scripts.dataset_generation.dataset_generation.augmentation import augment_accepted_render
+from scripts.dataset_generation.dataset_generation.crash_repro import write_crash_artifact
+from scripts.dataset_generation.dataset_generation.failure_policy import (
     FailurePolicySettings,
     resolve_failure_policy,
 )
-from scripts.dataset_generation.dataset_generation_new.io import append_jsonl, write_json
-from scripts.dataset_generation.dataset_generation_new.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation_new.renderer import render_sample
-from scripts.dataset_generation.dataset_generation_new.resume_store import (
+from scripts.dataset_generation.dataset_generation.io import append_jsonl, write_json
+from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
+from scripts.dataset_generation.dataset_generation.renderer import render_sample
+from scripts.dataset_generation.dataset_generation.resume_store import (
     ResumableShardStore,
     RuntimeSnapshot,
     compute_config_fingerprint,
     write_run_info,
 )
-from scripts.dataset_generation.dataset_generation_new.run_context import RunContext, build_run_context
-from scripts.dataset_generation.dataset_generation_new.source_index import build_source_index
-from scripts.dataset_generation.dataset_generation_new.system_balance import (
+from scripts.dataset_generation.dataset_generation.run_context import RunContext, build_run_context
+from scripts.dataset_generation.dataset_generation.source_index import build_source_index
+from scripts.dataset_generation.dataset_generation.system_balance import (
     DEFAULT_TOKENIZER_DIR,
     DEFAULT_CANDIDATE_PLAN_COUNT,
     choose_balanced_plan,
@@ -43,13 +43,13 @@ from scripts.dataset_generation.dataset_generation_new.system_balance import (
     load_bundled_system_balance_spec,
     load_tokenizer,
 )
-from scripts.dataset_generation.dataset_generation_new.types import (
+from scripts.dataset_generation.dataset_generation.types import (
     ResumeSnapshot,
     SamplePlan,
     WorkerFailure,
     WorkerSuccess,
 )
-from scripts.dataset_generation.dataset_generation_new.worker import (
+from scripts.dataset_generation.dataset_generation.worker import (
     evaluate_sample_plan,
     init_generation_worker,
     outcome_to_dataset_row,
@@ -150,6 +150,7 @@ def run_dataset_generation(
             "image": Image(mode="RGB"),
             "transcription": Value("string"),
             "sample_id": Value("string"),
+            "initial_kern_spine_count": Value("int32"),
             "source_ids": Sequence(Value("string")),
             "segment_count": Value("int32"),
             "source_measure_count": Value("int32"),

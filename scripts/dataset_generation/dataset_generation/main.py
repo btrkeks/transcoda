@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from scripts.dataset_generation.dataset_generation_new.executor import run_dataset_generation
+from .executor import run_dataset_generation
 
 DEFAULT_GENERATED_DATASETS_ROOT = Path("data/datasets/generated")
 

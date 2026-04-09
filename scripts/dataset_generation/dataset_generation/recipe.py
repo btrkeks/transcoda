@@ -90,7 +90,7 @@ class AcceptancePolicy:
 
 @dataclass(frozen=True)
 class ProductionRecipe:
-    version: str = "dataset_generation_new_v1"
+    version: str = "dataset_generation_v1"
     image_width: int = 1050
     image_height: int = 1485
     composition: CompositionPolicy = field(default_factory=CompositionPolicy)
@@ -101,4 +101,3 @@ class ProductionRecipe:
     offline_aug: OfflineAugmentationPolicy = field(default_factory=OfflineAugmentationPolicy)
     acceptance: AcceptancePolicy = field(default_factory=AcceptancePolicy)
     max_attempt_multiplier: int = 8
-

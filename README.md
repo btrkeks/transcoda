@@ -103,12 +103,12 @@ python train.py config/train.json --validate_only=true --checkpoint_path path/to
 
 Training configs live in `config/`. Key files:
 
-| File | Purpose |
-|------|---------|
-| `train.json` | Production training (synthetic grand staff) |
-| `finetune_real.json` | Fine-tune on real scans |
-| `debug.json` | Quick sanity check |
-| `profile.json` | Performance profiling |
+| File                 | Purpose                                     |
+| -------------------- | ------------------------------------------- |
+| `train.json`         | Production training (synthetic grand staff) |
+| `finetune_real.json` | Fine-tune on real scans                     |
+| `debug.json`         | Quick sanity check                          |
+| `profile.json`       | Performance profiling                       |
 
 See [`config/README.md`](config/README.md) for full config documentation and all available options.
 
@@ -142,7 +142,7 @@ The pipeline converts raw music scores through several stages into training-read
 source .venv/bin/activate
 
 # Generate training dataset with the production rewrite
-python -m scripts.dataset_generation.dataset_generation_new.main \
+python -m scripts.dataset_generation.dataset_generation.main \
   data/interim/train/pdmx/3_normalized \
   data/interim/train/grandstaff/3_normalized \
   data/interim/train/openscore-lieder/3_normalized \
@@ -205,3 +205,19 @@ docs/                    # Architecture, normalization, constraint docs
 - [Normalization Pipeline](docs/normalization.md) — 21-pass kern canonicalization
 - [Constrained Decoding](docs/constraint-decoding.md) — xgrammar integration and GBNF grammar
 - [Configuration](config/README.md) — config structure, CLI overrides, per-section reference
+
+## Commands
+
+### Generate dataset
+
+```bash
+source .venv/bin/activate && python -m scripts.dataset_generation.dataset_generation.main \
+  data/interim/train/pdmx/3_normalized \
+  data/interim/train/grandstaff/3_normalized \
+  data/interim/train/musetrainer/3_normalized \
+  --name test_v1 \
+  --target_samples 50 \
+  --num_workers 2 \
+  --max_attempts 80 \
+  --quiet true
+```

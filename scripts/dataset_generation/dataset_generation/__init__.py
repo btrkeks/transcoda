@@ -1,10 +1,3 @@
-"""Rewrite of the synthetic dataset generation pipeline."""
+"""Synthetic dataset generation rewrite package."""
 
-from .executor import ExecutionSummary, run_dataset_generation
-from .recipe import ProductionRecipe
-
-__all__ = [
-    "ExecutionSummary",
-    "ProductionRecipe",
-    "run_dataset_generation",
-]
+__all__: list[str] = []

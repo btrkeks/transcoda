@@ -17,18 +17,18 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from scripts.dataset_generation.dataset_generation.image_generation.rendering.verovio_backend import (
     VerovioRenderer,
 )
-from scripts.dataset_generation.dataset_generation_new.failure_policy import resolve_failure_policy
-from scripts.dataset_generation.dataset_generation_new.io import write_json
-from scripts.dataset_generation.dataset_generation_new.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation_new.source_index import build_source_index
-from scripts.dataset_generation.dataset_generation_new.system_balance import (
+from scripts.dataset_generation.dataset_generation.failure_policy import resolve_failure_policy
+from scripts.dataset_generation.dataset_generation.io import write_json
+from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
+from scripts.dataset_generation.dataset_generation.source_index import build_source_index
+from scripts.dataset_generation.dataset_generation.system_balance import (
     DEFAULT_CANDIDATE_PLAN_COUNT,
     build_calibration_artifact,
     compute_token_length,
     load_tokenizer,
 )
-from scripts.dataset_generation.dataset_generation_new.types import SamplePlan, WorkerFailure, WorkerSuccess
-from scripts.dataset_generation.dataset_generation_new.worker import (
+from scripts.dataset_generation.dataset_generation.types import SamplePlan, WorkerFailure, WorkerSuccess
+from scripts.dataset_generation.dataset_generation.worker import (
     evaluate_sample_plan,
     init_generation_worker,
     process_sample_plan,
@@ -226,7 +226,7 @@ def main(
 
 
 def _plan_sample(source_index, recipe, sample_idx: int, base_seed: int) -> SamplePlan:
-    from scripts.dataset_generation.dataset_generation_new.composer import plan_sample
+    from scripts.dataset_generation.dataset_generation.composer import plan_sample
 
     return plan_sample(source_index, recipe, sample_idx=sample_idx, base_seed=base_seed)
 

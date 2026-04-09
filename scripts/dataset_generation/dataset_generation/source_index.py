@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from scripts.dataset_generation.dataset_generation.source_stats import compute_kern_source_stats
-from scripts.dataset_generation.dataset_generation_new.types import SourceEntry
+from scripts.dataset_generation.dataset_generation.types import SourceEntry
 from src.core.kern_utils import is_spinemerge_line, is_spinesplit_line
 
 

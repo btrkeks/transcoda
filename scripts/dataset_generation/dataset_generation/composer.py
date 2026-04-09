@@ -10,9 +10,9 @@ from typing import Callable, Sequence
 
 from src.core.kern_utils import is_spinemerge_line, is_spinesplit_line, is_terminator_line
 
-from scripts.dataset_generation.dataset_generation_new.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation_new.source_index import SourceIndex
-from scripts.dataset_generation.dataset_generation_new.types import (
+from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
+from scripts.dataset_generation.dataset_generation.source_index import SourceIndex
+from scripts.dataset_generation.dataset_generation.types import (
     SamplePlan,
     SourceEntry,
     SourceSegment,

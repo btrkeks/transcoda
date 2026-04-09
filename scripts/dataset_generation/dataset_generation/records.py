@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from scripts.dataset_generation.dataset_generation_new.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation_new.types import AcceptedSample
+from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
+from scripts.dataset_generation.dataset_generation.types import AcceptedSample
 
 
 def build_dataset_row(
@@ -14,6 +14,7 @@ def build_dataset_row(
         "sample_id": sample.sample_id,
         "image": sample.image_bytes,
         "transcription": sample.label_transcription,
+        "initial_kern_spine_count": sample.initial_kern_spine_count,
         "source_ids": list(sample.source_ids),
         "segment_count": sample.segment_count,
         "source_measure_count": sample.source_measure_count,

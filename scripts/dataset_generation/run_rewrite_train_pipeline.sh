@@ -31,7 +31,7 @@ fi
 source "${ROOT_DIR}/.venv/bin/activate"
 
 cmd=(
-  python -m scripts.dataset_generation.dataset_generation_new.main
+  python -m scripts.dataset_generation.dataset_generation.main
   "${source_dirs[@]}"
   --output_dir "${OUTPUT_DIR}"
   --target_samples "${TARGET_SAMPLES}"
