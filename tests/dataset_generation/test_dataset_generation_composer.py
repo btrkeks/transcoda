@@ -12,7 +12,11 @@ from scripts.dataset_generation.dataset_generation.recipe import CompositionPoli
 from scripts.dataset_generation.dataset_generation.renderer import count_systems_in_svg
 from scripts.dataset_generation.dataset_generation.source_index import build_source_index
 from scripts.dataset_generation.dataset_generation.types import SourceEntry
-from src.core.kern_utils import is_spinemerge_line, is_spinesplit_line
+from src.core.kern_concatenation import (
+    diagnose_spine_topology,
+    restore_terminal_spine_count_before_final_barline,
+    summarize_spine_topology,
+)
 
 
 class _FixedRng:
@@ -32,36 +36,14 @@ class _FixedRng:
         return a
 
 
-def _infer_boundary_spine_counts(text: str) -> tuple[int, int]:
-    lines = [line for line in text.splitlines() if line.strip() and not line.startswith("!!")]
-    initial = lines[0].count("\t") + 1
-    current = initial
-    terminal = initial
-    for line in lines:
-        if all(token == "*-" for token in line.split("\t")):
-            continue
-        if is_spinesplit_line(line):
-            current += sum(1 for token in line.split("\t") if token == "*^")
-        elif is_spinemerge_line(line):
-            merge_groups = 0
-            idx = 0
-            tokens = line.split("\t")
-            while idx < len(tokens):
-                if tokens[idx] != "*v":
-                    idx += 1
-                    continue
-                merge_groups += 1
-                while idx < len(tokens) and tokens[idx] == "*v":
-                    idx += 1
-            current = current - sum(1 for token in tokens if token == "*v") + merge_groups
-        else:
-            current = line.count("\t") + 1
-        terminal = current
-    return initial, terminal
-
-
 def _make_source_entry(path: Path, source_id: str, text: str) -> SourceEntry:
-    initial_spine_count, terminal_spine_count = _infer_boundary_spine_counts(text)
+    topology = summarize_spine_topology(text)
+    restored_topology = summarize_spine_topology(
+        restore_terminal_spine_count_before_final_barline(text)
+    )
+    assert topology.initial_spine_count is not None
+    assert topology.terminal_spine_count is not None
+    assert restored_topology.terminal_spine_count is not None
     return SourceEntry(
         path=path,
         source_id=source_id,
@@ -70,8 +52,9 @@ def _make_source_entry(path: Path, source_id: str, text: str) -> SourceEntry:
         measure_count=1,
         non_empty_line_count=4,
         has_header=True,
-        initial_spine_count=initial_spine_count,
-        terminal_spine_count=terminal_spine_count,
+        initial_spine_count=topology.initial_spine_count,
+        terminal_spine_count=topology.terminal_spine_count,
+        restored_terminal_spine_count=restored_topology.terminal_spine_count,
     )
 
 
@@ -207,17 +190,31 @@ def test_compose_label_transcription_drops_non_tracked_leading_lines_from_follow
     assert "*MM120" not in composed
 
 
-def test_compose_label_transcription_allows_boundary_spine_count_mismatch(tmp_path: Path):
+def test_compose_label_transcription_restores_nonfinal_segment_before_followup(tmp_path: Path):
     composed = _compose_entries(
         tmp_path,
-        "**kern\n*clefG2\n=1\n4c\n*-\n",
-        "**kern\t**kern\n*clefF4\t*clefG2\n=1\t=1\n4d\t4f\n*-\t*-\n",
+        "**kern\n*clefG2\n=1\n4c\n*^\n*\t*\n=2\t=2\n4d\t4f\n==\t==\n*-\t*-\n",
+        "**kern\n*clefG2\n=1\n4e\n*-\n",
     )
 
     assert composed.count("**kern") == 1
-    assert composed.endswith("*-\t*-\n")
+    assert "*v\t*v" in composed
+    assert composed.endswith("*-\n")
     assert "4c" in composed
     assert "4d\t4f" in composed
+    assert "4e" in composed
+
+
+def test_compose_label_transcription_rejects_unrestorable_boundary_spine_count_mismatch(
+    tmp_path: Path,
+):
+    first = (
+        "**kern\t**kern\n*clefF4\t*clefG2\n=1\t=1\n4c\t4e\n==\t==\n*-\t*-\n"
+    )
+    second = "**kern\n*clefG2\n=1\n4d\n*-\n"
+
+    with pytest.raises(ValueError, match="Boundary spine count mismatch"):
+        _compose_entries(tmp_path, first, second)
 
 
 def test_compose_label_transcription_routes_output_through_terminal_spine_restorer(
@@ -241,8 +238,9 @@ def test_compose_label_transcription_routes_output_through_terminal_spine_restor
         "**kern\n*clefG2\n=1\n4d\n*-\n",
     )
 
-    assert len(calls) == 1
-    assert calls[0].endswith("*-")
+    assert len(calls) == 2
+    assert calls[0].endswith("*-\n")
+    assert calls[1].endswith("*-")
     assert composed.endswith("*-\n")
 
 
@@ -286,12 +284,12 @@ def test_plan_sample_respects_single_segment_policy_even_below_min_measures(tmp_
 
 
 def test_plan_sample_tracks_max_initial_spine_count_across_segments(tmp_path: Path, monkeypatch):
-    single_path = tmp_path / "single.krn"
-    double_path = tmp_path / "double.krn"
-    single_text = "**kern\n=1\n4c\n*-\n"
-    double_text = "**kern\t**kern\n=1\t=1\n4d\t4f\n*-\t*-\n"
-    single_path.write_text(single_text, encoding="utf-8")
-    double_path.write_text(double_text, encoding="utf-8")
+    first_double_path = tmp_path / "double_a.krn"
+    second_double_path = tmp_path / "double_b.krn"
+    first_double_text = "**kern\t**kern\n=1\t=1\n4c\t4e\n*-\t*-\n"
+    second_double_text = "**kern\t**kern\n=1\t=1\n4d\t4f\n*-\t*-\n"
+    first_double_path.write_text(first_double_text, encoding="utf-8")
+    second_double_path.write_text(second_double_text, encoding="utf-8")
 
     source_index = build_source_index(tmp_path)
     recipe = ProductionRecipe(
@@ -306,8 +304,8 @@ def test_plan_sample_tracks_max_initial_spine_count_across_segments(tmp_path: Pa
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.composer._choose_entries",
         lambda available_entries, recipe, rng, excluded_paths=None: (
-            next(entry for entry in available_entries if entry.path == single_path),
-            next(entry for entry in available_entries if entry.path == double_path),
+            next(entry for entry in available_entries if entry.path == first_double_path),
+            next(entry for entry in available_entries if entry.path == second_double_path),
         ),
     )
 
@@ -317,10 +315,10 @@ def test_plan_sample_tracks_max_initial_spine_count_across_segments(tmp_path: Pa
     assert plan.source_max_initial_spine_count == 2
 
 
-def test_choose_entries_can_append_sources_with_different_boundary_widths(tmp_path: Path):
-    anchor_text = "*clefG2\n=1\n4c\n*^"
-    compatible_text = "**kern\t**kern\n*clefG2\t*clefG2\n=1\t=1\n4d\t4f\n*-\t*-\n"
-    incompatible_text = "*clefG2\n=1\n4e\n*-\n"
+def test_choose_entries_uses_restored_terminal_spine_count_for_compatibility(tmp_path: Path):
+    anchor_text = "**kern\n*clefG2\n=1\n4c\n*^\n*\t*\n==\t==\n*-\t*-\n"
+    compatible_text = "**kern\n*clefG2\n=1\n4e\n*-\n"
+    incompatible_text = "**kern\t**kern\n*clefG2\t*clefG2\n=1\t=1\n4d\t4f\n*-\t*-\n"
     anchor_path = tmp_path / "anchor.krn"
     compatible_path = tmp_path / "compatible.krn"
     incompatible_path = tmp_path / "incompatible.krn"
@@ -335,7 +333,7 @@ def test_choose_entries_can_append_sources_with_different_boundary_widths(tmp_pa
         [anchor, compatible, incompatible],
         ProductionRecipe(
             composition=CompositionPolicy(
-                segment_count_weights=((3, 1.0),),
+                segment_count_weights=((2, 1.0),),
                 min_total_measures=1,
                 max_total_measures=8,
                 max_selection_attempts=2,
@@ -344,14 +342,14 @@ def test_choose_entries_can_append_sources_with_different_boundary_widths(tmp_pa
         _FixedRng([0, 0], [0.0, 0.0]),
     )
 
-    assert tuple(entry.source_id for entry in chosen) == ("anchor", "compatible", "incompatible")
+    assert tuple(entry.source_id for entry in chosen) == ("anchor", "compatible")
 
 
-def test_choose_entries_keeps_target_segment_count_without_compatibility_filter(
+def test_choose_entries_stops_when_no_boundary_compatible_followup_exists(
     tmp_path: Path,
 ):
-    anchor_text = "*clefG2\n=1\n4c\n*^"
-    incompatible_text = "*clefG2\n=1\n4e\n*-\n"
+    anchor_text = "**kern\t**kern\n*clefF4\t*clefG2\n=1\t=1\n4c\t4e\n==\t==\n*-\t*-\n"
+    incompatible_text = "**kern\n*clefG2\n=1\n4e\n*-\n"
     anchor_path = tmp_path / "anchor.krn"
     incompatible_path = tmp_path / "incompatible.krn"
     anchor_path.write_text(anchor_text, encoding="utf-8")
@@ -372,8 +370,8 @@ def test_choose_entries_keeps_target_segment_count_without_compatibility_filter(
         _FixedRng([0], [0.0]),
     )
 
-    assert len(chosen) == 2
-    assert tuple(entry.source_id for entry in chosen) == ("anchor", "incompatible")
+    assert len(chosen) == 1
+    assert tuple(entry.source_id for entry in chosen) == ("anchor",)
 
 
 def test_build_source_index_combines_multiple_roots(tmp_path: Path):
@@ -387,6 +385,7 @@ def test_build_source_index_combines_multiple_roots(tmp_path: Path):
     source_index = build_source_index(first_root, second_root)
 
     assert len(source_index.entries) == 2
+    assert source_index.invalid_sources == ()
     assert {entry.source_id for entry in source_index.entries} == {"a/one", "b/two"}
     assert {entry.initial_spine_count for entry in source_index.entries} == {1}
     assert {entry.terminal_spine_count for entry in source_index.entries} == {1}
@@ -420,6 +419,84 @@ def test_build_source_index_tracks_terminal_spine_count_after_split(tmp_path: Pa
     entry = source_index.entries[0]
     assert entry.initial_spine_count == 1
     assert entry.terminal_spine_count == 2
+    assert entry.restored_terminal_spine_count == 2
+
+
+def test_build_source_index_tracks_restored_terminal_spine_count_when_repairable(tmp_path: Path):
+    root = tmp_path / "input"
+    root.mkdir()
+    (root / "piece.krn").write_text(
+        "**kern\n=1\n4c\n*^\n*\t*\n==\t==\n*-\t*-\n",
+        encoding="utf-8",
+    )
+
+    source_index = build_source_index(root)
+
+    entry = source_index.entries[0]
+    assert entry.initial_spine_count == 1
+    assert entry.terminal_spine_count == 2
+    assert entry.restored_terminal_spine_count == 1
+
+
+def test_diagnose_spine_topology_reports_width_mismatch_details():
+    diagnostic = diagnose_spine_topology(
+        "\n".join(
+            [
+                "*clefF4\t*clefG2",
+                "*k[b-e-a-d-g-]\t*k[b-e-a-d-g-]",
+                "*M2/4\t*M2/4",
+                "*^\t*",
+                "*\t*^\t*",
+                "8d-L\t2d-\t2BB-\t16.fLL",
+                ".\t.\t.\t32eJJk",
+                "8E\t.\t.\t4.g",
+                "8G\t.\t.\t.",
+                "8EJ\t.\t.\t.",
+                "=\t=\t=\t=",
+                "8d-L\t2d-\t2BB-\t16.fLL",
+                ".\t.\t.\t32eJJk",
+                "8E\t.\t.\t4g",
+                "8G\t.\t.\t.",
+                "8EJ\t.\t.\t16.gLL",
+                ".\t.\t.\t32dd-JJk",
+                "*v\t*v\t*v\t*",
+                "=\t=\t=",
+            ]
+        )
+    )
+
+    assert diagnostic is not None
+    assert diagnostic.reason_code == "width_mismatch"
+    assert diagnostic.line_number == 19
+    assert diagnostic.expected_spine_count == 2
+    assert diagnostic.actual_spine_count == 3
+    assert diagnostic.line_text == "=\t=\t="
+
+
+def test_build_source_index_skips_invalid_sources_and_records_diagnostics(tmp_path: Path):
+    root = tmp_path / "input"
+    root.mkdir()
+    (root / "valid.krn").write_text("*clefG2\n=1\n4c\n*-\n", encoding="utf-8")
+    (root / "invalid.krn").write_text(
+        "*clefF4\t*clefG2\n"
+        "*^\t*\n"
+        "*\t*^\t*\n"
+        "4c\t4e\t4g\t4b\n"
+        "*v\t*v\t*v\t*\n"
+        "=\t=\t=\n",
+        encoding="utf-8",
+    )
+
+    source_index = build_source_index(root)
+
+    assert [entry.source_id for entry in source_index.entries] == ["input/valid"]
+    assert len(source_index.invalid_sources) == 1
+    diagnostic = source_index.invalid_sources[0]
+    assert diagnostic.path == (root / "invalid.krn").resolve()
+    assert diagnostic.root_dir == root.resolve()
+    assert diagnostic.root_label == "input"
+    assert diagnostic.reason_code == "width_mismatch"
+    assert "expected 2 spine field(s), got 3" in diagnostic.message
 
 
 def test_count_systems_in_svg_uses_svg_structure():

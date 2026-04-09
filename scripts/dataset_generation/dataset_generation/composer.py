@@ -43,6 +43,8 @@ def compose_label_transcription(entries: Sequence[SourceEntry]) -> str:
     current_state: BoundaryState | None = None
     for idx, entry in enumerate(entries):
         text = Path(entry.path).read_text(encoding="utf-8")
+        if idx < len(entries) - 1:
+            text = restore_terminal_spine_count_before_final_barline(text)
         raw_lines = _split_text_lines(text)
         segment_lines, scan_initial_state = _prepare_segment_lines(
             raw_lines,
@@ -118,11 +120,13 @@ def _choose_entries(
     chosen: list[SourceEntry] = [anchor]
     remaining = [entry for entry in filtered_entries if entry.path != anchor.path]
     current_total = anchor.measure_count
+    current_boundary_spine_count = anchor.restored_terminal_spine_count
 
     while len(chosen) < target_segments and remaining:
         candidate = _pick_next_entry(
             remaining=remaining,
             current_total=current_total,
+            current_boundary_spine_count=current_boundary_spine_count,
             target_total_measures=target_total_measures,
             max_total_measures=recipe.composition.max_total_measures,
             rng=rng,
@@ -132,12 +136,14 @@ def _choose_entries(
         chosen.append(candidate)
         remaining = [entry for entry in remaining if entry.path != candidate.path]
         current_total += candidate.measure_count
+        current_boundary_spine_count = candidate.restored_terminal_spine_count
 
     if current_total < recipe.composition.min_total_measures and len(chosen) < target_segments:
         for _ in range(recipe.composition.max_selection_attempts):
             candidate = _pick_next_entry(
                 remaining=remaining,
                 current_total=current_total,
+                current_boundary_spine_count=current_boundary_spine_count,
                 target_total_measures=recipe.composition.min_total_measures,
                 max_total_measures=recipe.composition.max_total_measures,
                 rng=rng,
@@ -147,6 +153,7 @@ def _choose_entries(
             chosen.append(candidate)
             remaining = [entry for entry in remaining if entry.path != candidate.path]
             current_total += candidate.measure_count
+            current_boundary_spine_count = candidate.restored_terminal_spine_count
             if (
                 current_total >= recipe.composition.min_total_measures
                 or len(chosen) >= target_segments
@@ -176,6 +183,7 @@ def _pick_next_entry(
     *,
     remaining: Sequence[SourceEntry],
     current_total: int,
+    current_boundary_spine_count: int,
     target_total_measures: int,
     max_total_measures: int,
     rng: random.Random,
@@ -185,6 +193,8 @@ def _pick_next_entry(
 
     scored: list[tuple[float, SourceEntry]] = []
     for entry in remaining:
+        if entry.initial_spine_count != current_boundary_spine_count:
+            continue
         projected_total = current_total + entry.measure_count
         if projected_total > max_total_measures and current_total >= target_total_measures:
             continue
@@ -235,15 +245,14 @@ def _prepare_segment_lines(
             initial_state=_empty_boundary_state(next_spine_count),
         )
         assert next_initial_state is not None
-        if next_spine_count == current_state.spine_count:
-            transition_lines = _build_transition_lines(current_state, next_initial_state)
-            lines = transition_lines + body_lines
-            scan_initial_state = current_state
-        else:
-            # Temporary permissive mode: for mismatched widths, drop follow-up headers and
-            # concatenate the raw body while resetting tracked state to the new snippet.
-            lines = body_lines
-            scan_initial_state = next_initial_state
+        if next_spine_count != current_state.spine_count:
+            raise ValueError(
+                "Boundary spine count mismatch after terminal restoration: "
+                f"{current_state.spine_count} -> {next_spine_count}"
+            )
+        transition_lines = _build_transition_lines(current_state, next_initial_state)
+        lines = transition_lines + body_lines
+        scan_initial_state = current_state
     if strip_terminator:
         lines = _strip_trailing_terminator(lines)
     return lines, scan_initial_state

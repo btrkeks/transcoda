@@ -512,6 +512,8 @@ def write_run_info(
     layout_summary: dict[str, Any] | None = None,
     snapshot: RuntimeSnapshot | ResumeSnapshot | None = None,
     finalization: dict[str, Any] | None = None,
+    auto_quarantined_source_count: int | None = None,
+    invalid_source_examples: list[dict[str, Any]] | None = None,
 ) -> None:
     serialized_finalization = finalization
     if finalization is not None:
@@ -537,5 +539,7 @@ def write_run_info(
         "layout_summary": layout_summary,
         "snapshot": asdict(snapshot) if snapshot is not None else None,
         "finalization": serialized_finalization,
+        "auto_quarantined_source_count": auto_quarantined_source_count,
+        "invalid_source_examples": invalid_source_examples,
     }
     write_json(run_context.info_path, payload)

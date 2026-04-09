@@ -383,6 +383,91 @@ def test_executor_smoke_run_writes_truncated_hf_dataset(tmp_path, monkeypatch):
     assert info["system_balance"]["spec_path"].endswith("balance.json")
 
 
+def test_executor_skips_invalid_sources_and_records_auto_quarantine(tmp_path, monkeypatch):
+    input_dir = _make_simple_input_dir(tmp_path, ("valid",))
+    output_dir = tmp_path / "output"
+    (input_dir / "invalid.krn").write_text(
+        "*clefF4\t*clefG2\n"
+        "*^\t*\n"
+        "*\t*^\t*\n"
+        "4c\t4e\t4g\t4b\n"
+        "*v\t*v\t*v\t*\n"
+        "=\t=\t=\n",
+        encoding="utf-8",
+    )
+    tokenizer_dir = _make_tokenizer_dir(tmp_path)
+    spec_path = _make_balance_spec(tmp_path, ProductionRecipe(), tokenizer_dir)
+    _install_bundled_spec(monkeypatch, spec_path)
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=1,
+        max_attempts=1,
+        renderer=object(),
+        render_fn=lambda render_text, recipe, *, seed, renderer: RenderResult(
+            image=np.pad(
+                np.zeros((60, 590, 3), dtype=np.uint8),
+                ((10, 1415), (10, 450), (0, 0)),
+                constant_values=255,
+            ),
+            render_layers=None,
+            svg_diagnostics=SvgLayoutDiagnostics(system_count=4, page_count=1),
+            bottom_whitespace_ratio=0.10,
+            vertical_fill_ratio=0.72,
+            bottom_whitespace_px=149,
+            top_whitespace_px=33,
+            content_height_px=1069,
+        ),
+        augment_fn=lambda plan, render_result, recipe: render_result.image,
+        quiet=True,
+    )
+
+    info = _read_json(summary.run_artifacts_dir / "info.json")
+    quarantined = _read_json(summary.run_artifacts_dir / "quarantined_sources.json")
+    ds = load_from_disk(str(output_dir))
+
+    assert summary.accepted_samples == 1
+    assert len(ds) == 1
+    assert info["auto_quarantined_source_count"] == 1
+    assert len(info["invalid_source_examples"]) == 1
+    assert info["invalid_source_examples"][0]["reason_code"] == "width_mismatch"
+    assert quarantined["quarantined_sources"] == [str((input_dir / "invalid.krn").resolve())]
+
+
+def test_executor_fails_cleanly_when_all_sources_are_invalid(tmp_path):
+    input_dir = tmp_path / "input"
+    output_dir = tmp_path / "output"
+    input_dir.mkdir()
+    (input_dir / "invalid.krn").write_text(
+        "*clefF4\t*clefG2\n"
+        "*^\t*\n"
+        "*\t*^\t*\n"
+        "4c\t4e\t4g\t4b\n"
+        "*v\t*v\t*v\t*\n"
+        "=\t=\t=\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeError, match="No schedulable sources remain after applying quarantine"):
+        run_dataset_generation(
+            input_dirs=(input_dir,),
+            output_dir=output_dir,
+            target_samples=1,
+            max_attempts=1,
+            quiet=True,
+        )
+
+    run_dirs = sorted((output_dir.parent / "_runs" / output_dir.name).iterdir())
+    assert len(run_dirs) == 1
+    run_artifacts_dir = run_dirs[0]
+    info = _read_json(run_artifacts_dir / "info.json")
+    quarantined = _read_json(run_artifacts_dir / "quarantined_sources.json")
+
+    assert info["auto_quarantined_source_count"] == 1
+    assert quarantined["quarantined_sources"] == [str((input_dir / "invalid.krn").resolve())]
+
+
 def test_executor_resume_recovers_after_failure_without_duplicates(tmp_path, monkeypatch):
     input_dir = tmp_path / "input"
     output_dir = tmp_path / "output"

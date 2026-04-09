@@ -36,6 +36,7 @@ class SourceEntry:
     has_header: bool
     initial_spine_count: int
     terminal_spine_count: int
+    restored_terminal_spine_count: int
 
 
 @dataclass(frozen=True)

@@ -52,6 +52,7 @@ def run_calibration(
     normalized_input_dirs = _normalize_input_dirs(input_dirs)
     active_recipe = recipe or ProductionRecipe()
     source_index = build_source_index(*normalized_input_dirs)
+    auto_quarantined_source_count = len(source_index.invalid_sources)
     entry_by_path = {entry.path.resolve(): entry for entry in source_index.entries}
     tokenizer_dir = resolve_tokenizer_dir(tokenizer_path)
     destination = _resolve_output_json(output_json)
@@ -67,8 +68,23 @@ def run_calibration(
 
     if not quiet:
         print(
-            f"Calibrating system balance from {len(source_index.entries)} sources "
+            f"Indexed {len(source_index.entries)} valid source(s); "
+            f"auto-quarantined {auto_quarantined_source_count} invalid source(s)"
+        )
+        for diagnostic in source_index.invalid_sources[:3]:
+            print(
+                f"  auto-quarantined: {diagnostic.path} "
+                f"({diagnostic.reason_code}: {diagnostic.message})"
+            )
+        print(
+            f"Calibrating system balance from {len(source_index.entries)} valid source(s) "
             f"across {len(normalized_input_dirs)} root(s)"
+        )
+
+    if not source_index.entries:
+        raise RuntimeError(
+            "No valid sources remain after indexing "
+            f"({auto_quarantined_source_count} auto-quarantined invalid source(s))"
         )
 
     if use_process_pool:

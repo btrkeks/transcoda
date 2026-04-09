@@ -33,7 +33,10 @@ from scripts.dataset_generation.dataset_generation.resume_store import (
     write_run_info,
 )
 from scripts.dataset_generation.dataset_generation.run_context import RunContext, build_run_context
-from scripts.dataset_generation.dataset_generation.source_index import build_source_index
+from scripts.dataset_generation.dataset_generation.source_index import (
+    InvalidSourceDiagnostic,
+    build_source_index,
+)
 from scripts.dataset_generation.dataset_generation.system_balance import (
     DEFAULT_TOKENIZER_DIR,
     DEFAULT_CANDIDATE_PLAN_COUNT,
@@ -126,6 +129,11 @@ def run_dataset_generation(
     active_recipe = recipe or ProductionRecipe()
     normalized_input_dirs = _normalize_input_dirs(input_dirs)
     source_index = build_source_index(*normalized_input_dirs)
+    auto_quarantined_source_count = len(source_index.invalid_sources)
+    auto_quarantined_source_examples = _serialize_invalid_source_examples(
+        source_index.invalid_sources
+    )
+    auto_quarantined_paths = {diagnostic.path for diagnostic in source_index.invalid_sources}
 
     if target_samples < 1:
         raise ValueError("target_samples must be >= 1")
@@ -188,6 +196,7 @@ def run_dataset_generation(
 
     counters = _build_runtime_counters(resume_snapshot)
     counters["quarantined_sources"].update(_load_quarantine_sources(quarantine_in))
+    counters["quarantined_sources"].update(auto_quarantined_paths)
     quarantine_out_path = _resolve_quarantine_out_path(
         quarantine_out=quarantine_out,
         run_context=run_context,
@@ -220,11 +229,28 @@ def run_dataset_generation(
 
     if not quiet:
         print(
-            f"Generating rewrite dataset from {len(source_index.entries)} sources "
+            f"Indexed {len(source_index.entries)} valid source(s); "
+            f"auto-quarantined {auto_quarantined_source_count} invalid source(s)"
+        )
+        for diagnostic in source_index.invalid_sources[:3]:
+            print(
+                f"  auto-quarantined: {diagnostic.path} "
+                f"({diagnostic.reason_code}: {diagnostic.message})"
+            )
+        print(
+            f"Generating rewrite dataset from {len(source_index.entries)} valid source(s) "
             f"into {run_context.output_path} with {resolved_num_workers} worker(s)"
         )
 
     try:
+        if not _has_schedulable_entries(
+            source_index=source_index,
+            quarantined_sources=counters["quarantined_sources"],  # type: ignore[arg-type]
+        ):
+            raise RuntimeError(
+                "No schedulable sources remain after applying quarantine "
+                f"({auto_quarantined_source_count} auto-quarantined invalid source(s))"
+            )
         if not use_process_pool:
             if sync_renderer is None:
                 sync_renderer = VerovioRenderer()
@@ -534,6 +560,8 @@ def run_dataset_generation(
             layout_summary=_build_layout_summary(counters),
             snapshot=finalization["snapshot"],
             finalization=finalization,
+            auto_quarantined_source_count=auto_quarantined_source_count,
+            invalid_source_examples=auto_quarantined_source_examples,
         )
         write_json(
             run_context.latest_run_path,
@@ -577,6 +605,8 @@ def run_dataset_generation(
             system_balance=_serialize_system_balance_runtime(balance_runtime),
             layout_summary=_build_layout_summary(counters),
             snapshot=_snapshot_from_counters(counters),
+            auto_quarantined_source_count=auto_quarantined_source_count,
+            invalid_source_examples=auto_quarantined_source_examples,
         )
         raise
 
@@ -629,6 +659,25 @@ def _write_quarantined_sources(*, quarantined_sources: set[Path], destination: P
             "quarantined_sources": sorted(str(path) for path in quarantined_sources),
         },
     )
+
+
+def _serialize_invalid_source_examples(
+    diagnostics: tuple[InvalidSourceDiagnostic, ...], *, limit: int = 5
+) -> list[dict[str, object]]:
+    return [
+        {
+            "path": str(diagnostic.path),
+            "root_dir": str(diagnostic.root_dir),
+            "root_label": diagnostic.root_label,
+            "reason_code": diagnostic.reason_code,
+            "message": diagnostic.message,
+        }
+        for diagnostic in diagnostics[:limit]
+    ]
+
+
+def _has_schedulable_entries(*, source_index, quarantined_sources: set[Path]) -> bool:
+    return any(entry.path not in quarantined_sources for entry in source_index.entries)
 
 
 def _plan_with_quarantine(

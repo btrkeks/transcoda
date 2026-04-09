@@ -7,13 +7,34 @@ from pathlib import Path
 
 from scripts.dataset_generation.dataset_generation.source_stats import compute_kern_source_stats
 from scripts.dataset_generation.dataset_generation.types import SourceEntry
-from src.core.kern_utils import is_spinemerge_line, is_spinesplit_line
+from src.core.kern_concatenation import (
+    SpineTopologyDiagnostic,
+    diagnose_spine_topology,
+    restore_terminal_spine_count_before_final_barline,
+    summarize_spine_topology,
+)
+
+
+@dataclass(frozen=True)
+class InvalidSourceDiagnostic:
+    path: Path
+    root_dir: Path
+    root_label: str
+    reason_code: str
+    message: str
+
+
+class InvalidSourceFileError(ValueError):
+    def __init__(self, *, reason_code: str, message: str) -> None:
+        super().__init__(message)
+        self.reason_code = reason_code
 
 
 @dataclass(frozen=True)
 class SourceIndex:
     root_dirs: tuple[Path, ...]
     entries: tuple[SourceEntry, ...]
+    invalid_sources: tuple[InvalidSourceDiagnostic, ...] = ()
 
 
 def build_source_index(*input_dirs: str | Path) -> SourceIndex:
@@ -23,6 +44,7 @@ def build_source_index(*input_dirs: str | Path) -> SourceIndex:
     root_dirs = tuple(Path(input_dir).expanduser().resolve() for input_dir in input_dirs)
     root_labels = _build_root_labels(root_dirs)
     entries: list[SourceEntry] = []
+    invalid_sources: list[InvalidSourceDiagnostic] = []
     for root_dir, root_label in zip(root_dirs, root_labels, strict=True):
         if not root_dir.exists():
             raise FileNotFoundError(f"Input directory does not exist: {root_dir}")
@@ -34,24 +56,44 @@ def build_source_index(*input_dirs: str | Path) -> SourceIndex:
             raise ValueError(f"No .krn files found under {root_dir}")
 
         for path in paths:
-            stats = compute_kern_source_stats(path)
             rel = path.relative_to(root_dir)
             source_id = (Path(root_label) / rel.with_suffix("")).as_posix()
-            initial_spine_count, terminal_spine_count = _compute_boundary_spine_counts(path)
-            entries.append(
-                SourceEntry(
-                    path=path,
-                    source_id=source_id,
-                    root_dir=root_dir,
-                    root_label=root_label,
-                    measure_count=stats.measure_count,
-                    non_empty_line_count=stats.non_empty_line_count,
-                    has_header=_has_explicit_header(path),
-                    initial_spine_count=initial_spine_count,
-                    terminal_spine_count=terminal_spine_count,
+            try:
+                stats = compute_kern_source_stats(path)
+                (
+                    initial_spine_count,
+                    terminal_spine_count,
+                    restored_terminal_spine_count,
+                ) = _compute_boundary_spine_counts(path)
+                entries.append(
+                    SourceEntry(
+                        path=path,
+                        source_id=source_id,
+                        root_dir=root_dir,
+                        root_label=root_label,
+                        measure_count=stats.measure_count,
+                        non_empty_line_count=stats.non_empty_line_count,
+                        has_header=_has_explicit_header(path),
+                        initial_spine_count=initial_spine_count,
+                        terminal_spine_count=terminal_spine_count,
+                        restored_terminal_spine_count=restored_terminal_spine_count,
+                    )
                 )
-            )
-    return SourceIndex(root_dirs=root_dirs, entries=tuple(entries))
+            except InvalidSourceFileError as exc:
+                invalid_sources.append(
+                    InvalidSourceDiagnostic(
+                        path=path,
+                        root_dir=root_dir,
+                        root_label=root_label,
+                        reason_code=exc.reason_code,
+                        message=str(exc),
+                    )
+                )
+    return SourceIndex(
+        root_dirs=root_dirs,
+        entries=tuple(entries),
+        invalid_sources=tuple(invalid_sources),
+    )
 
 
 def _has_explicit_header(path: Path) -> bool:
@@ -64,55 +106,43 @@ def _has_explicit_header(path: Path) -> bool:
     return False
 
 
-def _compute_boundary_spine_counts(path: Path) -> tuple[int, int]:
-    initial_spine_count: int | None = None
-    terminal_spine_count: int | None = None
-    current_spine_count: int | None = None
+def _compute_boundary_spine_counts(path: Path) -> tuple[int, int, int]:
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    original_topology = summarize_spine_topology(text)
+    if (
+        original_topology.initial_spine_count is None
+        or original_topology.terminal_spine_count is None
+    ):
+        diagnostic = diagnose_spine_topology(text)
+        raise InvalidSourceFileError(
+            reason_code=diagnostic.reason_code if diagnostic is not None else "invalid_source",
+            message=_format_topology_failure(
+                path=path,
+                diagnostic=diagnostic,
+                prefix="Cannot infer spine counts",
+            ),
+        )
 
-    with path.open("r", encoding="utf-8", errors="ignore") as handle:
-        for raw_line in handle:
-            line = raw_line.rstrip("\n")
-            stripped = line.strip()
-            if not stripped or stripped.startswith("!!"):
-                continue
+    restored_text = restore_terminal_spine_count_before_final_barline(text)
+    restored_topology = summarize_spine_topology(restored_text)
+    if restored_topology.terminal_spine_count is None:
+        diagnostic = diagnose_spine_topology(restored_text)
+        raise InvalidSourceFileError(
+            reason_code=(
+                diagnostic.reason_code if diagnostic is not None else "invalid_restored_terminal_spine_count"
+            ),
+            message=_format_topology_failure(
+                path=path,
+                diagnostic=diagnostic,
+                prefix="Cannot infer restored terminal spine count",
+            ),
+        )
 
-            spine_count = line.count("\t") + 1
-            if initial_spine_count is None:
-                initial_spine_count = spine_count
-            if current_spine_count is None:
-                current_spine_count = spine_count
-
-            if all(token == "*-" for token in line.split("\t")):
-                continue
-
-            if is_spinesplit_line(line):
-                current_spine_count += sum(1 for token in line.split("\t") if token == "*^")
-            elif is_spinemerge_line(line):
-                current_spine_count = _apply_merge_count(current_spine_count, line.split("\t"))
-            else:
-                current_spine_count = spine_count
-
-            terminal_spine_count = current_spine_count
-
-    if initial_spine_count is None:
-        raise ValueError(f"Cannot infer spine counts from empty source file: {path}")
-    if terminal_spine_count is None:
-        terminal_spine_count = initial_spine_count
-    return initial_spine_count, terminal_spine_count
-
-
-def _apply_merge_count(current_spine_count: int, tokens: list[str]) -> int:
-    merge_groups = 0
-    idx = 0
-    while idx < len(tokens):
-        if tokens[idx] != "*v":
-            idx += 1
-            continue
-        merge_groups += 1
-        while idx < len(tokens) and tokens[idx] == "*v":
-            idx += 1
-    merge_token_count = sum(1 for token in tokens if token == "*v")
-    return current_spine_count - merge_token_count + merge_groups
+    return (
+        original_topology.initial_spine_count,
+        original_topology.terminal_spine_count,
+        restored_topology.terminal_spine_count,
+    )
 
 
 def _build_root_labels(root_dirs: tuple[Path, ...]) -> tuple[str, ...]:
@@ -129,3 +159,18 @@ def _build_root_labels(root_dirs: tuple[Path, ...]) -> tuple[str, ...]:
         if len(set(labels)) == len(labels):
             return tuple(labels)
         suffix_len += 1
+
+
+def _format_topology_failure(
+    *,
+    path: Path,
+    diagnostic: SpineTopologyDiagnostic | None,
+    prefix: str,
+) -> str:
+    if diagnostic is None:
+        return f"{prefix} from source file: {path}"
+
+    detail = diagnostic.message
+    if diagnostic.line_text is not None:
+        detail = f"{detail}; line={diagnostic.line_text!r}"
+    return f"{prefix} from source file: {path} ({diagnostic.reason_code}: {detail})"

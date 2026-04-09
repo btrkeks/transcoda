@@ -21,11 +21,29 @@ class SpineTopologySummary:
 
 
 @dataclass(frozen=True)
+class SpineTopologyDiagnostic:
+    """Describe the first topology parsing failure in a **kern transcription."""
+
+    reason_code: str
+    message: str
+    line_number: int | None = None
+    line_text: str | None = None
+    expected_spine_count: int | None = None
+    actual_spine_count: int | None = None
+
+
+@dataclass(frozen=True)
 class _LineageAnalysis:
     """Boundary ancestry state inferred from a **kern transcription."""
 
     initial_lineage: Lineage | None
     terminal_lineage: Lineage | None
+
+
+@dataclass(frozen=True)
+class _LineageAnalysisResult:
+    analysis: _LineageAnalysis | None
+    diagnostic: SpineTopologyDiagnostic | None
 
 
 def _split_text_preserving_trailing_newline(text: str) -> list[str]:
@@ -89,12 +107,12 @@ def _advance_lineage(lineage: Lineage, fields: Sequence[str]) -> Lineage:
     return tuple(next_lineage)
 
 
-def _analyze_lineage(text: str) -> _LineageAnalysis | None:
+def _analyze_lineage_result(text: str) -> _LineageAnalysisResult:
     current_lineage: Lineage | None = None
     initial_lineage: Lineage | None = None
     terminal_lineage: Lineage | None = None
 
-    for line in _split_text_preserving_trailing_newline(text):
+    for line_number, line in enumerate(_split_text_preserving_trailing_newline(text), start=1):
         if _is_ignored_line(line):
             continue
 
@@ -105,7 +123,20 @@ def _analyze_lineage(text: str) -> _LineageAnalysis | None:
             terminal_lineage = current_lineage
 
         if len(fields) != len(current_lineage):
-            return None
+            return _LineageAnalysisResult(
+                analysis=None,
+                diagnostic=SpineTopologyDiagnostic(
+                    reason_code="width_mismatch",
+                    message=(
+                        f"line {line_number}: expected {len(current_lineage)} spine field(s), "
+                        f"got {len(fields)}"
+                    ),
+                    line_number=line_number,
+                    line_text=line,
+                    expected_spine_count=len(current_lineage),
+                    actual_spine_count=len(fields),
+                ),
+            )
 
         if not is_interpretation_record(fields):
             terminal_lineage = current_lineage
@@ -113,16 +144,42 @@ def _analyze_lineage(text: str) -> _LineageAnalysis | None:
 
         try:
             current_lineage = _advance_lineage(current_lineage, fields)
-        except ValueError:
-            return None
+        except ValueError as exc:
+            return _LineageAnalysisResult(
+                analysis=None,
+                diagnostic=SpineTopologyDiagnostic(
+                    reason_code="invalid_interpretation_record",
+                    message=f"line {line_number}: {exc}",
+                    line_number=line_number,
+                    line_text=line,
+                ),
+            )
 
         if not is_terminator_line(line):
             terminal_lineage = current_lineage
 
-    return _LineageAnalysis(
+    analysis = _LineageAnalysis(
         initial_lineage=initial_lineage,
         terminal_lineage=terminal_lineage,
     )
+    if analysis.initial_lineage is None or analysis.terminal_lineage is None:
+        return _LineageAnalysisResult(
+            analysis=None,
+            diagnostic=SpineTopologyDiagnostic(
+                reason_code="empty_source",
+                message="source does not contain any significant records",
+            ),
+        )
+    return _LineageAnalysisResult(analysis=analysis, diagnostic=None)
+
+
+def _analyze_lineage(text: str) -> _LineageAnalysis | None:
+    return _analyze_lineage_result(text).analysis
+
+
+def diagnose_spine_topology(text: str) -> SpineTopologyDiagnostic | None:
+    """Return the first topology parsing diagnostic for ``text``, if any."""
+    return _analyze_lineage_result(text).diagnostic
 
 
 def _equal_ancestry_runs(lineage: Lineage) -> list[tuple[int, int]]:
