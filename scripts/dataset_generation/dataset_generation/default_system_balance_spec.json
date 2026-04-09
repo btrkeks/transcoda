@@ -1,0 +1,4848 @@
+{
+  "accepted_samples": 184,
+  "attempted_samples": 300,
+  "calibration_target_metric": "full_render_system_count_preferred",
+  "candidate_plan_count": 8,
+  "coverage": {
+    "accepted_render_system_histogram": {
+      "1": 27,
+      "2": 77,
+      "3": 47,
+      "4": 25,
+      "5": 7,
+      "6": 1
+    },
+    "accepted_segment_histogram": {
+      "1": 165,
+      "2": 14,
+      "3": 5
+    },
+    "accepted_source_root_histogram": {
+      "grandstaff/3_normalized": 24,
+      "grandstaff/3_normalized,pdmx/3_normalized": 5,
+      "pdmx/3_normalized": 149,
+      "pdmx/3_normalized,grandstaff/3_normalized": 6
+    },
+    "full_render_system_histogram": {
+      "1": 55,
+      "10": 2,
+      "2": 82,
+      "3": 49,
+      "4": 22,
+      "5": 8,
+      "6": 4,
+      "7": 4,
+      "8": 1
+    },
+    "preferred_5_6_counts": {
+      "preferred_5_6_accepted_full": 8
+    },
+    "truncated_accepted_output_system_histogram": {
+      "3": 3,
+      "4": 4
+    }
+  },
+  "created_at": 1775643056.269583,
+  "diagnostics": {
+    "bucket_overlaps": [
+      {
+        "overlap_max": 301,
+        "overlap_min": 203,
+        "overlap_width": 99,
+        "systems": [
+          "1",
+          "2"
+        ]
+      },
+      {
+        "overlap_max": 301,
+        "overlap_min": 268,
+        "overlap_width": 34,
+        "systems": [
+          "1",
+          "3"
+        ]
+      },
+      {
+        "overlap_max": 301,
+        "overlap_min": 267,
+        "overlap_width": 35,
+        "systems": [
+          "1",
+          "4"
+        ]
+      },
+      {
+        "overlap_max": 555,
+        "overlap_min": 268,
+        "overlap_width": 288,
+        "systems": [
+          "2",
+          "3"
+        ]
+      },
+      {
+        "overlap_max": 555,
+        "overlap_min": 267,
+        "overlap_width": 289,
+        "systems": [
+          "2",
+          "4"
+        ]
+      },
+      {
+        "overlap_max": 837,
+        "overlap_min": 268,
+        "overlap_width": 570,
+        "systems": [
+          "3",
+          "4"
+        ]
+      },
+      {
+        "overlap_max": 869,
+        "overlap_min": 624,
+        "overlap_width": 246,
+        "systems": [
+          "3",
+          "5"
+        ]
+      },
+      {
+        "overlap_max": 837,
+        "overlap_min": 624,
+        "overlap_width": 214,
+        "systems": [
+          "4",
+          "5"
+        ]
+      },
+      {
+        "overlap_max": 1984,
+        "overlap_min": 1241,
+        "overlap_width": 744,
+        "systems": [
+          "5",
+          "6"
+        ]
+      }
+    ]
+  },
+  "input_dirs": [
+    "/home/daniel/.local/share/src/Transcoda/data/interim/train/pdmx/3_normalized",
+    "/home/daniel/.local/share/src/Transcoda/data/interim/train/grandstaff/3_normalized",
+    "/home/daniel/.local/share/src/Transcoda/data/interim/train/openscore-lieder/3_normalized",
+    "/home/daniel/.local/share/src/Transcoda/data/interim/train/openscore-stringquartets/3_normalized",
+    "/home/daniel/.local/share/src/Transcoda/data/interim/train/musetrainer/3_normalized"
+  ],
+  "mode": "length_proxy",
+  "recipe_fingerprint": "6f424a3080abc3c668654ee6ed1a19d11f9f8d43bf945d4a12f9468093419ab0",
+  "recipe_version": "dataset_generation_new_v1",
+  "recommended_token_length_ranges": {
+    "1": {
+      "center": 189.0,
+      "max": 301,
+      "min": 132
+    },
+    "2": {
+      "center": 277.0,
+      "max": 555,
+      "min": 203
+    },
+    "3": {
+      "center": 366.0,
+      "max": 869,
+      "min": 268
+    },
+    "4": {
+      "center": 413.5,
+      "max": 837,
+      "min": 267
+    },
+    "5": {
+      "center": 759.5,
+      "max": 1984,
+      "min": 624
+    },
+    "6": {
+      "center": 2846.5,
+      "max": 7862,
+      "min": 1241
+    }
+  },
+  "records": [
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000004",
+      "sample_idx": 4,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 127,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000002",
+      "sample_idx": 2,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 217,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000001",
+      "sample_idx": 1,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 147,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000003",
+      "sample_idx": 3,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 146,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000005",
+      "sample_idx": 5,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 926,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "truncation_exhausted",
+      "full_render_system_count": 6,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000000",
+      "sample_idx": 0,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 3908,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000007",
+      "sample_idx": 7,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 593,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000008",
+      "sample_idx": 8,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 284,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000009",
+      "sample_idx": 9,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 53,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000010",
+      "sample_idx": 10,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 211,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000011",
+      "sample_idx": 11,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 242,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000012",
+      "sample_idx": 12,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 845,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000013",
+      "sample_idx": 13,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 264,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000014",
+      "sample_idx": 14,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 166,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000006",
+      "sample_idx": 6,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 367,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000016",
+      "sample_idx": 16,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 165,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000017",
+      "sample_idx": 17,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 715,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000018",
+      "sample_idx": 18,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 318,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000019",
+      "sample_idx": 19,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 1355,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000015",
+      "sample_idx": 15,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 1027,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 5,
+      "failure_reason": null,
+      "full_render_system_count": 5,
+      "preferred_5_6_status": "preferred_5_6_accepted_full",
+      "sample_id": "sample_00000021",
+      "sample_idx": 21,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 1475,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000020",
+      "sample_idx": 20,
+      "segment_count": 3,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 514,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 7,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000023",
+      "sample_idx": 23,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 487,
+      "truncation_applied": true
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000022",
+      "sample_idx": 22,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 593,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000025",
+      "sample_idx": 25,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 223,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000024",
+      "sample_idx": 24,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 1186,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000026",
+      "sample_idx": 26,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 383,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000028",
+      "sample_idx": 28,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 158,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000029",
+      "sample_idx": 29,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 485,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000030",
+      "sample_idx": 30,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 276,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "left_clearance",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000031",
+      "sample_idx": 31,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 133,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000032",
+      "sample_idx": 32,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 927,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000033",
+      "sample_idx": 33,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 203,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000034",
+      "sample_idx": 34,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 305,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "left_clearance",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000035",
+      "sample_idx": 35,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 214,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000036",
+      "sample_idx": 36,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 195,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000037",
+      "sample_idx": 37,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 226,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000038",
+      "sample_idx": 38,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 906,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "truncation_exhausted",
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000039",
+      "sample_idx": 39,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 5284,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000027",
+      "sample_idx": 27,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 877,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000041",
+      "sample_idx": 41,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 245,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000042",
+      "sample_idx": 42,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 313,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000043",
+      "sample_idx": 43,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 77,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "truncation_exhausted",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000040",
+      "sample_idx": 40,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 19793,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000044",
+      "sample_idx": 44,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 171,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000045",
+      "sample_idx": 45,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 279,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000047",
+      "sample_idx": 47,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 185,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000048",
+      "sample_idx": 48,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 297,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000049",
+      "sample_idx": 49,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 658,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000050",
+      "sample_idx": 50,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 301,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000051",
+      "sample_idx": 51,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 319,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000052",
+      "sample_idx": 52,
+      "segment_count": 3,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 571,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "truncation_exhausted",
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000046",
+      "sample_idx": 46,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 11272,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000053",
+      "sample_idx": 53,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 170,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000055",
+      "sample_idx": 55,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 558,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000056",
+      "sample_idx": 56,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 436,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000057",
+      "sample_idx": 57,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 103,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000058",
+      "sample_idx": 58,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 206,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000059",
+      "sample_idx": 59,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 294,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000060",
+      "sample_idx": 60,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 553,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000061",
+      "sample_idx": 61,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 195,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000054",
+      "sample_idx": 54,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 268,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000063",
+      "sample_idx": 63,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 205,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000064",
+      "sample_idx": 64,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 267,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000062",
+      "sample_idx": 62,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 430,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 5,
+      "failure_reason": null,
+      "full_render_system_count": 5,
+      "preferred_5_6_status": "preferred_5_6_accepted_full",
+      "sample_id": "sample_00000065",
+      "sample_idx": 65,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 602,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000066",
+      "sample_idx": 66,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 304,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000069",
+      "sample_idx": 69,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 237,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000067",
+      "sample_idx": 67,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 557,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000068",
+      "sample_idx": 68,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 3810,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000071",
+      "sample_idx": 71,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 417,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "left_clearance",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000072",
+      "sample_idx": 72,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 179,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000070",
+      "sample_idx": 70,
+      "segment_count": 3,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 348,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000074",
+      "sample_idx": 74,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 912,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000073",
+      "sample_idx": 73,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 558,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000076",
+      "sample_idx": 76,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 311,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000075",
+      "sample_idx": 75,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 263,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000077",
+      "sample_idx": 77,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 416,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000080",
+      "sample_idx": 80,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 177,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000078",
+      "sample_idx": 78,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 245,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000079",
+      "sample_idx": 79,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 197,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000082",
+      "sample_idx": 82,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 905,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000083",
+      "sample_idx": 83,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 267,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "truncation_exhausted",
+      "full_render_system_count": 6,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000081",
+      "sample_idx": 81,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 13795,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000085",
+      "sample_idx": 85,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 553,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000086",
+      "sample_idx": 86,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 4017,
+      "truncation_applied": true
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000088",
+      "sample_idx": 88,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 213,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000087",
+      "sample_idx": 87,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 131,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000089",
+      "sample_idx": 89,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 62,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000090",
+      "sample_idx": 90,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 273,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000091",
+      "sample_idx": 91,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 235,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000092",
+      "sample_idx": 92,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 581,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000084",
+      "sample_idx": 84,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 375,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000094",
+      "sample_idx": 94,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 253,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000095",
+      "sample_idx": 95,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 1145,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000096",
+      "sample_idx": 96,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 331,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000097",
+      "sample_idx": 97,
+      "segment_count": 1,
+      "source_root_labels": [
+        "openscore-lieder/3_normalized"
+      ],
+      "token_length": 9370,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000098",
+      "sample_idx": 98,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 1262,
+      "truncation_applied": true
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000099",
+      "sample_idx": 99,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 101,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000100",
+      "sample_idx": 100,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 166,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000101",
+      "sample_idx": 101,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 416,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000102",
+      "sample_idx": 102,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 305,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000103",
+      "sample_idx": 103,
+      "segment_count": 3,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 577,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000105",
+      "sample_idx": 105,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 1220,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000104",
+      "sample_idx": 104,
+      "segment_count": 3,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 337,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000106",
+      "sample_idx": 106,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 664,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000107",
+      "sample_idx": 107,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 246,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000108",
+      "sample_idx": 108,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 331,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000109",
+      "sample_idx": 109,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 157,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000111",
+      "sample_idx": 111,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 265,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000110",
+      "sample_idx": 110,
+      "segment_count": 3,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 336,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000112",
+      "sample_idx": 112,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 267,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000113",
+      "sample_idx": 113,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 283,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000114",
+      "sample_idx": 114,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 117,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000115",
+      "sample_idx": 115,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 541,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000116",
+      "sample_idx": 116,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 337,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000117",
+      "sample_idx": 117,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 234,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000118",
+      "sample_idx": 118,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 412,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000119",
+      "sample_idx": 119,
+      "segment_count": 3,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 441,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000093",
+      "sample_idx": 93,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 433,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000120",
+      "sample_idx": 120,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 171,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000121",
+      "sample_idx": 121,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 385,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "left_clearance",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000123",
+      "sample_idx": 123,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 110,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000124",
+      "sample_idx": 124,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 377,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000125",
+      "sample_idx": 125,
+      "segment_count": 3,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 359,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000126",
+      "sample_idx": 126,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 414,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000127",
+      "sample_idx": 127,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 267,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000128",
+      "sample_idx": 128,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 309,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000129",
+      "sample_idx": 129,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 897,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000130",
+      "sample_idx": 130,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 113,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000131",
+      "sample_idx": 131,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 235,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "truncation_exhausted",
+      "full_render_system_count": 6,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000122",
+      "sample_idx": 122,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 1785,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000133",
+      "sample_idx": 133,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 499,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 5,
+      "failure_reason": null,
+      "full_render_system_count": 5,
+      "preferred_5_6_status": "preferred_5_6_accepted_full",
+      "sample_id": "sample_00000132",
+      "sample_idx": 132,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 2324,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000134",
+      "sample_idx": 134,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 97,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 5,
+      "failure_reason": null,
+      "full_render_system_count": 5,
+      "preferred_5_6_status": "preferred_5_6_accepted_full",
+      "sample_id": "sample_00000135",
+      "sample_idx": 135,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 659,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000136",
+      "sample_idx": 136,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 609,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000137",
+      "sample_idx": 137,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 271,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000138",
+      "sample_idx": 138,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 267,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000140",
+      "sample_idx": 140,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 989,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000139",
+      "sample_idx": 139,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 910,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000141",
+      "sample_idx": 141,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 325,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000142",
+      "sample_idx": 142,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 586,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000143",
+      "sample_idx": 143,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 330,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000145",
+      "sample_idx": 145,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 8277,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000146",
+      "sample_idx": 146,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 177,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000147",
+      "sample_idx": 147,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 297,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000144",
+      "sample_idx": 144,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 307,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000149",
+      "sample_idx": 149,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 269,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000150",
+      "sample_idx": 150,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 353,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000148",
+      "sample_idx": 148,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 181,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000152",
+      "sample_idx": 152,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 675,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000153",
+      "sample_idx": 153,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 447,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000154",
+      "sample_idx": 154,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 157,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 10,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000151",
+      "sample_idx": 151,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 855,
+      "truncation_applied": true
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 5,
+      "failure_reason": null,
+      "full_render_system_count": 5,
+      "preferred_5_6_status": "preferred_5_6_accepted_full",
+      "sample_id": "sample_00000155",
+      "sample_idx": 155,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 806,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000156",
+      "sample_idx": 156,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 409,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000157",
+      "sample_idx": 157,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 3683,
+      "truncation_applied": true
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000159",
+      "sample_idx": 159,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 269,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000158",
+      "sample_idx": 158,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 241,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000161",
+      "sample_idx": 161,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 507,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000162",
+      "sample_idx": 162,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 171,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000160",
+      "sample_idx": 160,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 5383,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "truncation_exhausted",
+      "full_render_system_count": 10,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000163",
+      "sample_idx": 163,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 1425,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000164",
+      "sample_idx": 164,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 253,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000165",
+      "sample_idx": 165,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 1512,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000167",
+      "sample_idx": 167,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 264,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000166",
+      "sample_idx": 166,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 1411,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000169",
+      "sample_idx": 169,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 291,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000168",
+      "sample_idx": 168,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 739,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000170",
+      "sample_idx": 170,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 997,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000171",
+      "sample_idx": 171,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 429,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000173",
+      "sample_idx": 173,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 136,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000174",
+      "sample_idx": 174,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 415,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000175",
+      "sample_idx": 175,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 242,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000176",
+      "sample_idx": 176,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 201,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000177",
+      "sample_idx": 177,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 668,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000178",
+      "sample_idx": 178,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 279,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000179",
+      "sample_idx": 179,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 422,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000180",
+      "sample_idx": 180,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 161,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000181",
+      "sample_idx": 181,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 285,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000182",
+      "sample_idx": 182,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 544,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000172",
+      "sample_idx": 172,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 3743,
+      "truncation_applied": true
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000183",
+      "sample_idx": 183,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 175,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000184",
+      "sample_idx": 184,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 243,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000186",
+      "sample_idx": 186,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 535,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000187",
+      "sample_idx": 187,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 189,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000185",
+      "sample_idx": 185,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 248,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000188",
+      "sample_idx": 188,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 1113,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000189",
+      "sample_idx": 189,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 402,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000190",
+      "sample_idx": 190,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 259,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000192",
+      "sample_idx": 192,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 139,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000193",
+      "sample_idx": 193,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 243,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000191",
+      "sample_idx": 191,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 1024,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000194",
+      "sample_idx": 194,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 242,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000196",
+      "sample_idx": 196,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 706,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000195",
+      "sample_idx": 195,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 899,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 6,
+      "failure_reason": null,
+      "full_render_system_count": 6,
+      "preferred_5_6_status": "preferred_5_6_accepted_full",
+      "sample_id": "sample_00000197",
+      "sample_idx": 197,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 425,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 5,
+      "failure_reason": null,
+      "full_render_system_count": 5,
+      "preferred_5_6_status": "preferred_5_6_accepted_full",
+      "sample_id": "sample_00000198",
+      "sample_idx": 198,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 428,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000199",
+      "sample_idx": 199,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 166,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000200",
+      "sample_idx": 200,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 210,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000202",
+      "sample_idx": 202,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 1415,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000201",
+      "sample_idx": 201,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 421,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000203",
+      "sample_idx": 203,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 626,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000205",
+      "sample_idx": 205,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 207,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000206",
+      "sample_idx": 206,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 166,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000207",
+      "sample_idx": 207,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 423,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000208",
+      "sample_idx": 208,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 299,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000209",
+      "sample_idx": 209,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 881,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000210",
+      "sample_idx": 210,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 164,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000211",
+      "sample_idx": 211,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 167,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000212",
+      "sample_idx": 212,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 191,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "truncation_exhausted",
+      "full_render_system_count": 7,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000204",
+      "sample_idx": 204,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 5362,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000213",
+      "sample_idx": 213,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 325,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000214",
+      "sample_idx": 214,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 533,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000216",
+      "sample_idx": 216,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 403,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000215",
+      "sample_idx": 215,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 1164,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000218",
+      "sample_idx": 218,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 349,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000220",
+      "sample_idx": 220,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 369,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000222",
+      "sample_idx": 222,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 843,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000219",
+      "sample_idx": 219,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 329,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000217",
+      "sample_idx": 217,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 336,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000224",
+      "sample_idx": 224,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 161,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000221",
+      "sample_idx": 221,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 237,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000223",
+      "sample_idx": 223,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 235,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000226",
+      "sample_idx": 226,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 551,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000228",
+      "sample_idx": 228,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 366,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "truncation_exhausted",
+      "full_render_system_count": 5,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000229",
+      "sample_idx": 229,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 10632,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000225",
+      "sample_idx": 225,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 345,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000227",
+      "sample_idx": 227,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 15766,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000231",
+      "sample_idx": 231,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 685,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000232",
+      "sample_idx": 232,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 685,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000233",
+      "sample_idx": 233,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 1408,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000234",
+      "sample_idx": 234,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 313,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000235",
+      "sample_idx": 235,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 203,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000230",
+      "sample_idx": 230,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 495,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000236",
+      "sample_idx": 236,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 462,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000238",
+      "sample_idx": 238,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 419,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000237",
+      "sample_idx": 237,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 247,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000241",
+      "sample_idx": 241,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 673,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000239",
+      "sample_idx": 239,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 160,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000240",
+      "sample_idx": 240,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 327,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 7,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000242",
+      "sample_idx": 242,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 444,
+      "truncation_applied": true
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "truncation_exhausted",
+      "full_render_system_count": 8,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000243",
+      "sample_idx": 243,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 5163,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000245",
+      "sample_idx": 245,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 307,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000246",
+      "sample_idx": 246,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 197,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000247",
+      "sample_idx": 247,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 137,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000248",
+      "sample_idx": 248,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 842,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "truncation_exhausted",
+      "full_render_system_count": 7,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000244",
+      "sample_idx": 244,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 13409,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "truncation_exhausted",
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000249",
+      "sample_idx": 249,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 4744,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000250",
+      "sample_idx": 250,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 208,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000251",
+      "sample_idx": 251,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 357,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000253",
+      "sample_idx": 253,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 154,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000254",
+      "sample_idx": 254,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 315,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000255",
+      "sample_idx": 255,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 219,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 5,
+      "failure_reason": null,
+      "full_render_system_count": 5,
+      "preferred_5_6_status": "preferred_5_6_accepted_full",
+      "sample_id": "sample_00000256",
+      "sample_idx": 256,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 713,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000257",
+      "sample_idx": 257,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 307,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000252",
+      "sample_idx": 252,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 543,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000259",
+      "sample_idx": 259,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 277,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000260",
+      "sample_idx": 260,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 159,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000261",
+      "sample_idx": 261,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 242,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000262",
+      "sample_idx": 262,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 189,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000258",
+      "sample_idx": 258,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 175,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000263",
+      "sample_idx": 263,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 620,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000264",
+      "sample_idx": 264,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 895,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000267",
+      "sample_idx": 267,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 140,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000265",
+      "sample_idx": 265,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 490,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000266",
+      "sample_idx": 266,
+      "segment_count": 3,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 986,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000269",
+      "sample_idx": 269,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 414,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000270",
+      "sample_idx": 270,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 856,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000271",
+      "sample_idx": 271,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 391,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000272",
+      "sample_idx": 272,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 948,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000273",
+      "sample_idx": 273,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 169,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000274",
+      "sample_idx": 274,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 700,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000275",
+      "sample_idx": 275,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 275,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000276",
+      "sample_idx": 276,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 299,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "truncation_exhausted",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000268",
+      "sample_idx": 268,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 15381,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "process_expired",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000278",
+      "sample_idx": 278,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 395,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000279",
+      "sample_idx": 279,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 267,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000280",
+      "sample_idx": 280,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 271,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "truncation_exhausted",
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000281",
+      "sample_idx": 281,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 5045,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000277",
+      "sample_idx": 277,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 346,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000283",
+      "sample_idx": 283,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 599,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000284",
+      "sample_idx": 284,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 395,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000285",
+      "sample_idx": 285,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 299,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000287",
+      "sample_idx": 287,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 739,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "sparse_render",
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000286",
+      "sample_idx": 286,
+      "segment_count": 1,
+      "source_root_labels": [
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 157,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000282",
+      "sample_idx": 282,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 1923,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000288",
+      "sample_idx": 288,
+      "segment_count": 3,
+      "source_root_labels": [
+        "pdmx/3_normalized",
+        "grandstaff/3_normalized"
+      ],
+      "token_length": 498,
+      "truncation_applied": false
+    },
+    {
+      "accepted": false,
+      "accepted_render_system_count": null,
+      "failure_reason": "timeout",
+      "full_render_system_count": null,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000289",
+      "sample_idx": 289,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 608,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 4,
+      "failure_reason": null,
+      "full_render_system_count": 4,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000290",
+      "sample_idx": 290,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 240,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000292",
+      "sample_idx": 292,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 291,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000291",
+      "sample_idx": 291,
+      "segment_count": 2,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 349,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000293",
+      "sample_idx": 293,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 278,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 1,
+      "failure_reason": null,
+      "full_render_system_count": 1,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000294",
+      "sample_idx": 294,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 143,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000296",
+      "sample_idx": 296,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 231,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 3,
+      "failure_reason": null,
+      "full_render_system_count": 3,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000295",
+      "sample_idx": 295,
+      "segment_count": 2,
+      "source_root_labels": [
+        "grandstaff/3_normalized",
+        "pdmx/3_normalized"
+      ],
+      "token_length": 784,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000297",
+      "sample_idx": 297,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 773,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000298",
+      "sample_idx": 298,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 203,
+      "truncation_applied": false
+    },
+    {
+      "accepted": true,
+      "accepted_render_system_count": 2,
+      "failure_reason": null,
+      "full_render_system_count": 2,
+      "preferred_5_6_status": null,
+      "sample_id": "sample_00000299",
+      "sample_idx": 299,
+      "segment_count": 1,
+      "source_root_labels": [
+        "pdmx/3_normalized"
+      ],
+      "token_length": 250,
+      "truncation_applied": false
+    }
+  ],
+  "sample_budget": 300,
+  "schema_version": "1.0",
+  "systems": {
+    "1": {
+      "accepted_count": 27,
+      "calibration_count": 55,
+      "full_render_count": 55,
+      "token_length": {
+        "max": 19793,
+        "mean": 845.7636363636364,
+        "median": 189.0,
+        "min": 53,
+        "q10": 105,
+        "q20": 132,
+        "q25": 138,
+        "q75": 265,
+        "q80": 301,
+        "q90": 393
+      }
+    },
+    "2": {
+      "accepted_count": 77,
+      "calibration_count": 82,
+      "full_render_count": 82,
+      "token_length": {
+        "max": 11272,
+        "mean": 573.8780487804878,
+        "median": 277.0,
+        "min": 140,
+        "q10": 170,
+        "q20": 203,
+        "q25": 211,
+        "q75": 415,
+        "q80": 555,
+        "q90": 698
+      }
+    },
+    "3": {
+      "accepted_count": 47,
+      "calibration_count": 49,
+      "full_render_count": 49,
+      "token_length": {
+        "max": 5045,
+        "mean": 739.7142857142857,
+        "median": 366.0,
+        "min": 147,
+        "q10": 217,
+        "q20": 268,
+        "q25": 291,
+        "q75": 784,
+        "q80": 869,
+        "q90": 1280
+      }
+    },
+    "4": {
+      "accepted_count": 25,
+      "calibration_count": 22,
+      "full_render_count": 22,
+      "token_length": {
+        "max": 3683,
+        "mean": 671.0,
+        "median": 413.5,
+        "min": 205,
+        "q10": 254,
+        "q20": 267,
+        "q25": 269,
+        "q75": 587,
+        "q80": 837,
+        "q90": 1357
+      }
+    },
+    "5": {
+      "accepted_count": 7,
+      "calibration_count": 8,
+      "full_render_count": 8,
+      "token_length": {
+        "max": 10632,
+        "mean": 2204.875,
+        "median": 759.5,
+        "min": 428,
+        "q10": 549,
+        "q20": 624,
+        "q25": 644,
+        "q75": 1687,
+        "q80": 1984,
+        "q90": 4816
+      }
+    },
+    "6": {
+      "accepted_count": 1,
+      "calibration_count": 4,
+      "full_render_count": 4,
+      "token_length": {
+        "max": 13795,
+        "mean": 4978.25,
+        "median": 2846.5,
+        "min": 425,
+        "q10": 833,
+        "q20": 1241,
+        "q25": 1445,
+        "q75": 6379,
+        "q80": 7862,
+        "q90": 10828
+      }
+    }
+  },
+  "tokenizer": {
+    "fingerprint": "dafc66b515c111d8ee5825c4a038f9f9eaa58875333c10542ac9a6bf16e53aa9",
+    "path": "/home/daniel/.local/share/src/Transcoda/vocab/bpe3k-splitspaces"
+  }
+}

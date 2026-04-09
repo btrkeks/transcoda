@@ -81,8 +81,32 @@ def _normalize_real_dataset_metadata(dataset):
 def _prepare_synth_subset(dataset, synth_indices: list[int]):
     subset = dataset.select(synth_indices)
     row_count = len(subset)
-    source_values = [f"train_full_{idx:06d}" for idx in synth_indices]
-    sample_ids = list(source_values)
+    column_values = {name: subset[name] for name in subset.column_names}
+    sample_ids = [
+        _derive_stem(
+            column_values.get("sample_id", [""] * row_count)[idx]
+            if "sample_id" in column_values
+            else (
+                column_values.get("source_ids", [[]] * row_count)[idx][0]
+                if column_values.get("source_ids", [[]] * row_count)[idx]
+                else f"train_full_{synth_indices[idx]:06d}"
+            ),
+            fallback=f"train_full_{synth_indices[idx]:06d}",
+        )
+        for idx in range(row_count)
+    ]
+    source_values = [
+        (
+            str(column_values["source"][idx])
+            if "source" in column_values
+            else (
+                str(column_values["source_ids"][idx][0])
+                if "source_ids" in column_values and column_values["source_ids"][idx]
+                else f"{sample_ids[idx]}.krn"
+            )
+        )
+        for idx in range(row_count)
+    ]
 
     subset = _set_column(subset, "source", source_values)
     subset = _set_column(subset, "source_dataset", ["train_full"] * row_count)
