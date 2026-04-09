@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Sequence
 
+from src.core.kern_concatenation import restore_terminal_spine_count_before_final_barline
 from src.core.kern_utils import is_spinemerge_line, is_spinesplit_line, is_terminator_line
 
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
@@ -57,6 +58,7 @@ def compose_label_transcription(entries: Sequence[SourceEntry]) -> str:
     composed = "\n".join(part.rstrip("\n") for part in prepared_segments).rstrip("\n")
     if not composed:
         raise ValueError("Composed transcription is empty")
+    composed = restore_terminal_spine_count_before_final_barline(composed)
     return composed + "\n"
 
 

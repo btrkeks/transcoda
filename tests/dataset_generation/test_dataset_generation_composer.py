@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+import scripts.dataset_generation.dataset_generation.composer as composer_module
 from scripts.dataset_generation.dataset_generation.composer import (
     _choose_entries,
     compose_label_transcription,
@@ -217,6 +218,32 @@ def test_compose_label_transcription_allows_boundary_spine_count_mismatch(tmp_pa
     assert composed.endswith("*-\t*-\n")
     assert "4c" in composed
     assert "4d\t4f" in composed
+
+
+def test_compose_label_transcription_routes_output_through_terminal_spine_restorer(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    calls: list[str] = []
+
+    def fake_restore(text: str) -> str:
+        calls.append(text)
+        return text
+
+    monkeypatch.setattr(
+        composer_module,
+        "restore_terminal_spine_count_before_final_barline",
+        fake_restore,
+    )
+
+    composed = _compose_entries(
+        tmp_path,
+        "**kern\n*clefG2\n=1\n4c\n*-\n",
+        "**kern\n*clefG2\n=1\n4d\n*-\n",
+    )
+
+    assert len(calls) == 1
+    assert calls[0].endswith("*-")
+    assert composed.endswith("*-\n")
 
 
 def test_plan_sample_is_deterministic_for_seed(tmp_path: Path):
