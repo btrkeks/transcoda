@@ -25,6 +25,18 @@ def test_assemble_mixed_train_dataset_is_deterministic_and_adds_metadata(tmp_pat
             {
                 "image": Image.new("RGB", (20, 20), color=(255, 255, 255)),
                 "transcription": f"**kern\n4c{i}\n*-\n",
+                "sample_id": f"sample_{i:08d}",
+                "source_ids": [f"train/full_{i:03d}"],
+                "segment_count": 1,
+                "source_measure_count": 2,
+                "source_non_empty_line_count": 4,
+                "svg_system_count": 4,
+                "truncation_applied": False,
+                "truncation_reason": None,
+                "truncation_ratio": None,
+                "vertical_fill_ratio": 0.5,
+                "bottom_whitespace_ratio": 0.2,
+                "recipe_version": "v1",
             }
             for i in range(5)
         ]
