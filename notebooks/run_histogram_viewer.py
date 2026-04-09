@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from collections import Counter
 import json
 import math
 import re
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -68,7 +70,45 @@ def _bucket_histogram(histogram: dict[int, int], bucket_width: int) -> dict[int,
     return dict(sorted(bucketed.items()))
 
 
-def plot_histograms(histograms: dict[str, dict[int, int]], *, dataset_name: str, info_path: Path) -> None:
+def _plot_spine_system_heatmap(ax, dataset) -> None:
+    pair_counts = Counter(
+        (int(row["initial_kern_spine_count"]), int(row["svg_system_count"]))
+        for row in dataset
+    )
+
+    spine_values = list(range(1, 5))
+    system_values = list(range(1, 7))
+    grid = np.array(
+        [
+            [pair_counts.get((spine, system), 0) for spine in spine_values]
+            for system in system_values
+        ]
+    )
+
+    image = ax.imshow(grid, origin="lower", cmap="Blues", aspect="auto")
+    ax.set_xticks(range(len(spine_values)), labels=spine_values)
+    ax.set_yticks(range(len(system_values)), labels=system_values)
+    ax.set_xlabel("initial_kern_spine_count")
+    ax.set_ylabel("svg_system_count")
+    ax.set_title("Initial kern spine count vs SVG system count")
+
+    max_count = int(grid.max()) if grid.size else 0
+    for y in range(grid.shape[0]):
+        for x in range(grid.shape[1]):
+            value = int(grid[y, x])
+            text_color = "white" if max_count and value > 0.6 * max_count else "black"
+            ax.text(x, y, str(value), ha="center", va="center", color=text_color)
+
+    plt.colorbar(image, ax=ax, label="Count")
+
+
+def plot_histograms(
+    histograms: dict[str, dict[int, int]],
+    *,
+    dataset_name: str,
+    info_path: Path,
+    dataset=None,
+) -> None:
     if not histograms:
         print(f"No histograms found in {info_path}")
         return
@@ -79,6 +119,9 @@ def plot_histograms(histograms: dict[str, dict[int, int]], *, dataset_name: str,
     axes = list(axes.flat) if hasattr(axes, "flat") else [axes]
 
     for ax, (name, histogram) in zip(axes, sorted(histograms.items())):
+        if name == "accepted_system_histogram" and dataset is not None:
+            _plot_spine_system_heatmap(ax, dataset)
+            continue
         bucket_width = HISTOGRAM_BUCKET_WIDTHS.get(name)
         plot_histogram = _bucket_histogram(histogram, bucket_width) if bucket_width else histogram
         items = sorted(plot_histogram.items())
