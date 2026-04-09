@@ -51,10 +51,27 @@ def _hf_transform(ex, image_col: str, custom_transform: Callable | None = None):
 
         pixel_values.append(t)
     result = {"pixel_values": pixel_values, "labels": ex["labels"]}
-    # Preserve source field for per-source metric tracking (if present)
-    if "source" in ex:
-        result["source"] = ex["source"]
+    result["source"] = _derive_source_batch(ex)
     return result
+
+
+def _derive_source_batch(ex) -> list[str]:
+    if "source" in ex:
+        return [str(value) for value in ex["source"]]
+    if "source_ids" in ex:
+        derived: list[str] = []
+        source_ids = ex["source_ids"]
+        sample_ids = ex.get("sample_id", [f"sample_{idx}" for idx in range(len(source_ids))])
+        for idx, value in enumerate(source_ids):
+            if value:
+                derived.append(str(value[0]))
+            else:
+                derived.append(str(sample_ids[idx]))
+        return derived
+    if "sample_id" in ex:
+        return [str(value) for value in ex["sample_id"]]
+    row_count = len(ex.get("labels", []))
+    return ["unknown"] * row_count
 
 
 def load_dataset_direct(

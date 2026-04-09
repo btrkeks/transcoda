@@ -112,6 +112,17 @@ class EvalDatasetWrapper(Dataset):
         return {
             "pixel_values": self.preprocess_fn(image),
             "transcription": sample["transcription"],
-            "source": sample.get("source", "unknown"),
+            "source": _derive_eval_source(sample),
             "sample_id": idx,
         }
+
+
+def _derive_eval_source(sample: dict) -> str:
+    if "source" in sample and sample["source"] is not None:
+        return str(sample["source"])
+    source_ids = sample.get("source_ids")
+    if source_ids:
+        return str(source_ids[0])
+    if "sample_id" in sample:
+        return str(sample["sample_id"])
+    return "unknown"
