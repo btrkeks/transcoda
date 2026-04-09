@@ -141,12 +141,38 @@ The pipeline converts raw music scores through several stages into training-read
 ```bash
 source .venv/bin/activate
 
-# Generate training dataset
-PIPELINE_TARGET=train_full bash scripts/dataset_generation/run_full_pipeline.sh
+# Generate training dataset with the production rewrite
+python -m scripts.dataset_generation.dataset_generation_new.main \
+  data/interim/train/pdmx/3_normalized \
+  data/interim/train/grandstaff/3_normalized \
+  data/interim/train/openscore-lieder/3_normalized \
+  data/interim/train/openscore-stringquartets/3_normalized \
+  --output_dir data/datasets/train_rewrite \
+  --target_samples 1000 \
+  --num_workers 4
 
-# Generate validation datasets
+# Or use the convenience wrapper
+bash scripts/dataset_generation/run_rewrite_train_pipeline.sh
+
+# Validation generation remains on the old pipeline path for now
 PIPELINE_TARGET=validation bash scripts/dataset_generation/run_full_pipeline.sh
 ```
+
+The rewrite writes a Hugging Face dataset via `save_to_disk()` at `output_dir` and stores run artifacts under `data/datasets/_runs/<output_name>/<run_id>/` by default. Each run directory includes:
+
+- `info.json` with the run configuration and summary
+- `progress.json` with live counters
+- resumable state under `<output_dir>/.resume/`
+
+The rewrite dataset also includes clean-render layout diagnostics such as `vertical_fill_ratio`,
+`bottom_whitespace_ratio`, `bottom_whitespace_px`, `top_whitespace_px`, and
+`content_height_px`. These are measured before offline dirt/degradation augmentation so they
+reflect page occupancy of the synthetic render itself rather than the augmented image.
+
+Balanced generation is mandatory in the rewrite path. Production runs always use the bundled
+token-length calibration spec checked into the repo, and generation aborts if that spec is
+missing or incompatible with the current recipe/tokenizer. The calibration CLI remains available
+as a maintenance tool for refreshing the bundled spec when those assumptions change.
 
 See [`docs/normalization.md`](docs/normalization.md) for details on the normalization pipeline.
 
