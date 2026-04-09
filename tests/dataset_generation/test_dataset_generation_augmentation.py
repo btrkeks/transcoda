@@ -28,6 +28,7 @@ def test_augment_accepted_render_falls_back_to_base_image_when_candidate_is_inva
         label_transcription="=1\n4c\n*-\n",
         source_measure_count=8,
         source_non_empty_line_count=16,
+        source_max_initial_spine_count=1,
         segment_count=1,
     )
     render_result = RenderResult(

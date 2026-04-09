@@ -24,8 +24,8 @@ from scripts.dataset_generation.dataset_generation.source_index import build_sou
 from scripts.dataset_generation.dataset_generation.system_balance import (
     DEFAULT_CANDIDATE_PLAN_COUNT,
     build_calibration_artifact,
-    compute_token_length,
-    load_tokenizer,
+    resolve_tokenizer_dir,
+    spine_class_for_count,
 )
 from scripts.dataset_generation.dataset_generation.types import SamplePlan, WorkerFailure, WorkerSuccess
 from scripts.dataset_generation.dataset_generation.worker import (
@@ -53,7 +53,7 @@ def run_calibration(
     active_recipe = recipe or ProductionRecipe()
     source_index = build_source_index(*normalized_input_dirs)
     entry_by_path = {entry.path.resolve(): entry for entry in source_index.entries}
-    tokenizer_dir, tokenizer = load_tokenizer(tokenizer_path)
+    tokenizer_dir = resolve_tokenizer_dir(tokenizer_path)
     destination = _resolve_output_json(output_json)
     failure_policy = resolve_failure_policy("balanced")
 
@@ -74,7 +74,7 @@ def run_calibration(
     if use_process_pool:
         max_in_flight = max(int(num_workers) * 4, int(num_workers))
         next_sample_idx = 0
-        futures_by_handle: dict[object, tuple[int, SamplePlan, int, list[str]]] = {}
+        futures_by_handle: dict[object, tuple[int, SamplePlan, list[str]]] = {}
         with ProcessPool(
             max_workers=max(1, int(num_workers)),
             max_tasks=200,
@@ -84,21 +84,20 @@ def run_calibration(
             while next_sample_idx < sample_budget or futures_by_handle:
                 while next_sample_idx < sample_budget and len(futures_by_handle) < max_in_flight:
                     plan = _plan_sample(source_index, active_recipe, next_sample_idx, base_seed)
-                    token_length = compute_token_length(plan.label_transcription, tokenizer)
                     root_labels = _source_root_labels(plan, entry_by_path)
                     future = pool.schedule(
                         process_sample_plan,
                         args=(plan,),
                         timeout=failure_policy.task_timeout_seconds,
                     )
-                    futures_by_handle[future] = (next_sample_idx, plan, token_length, root_labels)
+                    futures_by_handle[future] = (next_sample_idx, plan, root_labels)
                     next_sample_idx += 1
 
                 done, _ = wait(tuple(futures_by_handle), timeout=0.5, return_when=FIRST_COMPLETED)
                 if not done:
                     continue
                 for future in done:
-                    sample_idx, plan, token_length, root_labels = futures_by_handle.pop(future)
+                    sample_idx, plan, root_labels = futures_by_handle.pop(future)
                     try:
                         outcome = future.result()
                     except TimeoutError:
@@ -106,11 +105,13 @@ def run_calibration(
                             _build_record(
                                 sample_idx=sample_idx,
                                 plan=plan,
-                                token_length=token_length,
                                 source_root_labels=root_labels,
                                 accepted=False,
                                 failure_reason="timeout",
                                 full_render_system_count=None,
+                                full_render_content_height_px=None,
+                                full_render_vertical_fill_ratio=None,
+                                full_render_rejection_reason="timeout",
                                 accepted_render_system_count=None,
                                 truncation_applied=False,
                                 preferred_5_6_status=None,
@@ -121,11 +122,13 @@ def run_calibration(
                             _build_record(
                                 sample_idx=sample_idx,
                                 plan=plan,
-                                token_length=token_length,
                                 source_root_labels=root_labels,
                                 accepted=False,
                                 failure_reason="process_expired",
                                 full_render_system_count=None,
+                                full_render_content_height_px=None,
+                                full_render_vertical_fill_ratio=None,
+                                full_render_rejection_reason="process_expired",
                                 accepted_render_system_count=None,
                                 truncation_applied=False,
                                 preferred_5_6_status=None,
@@ -136,11 +139,13 @@ def run_calibration(
                             _build_record(
                                 sample_idx=sample_idx,
                                 plan=plan,
-                                token_length=token_length,
                                 source_root_labels=root_labels,
                                 accepted=False,
                                 failure_reason=f"task_error:{type(exc).__name__}",
                                 full_render_system_count=None,
+                                full_render_content_height_px=None,
+                                full_render_vertical_fill_ratio=None,
+                                full_render_rejection_reason=f"task_error:{type(exc).__name__}",
                                 accepted_render_system_count=None,
                                 truncation_applied=False,
                                 preferred_5_6_status=None,
@@ -151,7 +156,6 @@ def run_calibration(
                             _record_from_outcome(
                                 sample_idx=sample_idx,
                                 plan=plan,
-                                token_length=token_length,
                                 source_root_labels=root_labels,
                                 outcome=outcome,
                             )
@@ -160,7 +164,6 @@ def run_calibration(
         sync_renderer = renderer or VerovioRenderer()
         for sample_idx in range(sample_budget):
             plan = _plan_sample(source_index, active_recipe, sample_idx, base_seed)
-            token_length = compute_token_length(plan.label_transcription, tokenizer)
             root_labels = _source_root_labels(plan, entry_by_path)
             outcome = evaluate_sample_plan(
                 plan,
@@ -179,7 +182,6 @@ def run_calibration(
                 _record_from_outcome(
                     sample_idx=sample_idx,
                     plan=plan,
-                    token_length=token_length,
                     source_root_labels=root_labels,
                     outcome=outcome,
                 )
@@ -248,7 +250,6 @@ def _record_from_outcome(
     *,
     sample_idx: int,
     plan: SamplePlan,
-    token_length: int,
     source_root_labels: list[str],
     outcome,
 ) -> dict[str, object]:
@@ -256,11 +257,13 @@ def _record_from_outcome(
         return _build_record(
             sample_idx=sample_idx,
             plan=plan,
-            token_length=token_length,
             source_root_labels=source_root_labels,
             accepted=True,
             failure_reason=None,
             full_render_system_count=outcome.full_render_system_count,
+            full_render_content_height_px=outcome.full_render_content_height_px,
+            full_render_vertical_fill_ratio=outcome.full_render_vertical_fill_ratio,
+            full_render_rejection_reason=outcome.full_render_rejection_reason,
             accepted_render_system_count=outcome.accepted_render_system_count,
             truncation_applied=outcome.sample.truncation_applied,
             preferred_5_6_status=outcome.preferred_5_6_status,
@@ -269,11 +272,13 @@ def _record_from_outcome(
     return _build_record(
         sample_idx=sample_idx,
         plan=plan,
-        token_length=token_length,
         source_root_labels=source_root_labels,
         accepted=False,
         failure_reason=outcome.failure_reason,
         full_render_system_count=outcome.full_render_system_count,
+        full_render_content_height_px=outcome.full_render_content_height_px,
+        full_render_vertical_fill_ratio=outcome.full_render_vertical_fill_ratio,
+        full_render_rejection_reason=outcome.full_render_rejection_reason,
         accepted_render_system_count=outcome.accepted_render_system_count,
         truncation_applied=False,
         preferred_5_6_status=outcome.preferred_5_6_status,
@@ -284,11 +289,13 @@ def _build_record(
     *,
     sample_idx: int,
     plan: SamplePlan,
-    token_length: int,
     source_root_labels: list[str],
     accepted: bool,
     failure_reason: str | None,
     full_render_system_count: int | None,
+    full_render_content_height_px: int | None,
+    full_render_vertical_fill_ratio: float | None,
+    full_render_rejection_reason: str | None,
     accepted_render_system_count: int | None,
     truncation_applied: bool,
     preferred_5_6_status: str | None,
@@ -296,10 +303,21 @@ def _build_record(
     return {
         "sample_idx": int(sample_idx),
         "sample_id": plan.sample_id,
-        "token_length": int(token_length),
+        "source_non_empty_line_count": int(plan.source_non_empty_line_count),
+        "source_max_initial_spine_count": int(plan.source_max_initial_spine_count),
+        "spine_class": spine_class_for_count(plan.source_max_initial_spine_count),
         "full_render_system_count": (
             int(full_render_system_count) if full_render_system_count is not None else None
         ),
+        "full_render_content_height_px": (
+            int(full_render_content_height_px) if full_render_content_height_px is not None else None
+        ),
+        "full_render_vertical_fill_ratio": (
+            float(full_render_vertical_fill_ratio)
+            if full_render_vertical_fill_ratio is not None
+            else None
+        ),
+        "full_render_rejection_reason": full_render_rejection_reason,
         "accepted_render_system_count": (
             int(accepted_render_system_count) if accepted_render_system_count is not None else None
         ),

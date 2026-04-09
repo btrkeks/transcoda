@@ -18,10 +18,14 @@ from scripts.dataset_generation.dataset_generation.system_balance import (
     choose_balanced_plan,
     choose_target_bucket,
     load_system_balance_spec,
-    load_tokenizer,
+    spine_class_for_count,
 )
-from scripts.dataset_generation.dataset_generation.types import SamplePlan, SourceSegment
-from scripts.dataset_generation.dataset_generation.types import RenderResult, SvgLayoutDiagnostics
+from scripts.dataset_generation.dataset_generation.types import (
+    RenderResult,
+    SamplePlan,
+    SourceSegment,
+    SvgLayoutDiagnostics,
+)
 
 
 def _make_tokenizer_dir(tmp_path: Path) -> Path:
@@ -51,6 +55,23 @@ def _make_tokenizer_dir(tmp_path: Path) -> Path:
     return tokenizer_dir
 
 
+def _write_balance_spec(tmp_path: Path, tokenizer_dir: Path, payload: dict[str, object]) -> Path:
+    spec_path = tmp_path / "balance.json"
+    spec_path.write_text(
+        json.dumps(
+            {
+                "mode": "spine_aware_line_proxy",
+                "tokenizer": {"path": str(tokenizer_dir.resolve()), "fingerprint": "x"},
+                "recipe_fingerprint": "recipe",
+                "candidate_plan_count": 3,
+                **payload,
+            }
+        ),
+        encoding="utf-8",
+    )
+    return spec_path
+
+
 def test_build_calibration_artifact_and_load_spec(tmp_path: Path):
     tokenizer_dir = _make_tokenizer_dir(tmp_path)
     recipe = ProductionRecipe()
@@ -58,8 +79,13 @@ def test_build_calibration_artifact_and_load_spec(tmp_path: Path):
         {
             "sample_idx": 0,
             "sample_id": "sample_00000000",
-            "token_length": 10,
+            "source_non_empty_line_count": 10,
+            "source_max_initial_spine_count": 1,
+            "spine_class": "1",
             "full_render_system_count": 5,
+            "full_render_content_height_px": 900,
+            "full_render_vertical_fill_ratio": 0.61,
+            "full_render_rejection_reason": None,
             "accepted_render_system_count": 1,
             "accepted": True,
             "failure_reason": None,
@@ -71,8 +97,13 @@ def test_build_calibration_artifact_and_load_spec(tmp_path: Path):
         {
             "sample_idx": 1,
             "sample_id": "sample_00000001",
-            "token_length": 12,
+            "source_non_empty_line_count": 12,
+            "source_max_initial_spine_count": 1,
+            "spine_class": "1",
             "full_render_system_count": 1,
+            "full_render_content_height_px": 840,
+            "full_render_vertical_fill_ratio": 0.57,
+            "full_render_rejection_reason": None,
             "accepted_render_system_count": 1,
             "accepted": True,
             "failure_reason": None,
@@ -84,8 +115,13 @@ def test_build_calibration_artifact_and_load_spec(tmp_path: Path):
         {
             "sample_idx": 2,
             "sample_id": "sample_00000002",
-            "token_length": 20,
+            "source_non_empty_line_count": 20,
+            "source_max_initial_spine_count": 2,
+            "spine_class": "2",
             "full_render_system_count": 2,
+            "full_render_content_height_px": 1060,
+            "full_render_vertical_fill_ratio": 0.71,
+            "full_render_rejection_reason": None,
             "accepted_render_system_count": 2,
             "accepted": True,
             "failure_reason": None,
@@ -109,19 +145,25 @@ def test_build_calibration_artifact_and_load_spec(tmp_path: Path):
     spec = load_system_balance_spec(output_path)
 
     assert artifact["tokenizer"]["path"] == str(tokenizer_dir)
+    assert artifact["mode"] == "spine_aware_line_proxy"
     assert artifact["calibration_target_metric"] == "full_render_system_count_preferred"
-    assert artifact["systems"]["1"]["accepted_count"] == 2
-    assert artifact["systems"]["1"]["calibration_count"] == 1
-    assert artifact["systems"]["1"]["full_render_count"] == 1
-    assert artifact["systems"]["5"]["calibration_count"] == 1
-    assert artifact["systems"]["5"]["accepted_count"] == 0
-    assert artifact["systems"]["5"]["full_render_count"] == 1
-    assert artifact["coverage"]["full_render_system_histogram"]["5"] == 1
-    assert artifact["coverage"]["truncated_accepted_output_system_histogram"]["1"] == 1
-    assert artifact["recommended_token_length_ranges"]["5"]["center"] == 10.0
-    assert "1" in artifact["recommended_token_length_ranges"]
+    assert artifact["systems"]["all"]["1"]["accepted_count"] == 2
+    assert artifact["systems"]["all"]["5"]["full_render_count"] == 1
+    assert artifact["recommended_line_count_ranges"]["all"]["5"]["center"] == 10.0
+    assert artifact["recommended_line_count_ranges"]["1"]["1"]["center"] == 12.0
+    assert artifact["recommended_line_count_ranges"]["2"]["2"]["center"] == 20.0
+    assert artifact["vertical_fit_model"]["all"]["1"]["safe_max_line_count"] == 12
+    assert artifact["vertical_fit_model"]["1"]["1"]["median_content_height_px"] == 840.0
     assert spec.tokenizer_path == tokenizer_dir.resolve()
-    assert 1 in spec.token_length_ranges
+    assert 1 in spec.line_count_ranges["all"]
+    assert spec.vertical_fit_model["1"][1].safe_sample_count == 1
+
+
+def test_spine_class_for_count_uses_expected_buckets():
+    assert spine_class_for_count(1) == "1"
+    assert spine_class_for_count(2) == "2"
+    assert spine_class_for_count(3) == "3_plus"
+    assert spine_class_for_count(8) == "3_plus"
 
 
 def test_choose_target_bucket_prefers_most_underfilled_bucket():
@@ -132,29 +174,34 @@ def test_choose_balanced_plan_prefers_candidate_closest_to_target_bucket(
     tmp_path: Path, monkeypatch
 ):
     tokenizer_dir = _make_tokenizer_dir(tmp_path)
-    tokenizer_dir_resolved = tokenizer_dir.resolve()
-    _, tokenizer = load_tokenizer(tokenizer_dir_resolved)
-    spec_path = tmp_path / "balance.json"
-    spec_path.write_text(
-        json.dumps(
+    spec = load_system_balance_spec(
+        _write_balance_spec(
+            tmp_path,
+            tokenizer_dir,
             {
-                "mode": "length_proxy",
-                "tokenizer": {"path": str(tokenizer_dir_resolved), "fingerprint": "x"},
-                "recipe_fingerprint": "recipe",
-                "candidate_plan_count": 3,
-                    "recommended_token_length_ranges": {
+                "recommended_line_count_ranges": {
+                    "all": {
                         "1": {"min": 2, "max": 3, "center": 2.5},
                         "2": {"min": 4, "max": 5, "center": 4.5},
                         "3": {"min": 6, "max": 7, "center": 6.5},
                         "4": {"min": 8, "max": 9, "center": 8.5},
                         "5": {"min": 6, "max": 6, "center": 6.0},
                         "6": {"min": 12, "max": 13, "center": 12.5},
-                    },
-                }
-        ),
-        encoding="utf-8",
+                    }
+                },
+                "vertical_fit_model": {
+                    "all": {
+                        str(bucket): {
+                            "safe_max_line_count": bucket + 10,
+                            "median_content_height_px": 1000.0 + bucket,
+                            "safe_sample_count": 3,
+                        }
+                        for bucket in range(1, 7)
+                    }
+                },
+            },
+        )
     )
-    spec = load_system_balance_spec(spec_path)
 
     input_dir = tmp_path / "input"
     input_dir.mkdir()
@@ -162,11 +209,7 @@ def test_choose_balanced_plan_prefers_candidate_closest_to_target_bucket(
     from scripts.dataset_generation.dataset_generation.source_index import build_source_index
 
     source_index = build_source_index(input_dir)
-    candidate_texts = [
-        "alpha beta\n",
-        "alpha beta gamma delta epsilon zeta\n",
-        "alpha beta gamma\n",
-    ]
+    candidate_line_counts = [2, 6, 3]
     calls = {"value": 0}
 
     def fake_plan_sample(source_index, recipe, *, sample_idx, base_seed, excluded_paths=None):
@@ -176,12 +219,11 @@ def test_choose_balanced_plan_prefers_candidate_closest_to_target_bucket(
         return SamplePlan(
             sample_id="sample_00000000",
             seed=idx,
-            segments=(
-                SourceSegment(source_id="input/piece", path=input_dir / "piece.krn", order=0),
-            ),
-            label_transcription=candidate_texts[idx],
+            segments=(SourceSegment(source_id="input/piece", path=input_dir / "piece.krn", order=0),),
+            label_transcription=f"candidate_{idx}\n",
             source_measure_count=1,
-            source_non_empty_line_count=1,
+            source_non_empty_line_count=candidate_line_counts[idx],
+            source_max_initial_spine_count=1,
             segment_count=1,
         )
 
@@ -196,38 +238,182 @@ def test_choose_balanced_plan_prefers_candidate_closest_to_target_bucket(
         sample_idx=0,
         base_seed=0,
         excluded_paths=None,
-        tokenizer=tokenizer,
         spec=spec,
         accepted_system_histogram={1: 1, 2: 1, 3: 1, 4: 1, 5: 0, 6: 1},
         candidate_plan_count=3,
     )
 
     assert selected.target_bucket == 5
+    assert selected.line_count == 6
     assert selected.in_target_range is True
-    assert selected.plan.label_transcription == candidate_texts[1]
+    assert selected.plan.label_transcription == "candidate_1\n"
+
+
+def test_choose_balanced_plan_uses_lower_fit_risk_as_tiebreaker(
+    tmp_path: Path, monkeypatch
+):
+    tokenizer_dir = _make_tokenizer_dir(tmp_path)
+    spec = load_system_balance_spec(
+        _write_balance_spec(
+            tmp_path,
+            tokenizer_dir,
+            {
+                "recommended_line_count_ranges": {
+                    "all": {
+                        str(bucket): {"min": bucket, "max": bucket + 1, "center": float(bucket) + 0.5}
+                        for bucket in range(1, 7)
+                    },
+                    "2": {"4": {"min": 8, "max": 8, "center": 8.0}},
+                },
+                "vertical_fit_model": {
+                    "2": {
+                        "4": {
+                            "safe_max_line_count": 8,
+                            "median_content_height_px": 1100.0,
+                            "safe_sample_count": 4,
+                        }
+                    }
+                },
+            },
+        )
+    )
+
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    (input_dir / "piece.krn").write_text("**kern\t**kern\n=1\t=1\n4c\t4e\n*-\t*-\n", encoding="utf-8")
+    from scripts.dataset_generation.dataset_generation.source_index import build_source_index
+
+    source_index = build_source_index(input_dir)
+    candidate_line_counts = [7, 9]
+    calls = {"value": 0}
+
+    def fake_plan_sample(source_index, recipe, *, sample_idx, base_seed, excluded_paths=None):
+        del source_index, recipe, sample_idx, base_seed, excluded_paths
+        idx = calls["value"]
+        calls["value"] += 1
+        return SamplePlan(
+            sample_id="sample_00000000",
+            seed=idx,
+            segments=(SourceSegment(source_id="input/piece", path=input_dir / "piece.krn", order=0),),
+            label_transcription=f"candidate_{idx}\n",
+            source_measure_count=1,
+            source_non_empty_line_count=candidate_line_counts[idx],
+            source_max_initial_spine_count=2,
+            segment_count=1,
+        )
+
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample",
+        fake_plan_sample,
+    )
+
+    selected = choose_balanced_plan(
+        source_index=source_index,
+        recipe=ProductionRecipe(),
+        sample_idx=0,
+        base_seed=0,
+        excluded_paths=None,
+        spec=spec,
+        accepted_system_histogram={1: 1, 2: 1, 3: 1, 4: 0, 5: 1, 6: 1},
+        candidate_plan_count=2,
+    )
+
+    assert selected.target_bucket == 4
+    assert selected.line_count == 7
+    assert selected.vertical_fit_penalty == 0.0
+
+
+def test_choose_balanced_plan_falls_back_to_all_when_class_specific_data_missing(
+    tmp_path: Path, monkeypatch
+):
+    tokenizer_dir = _make_tokenizer_dir(tmp_path)
+    spec = load_system_balance_spec(
+        _write_balance_spec(
+            tmp_path,
+            tokenizer_dir,
+            {
+                "recommended_line_count_ranges": {
+                    "all": {
+                        str(bucket): {"min": bucket, "max": bucket + 2, "center": float(bucket) + 1.0}
+                        for bucket in range(1, 7)
+                    }
+                },
+                "vertical_fit_model": {
+                    "all": {
+                        str(bucket): {
+                            "safe_max_line_count": bucket + 2,
+                            "median_content_height_px": 1000.0 + bucket,
+                            "safe_sample_count": 2,
+                        }
+                        for bucket in range(1, 7)
+                    }
+                },
+            },
+        )
+    )
+
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    (input_dir / "piece.krn").write_text("**kern\t**kern\t**kern\n=1\t=1\t=1\n4c\t4e\t4g\n*-\t*-\t*-\n", encoding="utf-8")
+    from scripts.dataset_generation.dataset_generation.source_index import build_source_index
+
+    source_index = build_source_index(input_dir)
+
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample",
+        lambda *args, **kwargs: SamplePlan(
+            sample_id="sample_00000000",
+            seed=0,
+            segments=(SourceSegment(source_id="input/piece", path=input_dir / "piece.krn", order=0),),
+            label_transcription="candidate\n",
+            source_measure_count=1,
+            source_non_empty_line_count=5,
+            source_max_initial_spine_count=3,
+            segment_count=1,
+        ),
+    )
+
+    selected = choose_balanced_plan(
+        source_index=source_index,
+        recipe=ProductionRecipe(),
+        sample_idx=0,
+        base_seed=0,
+        excluded_paths=None,
+        spec=spec,
+        accepted_system_histogram={bucket: 0 for bucket in range(1, 7)},
+        candidate_plan_count=1,
+    )
+
+    assert selected.spine_class == "3_plus"
+    assert selected.line_count == 5
 
 
 def test_choose_balanced_plan_skips_invalid_candidates(tmp_path: Path, monkeypatch):
     tokenizer_dir = _make_tokenizer_dir(tmp_path)
-    tokenizer_dir_resolved = tokenizer_dir.resolve()
-    _, tokenizer = load_tokenizer(tokenizer_dir_resolved)
-    spec_path = tmp_path / "balance.json"
-    spec_path.write_text(
-        json.dumps(
+    spec = load_system_balance_spec(
+        _write_balance_spec(
+            tmp_path,
+            tokenizer_dir,
             {
-                "mode": "length_proxy",
-                "tokenizer": {"path": str(tokenizer_dir_resolved), "fingerprint": "x"},
-                "recipe_fingerprint": "recipe",
-                "candidate_plan_count": 3,
-                "recommended_token_length_ranges": {
-                    str(bucket): {"min": bucket, "max": bucket + 1, "center": float(bucket) + 0.5}
-                    for bucket in range(1, 7)
+                "recommended_line_count_ranges": {
+                    "all": {
+                        str(bucket): {"min": bucket, "max": bucket + 1, "center": float(bucket) + 0.5}
+                        for bucket in range(1, 7)
+                    }
                 },
-            }
-        ),
-        encoding="utf-8",
+                "vertical_fit_model": {
+                    "all": {
+                        str(bucket): {
+                            "safe_max_line_count": bucket + 1,
+                            "median_content_height_px": 1000.0 + bucket,
+                            "safe_sample_count": 2,
+                        }
+                        for bucket in range(1, 7)
+                    }
+                },
+            },
+        )
     )
-    spec = load_system_balance_spec(spec_path)
     input_dir = tmp_path / "input"
     input_dir.mkdir()
     (input_dir / "piece.krn").write_text("*clefG2\n=1\n4c\n*-\n", encoding="utf-8")
@@ -248,7 +434,8 @@ def test_choose_balanced_plan_skips_invalid_candidates(tmp_path: Path, monkeypat
             segments=(SourceSegment(source_id="input/piece", path=input_dir / "piece.krn", order=0),),
             label_transcription="alpha beta gamma\n",
             source_measure_count=1,
-            source_non_empty_line_count=1,
+            source_non_empty_line_count=3,
+            source_max_initial_spine_count=1,
             segment_count=1,
         )
 
@@ -263,7 +450,6 @@ def test_choose_balanced_plan_skips_invalid_candidates(tmp_path: Path, monkeypat
         sample_idx=0,
         base_seed=0,
         excluded_paths=None,
-        tokenizer=tokenizer,
         spec=spec,
         accepted_system_histogram={bucket: 0 for bucket in range(1, 7)},
         candidate_plan_count=3,
@@ -275,25 +461,21 @@ def test_choose_balanced_plan_skips_invalid_candidates(tmp_path: Path, monkeypat
 
 def test_choose_balanced_plan_raises_after_all_candidates_fail(tmp_path: Path, monkeypatch):
     tokenizer_dir = _make_tokenizer_dir(tmp_path)
-    tokenizer_dir_resolved = tokenizer_dir.resolve()
-    _, tokenizer = load_tokenizer(tokenizer_dir_resolved)
-    spec_path = tmp_path / "balance.json"
-    spec_path.write_text(
-        json.dumps(
+    spec = load_system_balance_spec(
+        _write_balance_spec(
+            tmp_path,
+            tokenizer_dir,
             {
-                "mode": "length_proxy",
-                "tokenizer": {"path": str(tokenizer_dir_resolved), "fingerprint": "x"},
-                "recipe_fingerprint": "recipe",
-                "candidate_plan_count": 2,
-                "recommended_token_length_ranges": {
-                    str(bucket): {"min": bucket, "max": bucket + 1, "center": float(bucket) + 0.5}
-                    for bucket in range(1, 7)
+                "recommended_line_count_ranges": {
+                    "all": {
+                        str(bucket): {"min": bucket, "max": bucket + 1, "center": float(bucket) + 0.5}
+                        for bucket in range(1, 7)
+                    }
                 },
-            }
-        ),
-        encoding="utf-8",
+                "vertical_fit_model": {},
+            },
+        )
     )
-    spec = load_system_balance_spec(spec_path)
     input_dir = tmp_path / "input"
     input_dir.mkdir()
     (input_dir / "piece.krn").write_text("*clefG2\n=1\n4c\n*-\n", encoding="utf-8")
@@ -313,7 +495,6 @@ def test_choose_balanced_plan_raises_after_all_candidates_fail(tmp_path: Path, m
             sample_idx=0,
             base_seed=0,
             excluded_paths=None,
-            tokenizer=tokenizer,
             spec=spec,
             accepted_system_histogram={bucket: 0 for bucket in range(1, 7)},
             candidate_plan_count=2,
@@ -338,6 +519,9 @@ def test_run_calibration_writes_expected_json(tmp_path: Path):
             svg_diagnostics=SvgLayoutDiagnostics(system_count=2, page_count=1),
             bottom_whitespace_ratio=0.10,
             vertical_fill_ratio=0.72,
+            bottom_whitespace_px=149,
+            top_whitespace_px=33,
+            content_height_px=1069,
         )
 
     recipe = ProductionRecipe(
@@ -385,7 +569,11 @@ def test_run_calibration_writes_expected_json(tmp_path: Path):
     assert summary["attempted_samples"] == 3
     assert payload["attempted_samples"] == 3
     assert payload["accepted_samples"] == 3
+    assert payload["mode"] == "spine_aware_line_proxy"
     assert payload["tokenizer"]["path"] == str(tokenizer_dir.resolve())
     assert payload["records"][0]["segment_count"] == 1
     assert payload["records"][0]["full_render_system_count"] == 2
-    assert payload["records"][0]["accepted_render_system_count"] == 2
+    assert payload["records"][0]["source_non_empty_line_count"] == 4
+    assert payload["records"][0]["source_max_initial_spine_count"] == 1
+    assert payload["records"][0]["full_render_content_height_px"] == 1069
+    assert payload["records"][0]["full_render_rejection_reason"] is None

@@ -1,4 +1,4 @@
-"""Token-length calibration and soft balancing helpers."""
+"""Spine-aware line-count calibration and soft balancing helpers."""
 
 from __future__ import annotations
 
@@ -22,16 +22,30 @@ DEFAULT_CANDIDATE_PLAN_COUNT = 8
 DEFAULT_BUNDLED_SYSTEM_BALANCE_SPEC_PATH = (
     Path(__file__).resolve().parent / "default_system_balance_spec.json"
 )
+SPINE_CLASS_ORDER = ("all", "1", "2", "3_plus")
+UNSAFE_VERTICAL_FIT_REJECTION_REASONS = {
+    "multi_page",
+    "top_clearance",
+    "bottom_clearance",
+    "crop_risk",
+}
 
 
 @dataclass(frozen=True)
-class TokenLengthBucket:
-    min_length: int
-    max_length: int
-    center_length: float
+class LineCountBucket:
+    min_line_count: int
+    max_line_count: int
+    center_line_count: float
 
-    def contains(self, token_length: int) -> bool:
-        return self.min_length <= int(token_length) <= self.max_length
+    def contains(self, line_count: int) -> bool:
+        return self.min_line_count <= int(line_count) <= self.max_line_count
+
+
+@dataclass(frozen=True)
+class VerticalFitBucket:
+    safe_max_line_count: int
+    median_content_height_px: float
+    safe_sample_count: int
 
 
 @dataclass(frozen=True)
@@ -42,18 +56,22 @@ class SystemBalanceSpec:
     tokenizer_fingerprint: str
     recipe_fingerprint: str
     candidate_plan_count: int
-    token_length_ranges: dict[int, TokenLengthBucket]
+    line_count_ranges: dict[str, dict[int, LineCountBucket]]
+    vertical_fit_model: dict[str, dict[int, VerticalFitBucket]]
 
 
 @dataclass(frozen=True)
 class CandidatePlanScore:
     candidate_idx: int
     plan: SamplePlan
-    token_length: int
+    line_count: int
+    source_max_initial_spine_count: int
+    spine_class: str
     target_bucket: int
-    target_center_length: float
+    target_center_line_count: float
     in_target_range: bool
     distance_to_bucket: float
+    vertical_fit_penalty: float
 
 
 def resolve_tokenizer_dir(tokenizer_path: str | Path | None = None) -> Path:
@@ -81,39 +99,83 @@ def compute_tokenizer_fingerprint(tokenizer_dir: str | Path) -> str:
     return hashlib.sha256(tokenizer_json_path.read_bytes()).hexdigest()
 
 
-def compute_token_length(transcription: str, tokenizer: Tokenizer) -> int:
-    return len(tokenizer.encode(transcription, add_special_tokens=True).ids)
+def spine_class_for_count(initial_spine_count: int) -> str:
+    count = max(1, int(initial_spine_count))
+    if count == 1:
+        return "1"
+    if count == 2:
+        return "2"
+    return "3_plus"
 
 
 def load_system_balance_spec(path: str | Path) -> SystemBalanceSpec:
     spec_path = Path(path).expanduser().resolve()
     payload = json.loads(spec_path.read_text(encoding="utf-8"))
-    ranges_payload = payload.get("recommended_token_length_ranges")
+    ranges_payload = payload.get("recommended_line_count_ranges")
     if not isinstance(ranges_payload, dict) or not ranges_payload:
-        raise ValueError("System balance spec is missing recommended_token_length_ranges")
-    token_length_ranges: dict[int, TokenLengthBucket] = {}
-    for raw_bucket, raw_range in ranges_payload.items():
-        bucket = int(raw_bucket)
-        if bucket not in TARGET_SYSTEM_BUCKETS:
+        raise ValueError("System balance spec is missing recommended_line_count_ranges")
+
+    line_count_ranges: dict[str, dict[int, LineCountBucket]] = {}
+    for raw_class, raw_class_ranges in ranges_payload.items():
+        class_name = str(raw_class)
+        if class_name not in SPINE_CLASS_ORDER:
             continue
-        if not isinstance(raw_range, dict):
-            raise ValueError(f"Invalid token-length range for bucket {bucket}")
-        token_length_ranges[bucket] = TokenLengthBucket(
-            min_length=int(raw_range["min"]),
-            max_length=int(raw_range["max"]),
-            center_length=float(raw_range.get("center", (raw_range["min"] + raw_range["max"]) / 2.0)),
-        )
-    if not token_length_ranges:
-        raise ValueError("System balance spec contains no supported target buckets")
+        if not isinstance(raw_class_ranges, dict):
+            raise ValueError(f"Invalid line-count ranges for spine class {class_name!r}")
+        parsed_class_ranges: dict[int, LineCountBucket] = {}
+        for raw_bucket, raw_range in raw_class_ranges.items():
+            bucket = int(raw_bucket)
+            if bucket not in TARGET_SYSTEM_BUCKETS:
+                continue
+            if not isinstance(raw_range, dict):
+                raise ValueError(f"Invalid line-count range for bucket {bucket}")
+            parsed_class_ranges[bucket] = LineCountBucket(
+                min_line_count=int(raw_range["min"]),
+                max_line_count=int(raw_range["max"]),
+                center_line_count=float(
+                    raw_range.get("center", (raw_range["min"] + raw_range["max"]) / 2.0)
+                ),
+            )
+        if parsed_class_ranges:
+            line_count_ranges[class_name] = parsed_class_ranges
+    if not line_count_ranges:
+        raise ValueError("System balance spec contains no supported line-count buckets")
+
+    vertical_fit_payload = payload.get("vertical_fit_model", {})
+    if not isinstance(vertical_fit_payload, dict):
+        raise ValueError("System balance spec has invalid vertical_fit_model")
+    vertical_fit_model: dict[str, dict[int, VerticalFitBucket]] = {}
+    for raw_class, raw_class_buckets in vertical_fit_payload.items():
+        class_name = str(raw_class)
+        if class_name not in SPINE_CLASS_ORDER:
+            continue
+        if not isinstance(raw_class_buckets, dict):
+            raise ValueError(f"Invalid vertical-fit entries for spine class {class_name!r}")
+        parsed_fit_buckets: dict[int, VerticalFitBucket] = {}
+        for raw_bucket, raw_entry in raw_class_buckets.items():
+            bucket = int(raw_bucket)
+            if bucket not in TARGET_SYSTEM_BUCKETS:
+                continue
+            if not isinstance(raw_entry, dict):
+                raise ValueError(f"Invalid vertical-fit entry for bucket {bucket}")
+            parsed_fit_buckets[bucket] = VerticalFitBucket(
+                safe_max_line_count=int(raw_entry["safe_max_line_count"]),
+                median_content_height_px=float(raw_entry["median_content_height_px"]),
+                safe_sample_count=int(raw_entry["safe_sample_count"]),
+            )
+        if parsed_fit_buckets:
+            vertical_fit_model[class_name] = parsed_fit_buckets
+
     tokenizer_meta = payload.get("tokenizer", {})
     return SystemBalanceSpec(
         path=spec_path,
-        mode=str(payload.get("mode", "length_proxy")),
+        mode=str(payload.get("mode", "spine_aware_line_proxy")),
         tokenizer_path=Path(tokenizer_meta.get("path", DEFAULT_TOKENIZER_DIR)).expanduser().resolve(),
         tokenizer_fingerprint=str(tokenizer_meta.get("fingerprint", "")),
         recipe_fingerprint=str(payload.get("recipe_fingerprint", "")),
         candidate_plan_count=int(payload.get("candidate_plan_count", DEFAULT_CANDIDATE_PLAN_COUNT)),
-        token_length_ranges=token_length_ranges,
+        line_count_ranges=line_count_ranges,
+        vertical_fit_model=vertical_fit_model,
     )
 
 
@@ -142,13 +204,12 @@ def choose_balanced_plan(
     sample_idx: int,
     base_seed: int,
     excluded_paths: set[Path] | None,
-    tokenizer: Tokenizer,
     spec: SystemBalanceSpec,
     accepted_system_histogram: Mapping[int | str, int],
     candidate_plan_count: int | None = None,
 ) -> CandidatePlanScore:
     available_buckets = tuple(
-        bucket for bucket in TARGET_SYSTEM_BUCKETS if bucket in spec.token_length_ranges
+        bucket for bucket in TARGET_SYSTEM_BUCKETS if _has_line_count_bucket(spec, bucket)
     )
     if not available_buckets:
         raise ValueError("System balance spec does not define any target buckets")
@@ -160,7 +221,6 @@ def choose_balanced_plan(
     }
     min_count = min(bucket_counts.values())
     target_bucket = next(bucket for bucket in available_buckets if bucket_counts[bucket] == min_count)
-    bucket = spec.token_length_ranges[target_bucket]
 
     total_candidates = max(1, int(candidate_plan_count or spec.candidate_plan_count or 1))
     best_score: CandidatePlanScore | None = None
@@ -182,16 +242,30 @@ def choose_balanced_plan(
         except ValueError as exc:
             last_error = exc
             continue
-        token_length = compute_token_length(plan.label_transcription, tokenizer)
-        distance = distance_to_bucket(token_length, bucket)
+        line_count = int(plan.source_non_empty_line_count)
+        source_max_initial_spine_count = int(plan.source_max_initial_spine_count)
+        spine_class = spine_class_for_count(source_max_initial_spine_count)
+        bucket = _resolve_line_count_bucket(spec=spec, spine_class=spine_class, target_bucket=target_bucket)
+        vertical_fit_bucket = _resolve_vertical_fit_bucket(
+            spec=spec,
+            spine_class=spine_class,
+            target_bucket=target_bucket,
+        )
+        distance = distance_to_bucket(line_count, bucket)
         score = CandidatePlanScore(
             candidate_idx=candidate_idx,
             plan=plan,
-            token_length=token_length,
+            line_count=line_count,
+            source_max_initial_spine_count=source_max_initial_spine_count,
+            spine_class=spine_class,
             target_bucket=target_bucket,
-            target_center_length=bucket.center_length,
-            in_target_range=bucket.contains(token_length),
+            target_center_line_count=bucket.center_line_count,
+            in_target_range=bucket.contains(line_count),
             distance_to_bucket=distance,
+            vertical_fit_penalty=compute_vertical_fit_penalty(
+                line_count=line_count,
+                vertical_fit_bucket=vertical_fit_bucket,
+            ),
         )
         if best_score is None or _candidate_sort_key(score) < _candidate_sort_key(best_score):
             best_score = score
@@ -215,13 +289,28 @@ def derive_candidate_base_seed(*, base_seed: int, sample_idx: int, candidate_idx
     return mixed
 
 
-def distance_to_bucket(token_length: int, bucket: TokenLengthBucket) -> float:
-    token_length = int(token_length)
-    if bucket.contains(token_length):
-        return abs(token_length - bucket.center_length) / max(1.0, bucket.max_length - bucket.min_length + 1.0)
-    if token_length < bucket.min_length:
-        return float(bucket.min_length - token_length)
-    return float(token_length - bucket.max_length)
+def distance_to_bucket(line_count: int, bucket: LineCountBucket) -> float:
+    line_count = int(line_count)
+    if bucket.contains(line_count):
+        return abs(line_count - bucket.center_line_count) / max(
+            1.0, bucket.max_line_count - bucket.min_line_count + 1.0
+        )
+    if line_count < bucket.min_line_count:
+        return float(bucket.min_line_count - line_count)
+    return float(line_count - bucket.max_line_count)
+
+
+def compute_vertical_fit_penalty(
+    *,
+    line_count: int,
+    vertical_fit_bucket: VerticalFitBucket | None,
+) -> float:
+    if vertical_fit_bucket is None:
+        return 0.0
+    safe_max_line_count = max(1, int(vertical_fit_bucket.safe_max_line_count))
+    if int(line_count) <= safe_max_line_count:
+        return 0.0
+    return float(int(line_count) - safe_max_line_count) / float(safe_max_line_count)
 
 
 def build_calibration_artifact(
@@ -258,41 +347,80 @@ def build_calibration_artifact(
         for record in records
         if (_calibration_bucket_system_count(record) or 0) in TARGET_SYSTEM_BUCKETS
     ]
-    recommended_ranges: dict[str, dict[str, int | float]] = {}
-    per_system_stats: dict[str, dict[str, object]] = {}
 
-    for bucket in TARGET_SYSTEM_BUCKETS:
-        bucket_records = [
-            int(record["token_length"])
-            for record in calibration_records
-            if _calibration_bucket_system_count(record) == bucket
+    recommended_ranges: dict[str, dict[str, dict[str, int | float]]] = {}
+    vertical_fit_model: dict[str, dict[str, dict[str, int | float]]] = {}
+    systems_by_spine_class: dict[str, dict[str, dict[str, object]]] = {}
+
+    for spine_class in SPINE_CLASS_ORDER:
+        class_recommended_ranges: dict[str, dict[str, int | float]] = {}
+        class_vertical_fit_model: dict[str, dict[str, int | float]] = {}
+        per_system_stats: dict[str, dict[str, object]] = {}
+        class_accepted_records = [
+            record for record in accepted_records if _record_matches_spine_class(record, spine_class)
         ]
-        if not bucket_records:
-            continue
-        stats = summarize_lengths(bucket_records)
-        recommended_ranges[str(bucket)] = {
-            "min": int(stats["q20"]),
-            "max": int(stats["q80"]),
-            "center": float(stats["median"]),
-        }
-        per_system_stats[str(bucket)] = {
-            "calibration_count": len(bucket_records),
-            "accepted_count": sum(
-                1
-                for record in accepted_records
-                if _accepted_system_count(record) == bucket
-            ),
-            "full_render_count": sum(
-                1
-                for record in records
-                if _full_render_system_count(record) == bucket
-            ),
-            "token_length": stats,
-        }
+        class_calibration_records = [
+            record for record in calibration_records if _record_matches_spine_class(record, spine_class)
+        ]
+
+        for bucket in TARGET_SYSTEM_BUCKETS:
+            bucket_records = [
+                int(record["source_non_empty_line_count"])
+                for record in class_calibration_records
+                if _calibration_bucket_system_count(record) == bucket
+                and record.get("source_non_empty_line_count") is not None
+            ]
+            if not bucket_records:
+                continue
+            stats = summarize_lengths(bucket_records)
+            class_recommended_ranges[str(bucket)] = {
+                "min": int(stats["q20"]),
+                "max": int(stats["q80"]),
+                "center": float(stats["median"]),
+            }
+            per_system_stats[str(bucket)] = {
+                "calibration_count": len(bucket_records),
+                "accepted_count": sum(
+                    1
+                    for record in class_accepted_records
+                    if _accepted_system_count(record) == bucket
+                ),
+                "full_render_count": sum(
+                    1
+                    for record in class_calibration_records
+                    if _full_render_system_count(record) == bucket
+                ),
+                "line_count": stats,
+            }
+
+            safe_records = [
+                record
+                for record in class_calibration_records
+                if _calibration_bucket_system_count(record) == bucket
+                and _record_is_vertical_fit_safe(record)
+            ]
+            if not safe_records:
+                continue
+            safe_line_counts = [int(record["source_non_empty_line_count"]) for record in safe_records]
+            safe_content_heights = [int(record["full_render_content_height_px"]) for record in safe_records]
+            class_vertical_fit_model[str(bucket)] = {
+                "safe_max_line_count": int(np.percentile(np.asarray(safe_line_counts, dtype=np.int32), 80)),
+                "median_content_height_px": float(
+                    np.percentile(np.asarray(safe_content_heights, dtype=np.int32), 50)
+                ),
+                "safe_sample_count": len(safe_records),
+            }
+
+        if class_recommended_ranges:
+            recommended_ranges[spine_class] = class_recommended_ranges
+        if class_vertical_fit_model:
+            vertical_fit_model[spine_class] = class_vertical_fit_model
+        if per_system_stats:
+            systems_by_spine_class[spine_class] = per_system_stats
 
     return {
-        "schema_version": "1.0",
-        "mode": "length_proxy",
+        "schema_version": "2.0",
+        "mode": "spine_aware_line_proxy",
         "calibration_target_metric": "full_render_system_count_preferred",
         "created_at": time_now(),
         "input_dirs": [str(path) for path in input_dirs],
@@ -306,8 +434,9 @@ def build_calibration_artifact(
         },
         "recipe_version": recipe.version,
         "recipe_fingerprint": compute_recipe_fingerprint(recipe),
-        "systems": per_system_stats,
-        "recommended_token_length_ranges": recommended_ranges,
+        "systems": systems_by_spine_class,
+        "recommended_line_count_ranges": recommended_ranges,
+        "vertical_fit_model": vertical_fit_model,
         "diagnostics": build_overlap_diagnostics(recommended_ranges),
         "coverage": {
             "accepted_render_system_histogram": histogram_by_key(
@@ -351,6 +480,10 @@ def build_calibration_artifact(
                 accepted_records,
                 key=lambda record: ",".join(record.get("source_root_labels", [])),  # type: ignore[arg-type]
             ),
+            "accepted_spine_class_histogram": histogram_by_key(
+                accepted_records,
+                key=lambda record: record.get("spine_class"),
+            ),
         },
         "records": records,
     }
@@ -373,26 +506,29 @@ def summarize_lengths(lengths: list[int]) -> dict[str, int | float]:
 
 
 def build_overlap_diagnostics(
-    recommended_ranges: Mapping[str, Mapping[str, int | float]]
+    recommended_ranges: Mapping[str, Mapping[str, Mapping[str, int | float]]]
 ) -> dict[str, object]:
-    overlaps: list[dict[str, int | list[str]]] = []
-    ordered = sorted((int(bucket), bucket_range) for bucket, bucket_range in recommended_ranges.items())
-    for idx, (left_bucket, left_range) in enumerate(ordered):
-        for right_bucket, right_range in ordered[idx + 1 :]:
-            overlap_min = max(int(left_range["min"]), int(right_range["min"]))
-            overlap_max = min(int(left_range["max"]), int(right_range["max"]))
-            if overlap_min > overlap_max:
-                continue
-            overlaps.append(
-                {
-                    "systems": [str(left_bucket), str(right_bucket)],
-                    "overlap_min": overlap_min,
-                    "overlap_max": overlap_max,
-                    "overlap_width": overlap_max - overlap_min + 1,
-                }
-            )
+    overlaps_by_class: dict[str, list[dict[str, int | list[str]]]] = {}
+    for spine_class, class_ranges in recommended_ranges.items():
+        overlaps: list[dict[str, int | list[str]]] = []
+        ordered = sorted((int(bucket), bucket_range) for bucket, bucket_range in class_ranges.items())
+        for idx, (left_bucket, left_range) in enumerate(ordered):
+            for right_bucket, right_range in ordered[idx + 1 :]:
+                overlap_min = max(int(left_range["min"]), int(right_range["min"]))
+                overlap_max = min(int(left_range["max"]), int(right_range["max"]))
+                if overlap_min > overlap_max:
+                    continue
+                overlaps.append(
+                    {
+                        "systems": [str(left_bucket), str(right_bucket)],
+                        "overlap_min": overlap_min,
+                        "overlap_max": overlap_max,
+                        "overlap_width": overlap_max - overlap_min + 1,
+                    }
+                )
+        overlaps_by_class[spine_class] = overlaps
     return {
-        "bucket_overlaps": overlaps,
+        "bucket_overlaps_by_spine_class": overlaps_by_class,
     }
 
 
@@ -416,7 +552,69 @@ def time_now() -> float:
     return time.time()
 
 
-def _candidate_sort_key(score: CandidatePlanScore) -> tuple[float, float, int]:
-    bucket = score.distance_to_bucket
-    center_distance = abs(score.token_length - score.target_center_length)
-    return (bucket, center_distance, score.candidate_idx)
+def _candidate_sort_key(score: CandidatePlanScore) -> tuple[float, float, float, int]:
+    center_distance = abs(score.line_count - score.target_center_line_count)
+    return (
+        score.distance_to_bucket,
+        score.vertical_fit_penalty,
+        center_distance,
+        score.candidate_idx,
+    )
+
+
+def _has_line_count_bucket(spec: SystemBalanceSpec, target_bucket: int) -> bool:
+    for spine_class in SPINE_CLASS_ORDER:
+        class_ranges = spec.line_count_ranges.get(spine_class, {})
+        if int(target_bucket) in class_ranges:
+            return True
+    return False
+
+
+def _resolve_line_count_bucket(
+    *,
+    spec: SystemBalanceSpec,
+    spine_class: str,
+    target_bucket: int,
+) -> LineCountBucket:
+    class_ranges = spec.line_count_ranges.get(spine_class, {})
+    if int(target_bucket) in class_ranges:
+        return class_ranges[int(target_bucket)]
+    fallback_ranges = spec.line_count_ranges.get("all", {})
+    if int(target_bucket) in fallback_ranges:
+        return fallback_ranges[int(target_bucket)]
+    raise ValueError(
+        f"System balance spec does not define line-count ranges for bucket {target_bucket} "
+        f"under spine class {spine_class!r} or 'all'"
+    )
+
+
+def _resolve_vertical_fit_bucket(
+    *,
+    spec: SystemBalanceSpec,
+    spine_class: str,
+    target_bucket: int,
+) -> VerticalFitBucket | None:
+    class_fit_buckets = spec.vertical_fit_model.get(spine_class, {})
+    if int(target_bucket) in class_fit_buckets:
+        return class_fit_buckets[int(target_bucket)]
+    fallback_fit_buckets = spec.vertical_fit_model.get("all", {})
+    return fallback_fit_buckets.get(int(target_bucket))
+
+
+def _record_spine_class(record: dict[str, object]) -> str:
+    return spine_class_for_count(int(record.get("source_max_initial_spine_count", 1)))
+
+
+def _record_matches_spine_class(record: dict[str, object], spine_class: str) -> bool:
+    if spine_class == "all":
+        return True
+    return _record_spine_class(record) == spine_class
+
+
+def _record_is_vertical_fit_safe(record: dict[str, object]) -> bool:
+    if record.get("full_render_system_count") is None:
+        return False
+    if record.get("full_render_content_height_px") is None:
+        return False
+    rejection_reason = record.get("full_render_rejection_reason")
+    return rejection_reason not in UNSAFE_VERTICAL_FIT_REJECTION_REASONS

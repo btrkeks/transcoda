@@ -41,7 +41,7 @@ from scripts.dataset_generation.dataset_generation.system_balance import (
     compute_tokenizer_fingerprint,
     compute_recipe_fingerprint,
     load_bundled_system_balance_spec,
-    load_tokenizer,
+    resolve_tokenizer_dir,
 )
 from scripts.dataset_generation.dataset_generation.types import (
     ResumeSnapshot,
@@ -77,7 +77,7 @@ class ScheduledTask:
     plan: SamplePlan
     scheduled_ns: int
     target_bucket: int | None = None
-    planned_token_length: int | None = None
+    planned_line_count: int | None = None
     candidate_in_target_range: bool | None = None
     timeout_retries: int = 0
     expired_retries: int = 0
@@ -88,7 +88,7 @@ class PlannedTask:
     sample_idx: int
     plan: SamplePlan
     target_bucket: int | None = None
-    planned_token_length: int | None = None
+    planned_line_count: int | None = None
     candidate_in_target_range: bool | None = None
 
 
@@ -101,7 +101,6 @@ class SystemBalanceRuntime:
     tokenizer_fingerprint: str | None = None
     recipe_fingerprint: str | None = None
     candidate_plan_count: int = DEFAULT_CANDIDATE_PLAN_COUNT
-    tokenizer: object | None = None
     spec: object | None = None
 
 
@@ -306,7 +305,7 @@ def run_dataset_generation(
                             plan=plan.plan,
                             failure_policy=resolved_failure_policy,
                             target_bucket=plan.target_bucket,
-                            planned_token_length=plan.planned_token_length,
+                            planned_line_count=plan.planned_line_count,
                             candidate_in_target_range=plan.candidate_in_target_range,
                         )
                         futures_by_handle[task.future] = task
@@ -643,11 +642,10 @@ def _plan_with_quarantine(
     accepted_system_histogram: Counter,
 ) -> PlannedTask:
     try:
-        if system_balance_runtime.mode != "length_proxy":
+        if system_balance_runtime.mode != "spine_aware_line_proxy":
             raise RuntimeError(
                 f"Unsupported mandatory system balance mode: {system_balance_runtime.mode!r}"
             )
-        assert system_balance_runtime.tokenizer is not None
         assert system_balance_runtime.spec is not None
         selected = choose_balanced_plan(
             source_index=source_index,
@@ -655,7 +653,6 @@ def _plan_with_quarantine(
             sample_idx=sample_idx,
             base_seed=base_seed,
             excluded_paths=quarantined_sources,
-            tokenizer=system_balance_runtime.tokenizer,  # type: ignore[arg-type]
             spec=system_balance_runtime.spec,  # type: ignore[arg-type]
             accepted_system_histogram=accepted_system_histogram,
             candidate_plan_count=system_balance_runtime.candidate_plan_count,
@@ -664,7 +661,7 @@ def _plan_with_quarantine(
             sample_idx=sample_idx,
             plan=selected.plan,
             target_bucket=selected.target_bucket,
-            planned_token_length=selected.token_length,
+            planned_line_count=selected.line_count,
             candidate_in_target_range=selected.in_target_range,
         )
     except ValueError as exc:
@@ -684,7 +681,7 @@ def _schedule_task(
     plan: SamplePlan,
     failure_policy: FailurePolicySettings,
     target_bucket: int | None = None,
-    planned_token_length: int | None = None,
+    planned_line_count: int | None = None,
     candidate_in_target_range: bool | None = None,
     timeout_retries: int = 0,
     expired_retries: int = 0,
@@ -700,7 +697,7 @@ def _schedule_task(
         plan=plan,
         scheduled_ns=time.perf_counter_ns(),
         target_bucket=target_bucket,
-        planned_token_length=planned_token_length,
+        planned_line_count=planned_line_count,
         candidate_in_target_range=candidate_in_target_range,
         timeout_retries=timeout_retries,
         expired_retries=expired_retries,
@@ -732,7 +729,7 @@ def _maybe_retry_task(
             plan=task.plan,
             failure_policy=failure_policy,
             target_bucket=task.target_bucket,
-            planned_token_length=task.planned_token_length,
+            planned_line_count=task.planned_line_count,
             candidate_in_target_range=task.candidate_in_target_range,
             timeout_retries=task.timeout_retries + 1,
             expired_retries=task.expired_retries,
@@ -751,7 +748,7 @@ def _maybe_retry_task(
             plan=task.plan,
             failure_policy=failure_policy,
             target_bucket=task.target_bucket,
-            planned_token_length=task.planned_token_length,
+            planned_line_count=task.planned_line_count,
             candidate_in_target_range=task.candidate_in_target_range,
             timeout_retries=task.timeout_retries,
             expired_retries=task.expired_retries + 1,
@@ -804,13 +801,13 @@ def _resolve_system_balance_runtime(
 ) -> SystemBalanceRuntime:
     try:
         spec = load_bundled_system_balance_spec()
-        resolved_tokenizer_path, tokenizer = load_tokenizer(DEFAULT_TOKENIZER_DIR)
+        resolved_tokenizer_path = resolve_tokenizer_dir(DEFAULT_TOKENIZER_DIR)
         tokenizer_fingerprint = compute_tokenizer_fingerprint(resolved_tokenizer_path)
     except Exception as exc:
         raise RuntimeError(f"Bundled system balance spec could not be loaded: {exc}") from exc
 
     expected_recipe_fingerprint = compute_recipe_fingerprint(recipe)
-    if spec.mode != "length_proxy":
+    if spec.mode != "spine_aware_line_proxy":
         raise RuntimeError(
             f"Bundled system balance spec has unsupported mode: {spec.mode!r}"
         )
@@ -828,14 +825,13 @@ def _resolve_system_balance_runtime(
     if not quiet:
         print(f"Using bundled system balance spec: {spec_path}")
     return SystemBalanceRuntime(
-        mode="length_proxy",
+        mode="spine_aware_line_proxy",
         spec_path=spec_path,
         spec_fingerprint=spec_fingerprint,
         tokenizer_path=resolved_tokenizer_path,
         tokenizer_fingerprint=tokenizer_fingerprint,
         recipe_fingerprint=spec.recipe_fingerprint,
         candidate_plan_count=spec.candidate_plan_count,
-        tokenizer=tokenizer,
         spec=spec,
     )
 
@@ -855,7 +851,7 @@ def _serialize_system_balance_runtime(runtime: SystemBalanceRuntime) -> dict[str
         payload["tokenizer_fingerprint"] = runtime.tokenizer_fingerprint
     if runtime.recipe_fingerprint is not None:
         payload["recipe_fingerprint"] = runtime.recipe_fingerprint
-    if runtime.mode == "length_proxy":
+    if runtime.mode == "spine_aware_line_proxy":
         payload["candidate_plan_count"] = runtime.candidate_plan_count
     return payload
 
@@ -1300,7 +1296,7 @@ def _write_terminal_crash_artifact(
         queue_wait_ms=queue_wait_ms,
         dropped_pending_tasks=dropped_pending_tasks,
         target_bucket=task.target_bucket,
-        planned_token_length=task.planned_token_length,
+        planned_line_count=task.planned_line_count,
         candidate_in_target_range=task.candidate_in_target_range,
         exception_payload=exception_payload,
     )

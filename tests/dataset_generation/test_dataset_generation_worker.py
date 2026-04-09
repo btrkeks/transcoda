@@ -48,6 +48,7 @@ def _make_plan() -> SamplePlan:
         label_transcription="**kern\n=1\n4c\n*-\n",
         source_measure_count=1,
         source_non_empty_line_count=4,
+        source_max_initial_spine_count=1,
         segment_count=1,
     )
 

@@ -108,6 +108,7 @@ def _make_fake_plan_sample(entry_groups_by_sample_idx):
             label_transcription=compose_label_transcription(entries),
             source_measure_count=sum(entry.measure_count for entry in entries),
             source_non_empty_line_count=sum(entry.non_empty_line_count for entry in entries),
+            source_max_initial_spine_count=max(entry.initial_spine_count for entry in entries),
             segment_count=len(entries),
         )
 
@@ -175,16 +176,28 @@ def _make_balance_spec(tmp_path: Path, recipe: ProductionRecipe, tokenizer_dir: 
     spec_path.write_text(
         json.dumps(
             {
-                "mode": "length_proxy",
+                "mode": "spine_aware_line_proxy",
                 "tokenizer": {
                     "path": str(DEFAULT_TOKENIZER_DIR),
                     "fingerprint": compute_tokenizer_fingerprint(DEFAULT_TOKENIZER_DIR),
                 },
                 "recipe_fingerprint": compute_recipe_fingerprint(recipe),
                 "candidate_plan_count": 8,
-                "recommended_token_length_ranges": {
-                    str(bucket): {"min": bucket, "max": bucket + 1, "center": float(bucket) + 0.5}
-                    for bucket in range(1, 7)
+                "recommended_line_count_ranges": {
+                    "all": {
+                        str(bucket): {"min": bucket, "max": bucket + 1, "center": float(bucket) + 0.5}
+                        for bucket in range(1, 7)
+                    }
+                },
+                "vertical_fit_model": {
+                    "all": {
+                        str(bucket): {
+                            "safe_max_line_count": bucket + 1,
+                            "median_content_height_px": 1000.0 + bucket,
+                            "safe_sample_count": 2,
+                        }
+                        for bucket in range(1, 7)
+                    }
                 },
             }
         ),
@@ -211,12 +224,11 @@ def _install_fake_balanced_planner(monkeypatch, entry_groups_by_sample_idx):
         sample_idx,
         base_seed,
         excluded_paths,
-        tokenizer,
         spec,
         accepted_system_histogram,
         candidate_plan_count=None,
     ):
-        del tokenizer, spec, accepted_system_histogram, candidate_plan_count
+        del spec, accepted_system_histogram, candidate_plan_count
         plan = fake_plan_sample(
             source_index,
             recipe,
@@ -227,11 +239,14 @@ def _install_fake_balanced_planner(monkeypatch, entry_groups_by_sample_idx):
         return CandidatePlanScore(
             candidate_idx=0,
             plan=plan,
-            token_length=len(plan.label_transcription.split()),
+            line_count=plan.source_non_empty_line_count,
+            source_max_initial_spine_count=plan.source_max_initial_spine_count,
+            spine_class="1",
             target_bucket=1,
-            target_center_length=1.0,
+            target_center_line_count=1.0,
             in_target_range=True,
             distance_to_bucket=0.0,
+            vertical_fit_penalty=0.0,
         )
 
     monkeypatch.setattr(executor_module, "choose_balanced_plan", fake_choose_balanced_plan)
@@ -257,8 +272,7 @@ def test_plan_with_quarantine_preserves_planning_exhausted_error(tmp_path, monke
             base_seed=0,
             quarantined_sources=set(),
             system_balance_runtime=executor_module.SystemBalanceRuntime(
-                mode="length_proxy",
-                tokenizer=object(),
+                mode="spine_aware_line_proxy",
                 spec=object(),
             ),
             accepted_system_histogram=Counter(),
@@ -288,8 +302,7 @@ def test_plan_with_quarantine_keeps_no_schedulable_message_for_true_empty_case(
             base_seed=0,
             quarantined_sources=quarantined,
             system_balance_runtime=executor_module.SystemBalanceRuntime(
-                mode="length_proxy",
-                tokenizer=object(),
+                mode="spine_aware_line_proxy",
                 spec=object(),
             ),
             accepted_system_histogram=Counter(),
@@ -366,7 +379,7 @@ def test_executor_smoke_run_writes_truncated_hf_dataset(tmp_path, monkeypatch):
     assert ds[0]["source_ids"] == ["input/piece"]
     assert "initial_kern_spine_count" in ds.features
     assert info["system_balance"]["mandatory"] is True
-    assert info["system_balance"]["mode"] == "length_proxy"
+    assert info["system_balance"]["mode"] == "spine_aware_line_proxy"
     assert info["system_balance"]["spec_path"].endswith("balance.json")
 
 
@@ -750,11 +763,14 @@ def test_executor_tracks_requested_target_buckets_and_candidate_hits(tmp_path, m
         return CandidatePlanScore(
             candidate_idx=2,
             plan=plan,
-            token_length=5,
+            line_count=plan.source_non_empty_line_count,
+            source_max_initial_spine_count=plan.source_max_initial_spine_count,
+            spine_class="1",
             target_bucket=3,
-            target_center_length=5.5,
+            target_center_line_count=5.5,
             in_target_range=True,
             distance_to_bucket=0.0,
+            vertical_fit_penalty=0.0,
         )
 
     monkeypatch.setattr(executor_module, "choose_balanced_plan", fake_balanced_plan)
@@ -822,14 +838,17 @@ def test_executor_fails_when_bundled_spec_fingerprint_mismatches(tmp_path, monke
     spec_path.write_text(
         json.dumps(
             {
-                "mode": "length_proxy",
+                "mode": "spine_aware_line_proxy",
                 "tokenizer": {"path": str(tokenizer_dir.resolve()), "fingerprint": "bad"},
                 "recipe_fingerprint": "bad",
                 "candidate_plan_count": 8,
-                "recommended_token_length_ranges": {
-                    str(bucket): {"min": bucket, "max": bucket + 1, "center": float(bucket) + 0.5}
-                    for bucket in range(1, 7)
+                "recommended_line_count_ranges": {
+                    "all": {
+                        str(bucket): {"min": bucket, "max": bucket + 1, "center": float(bucket) + 0.5}
+                        for bucket in range(1, 7)
+                    }
                 },
+                "vertical_fit_model": {},
             }
         ),
         encoding="utf-8",

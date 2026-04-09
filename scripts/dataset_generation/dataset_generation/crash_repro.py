@@ -26,7 +26,7 @@ def write_crash_artifact(
     queue_wait_ms: float,
     dropped_pending_tasks: int,
     target_bucket: int | None,
-    planned_token_length: int | None,
+    planned_line_count: int | None,
     candidate_in_target_range: bool | None,
     exception_payload: dict[str, object] | None,
 ) -> tuple[Path, int]:
@@ -76,7 +76,7 @@ def write_crash_artifact(
         "dropped_pending_tasks": dropped_pending_tasks,
         "source_paths": [str(segment.path.resolve()) for segment in plan.segments],
         "target_bucket": target_bucket,
-        "planned_token_length": planned_token_length,
+        "planned_line_count": planned_line_count,
         "candidate_in_target_range": candidate_in_target_range,
         "stage_unknown_due_to_timeout": event_type == "timeout",
         "exception": exception_payload,

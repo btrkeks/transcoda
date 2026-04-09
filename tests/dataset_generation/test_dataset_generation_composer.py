@@ -258,6 +258,38 @@ def test_plan_sample_respects_single_segment_policy_even_below_min_measures(tmp_
     assert len(plan.segments) == 1
 
 
+def test_plan_sample_tracks_max_initial_spine_count_across_segments(tmp_path: Path, monkeypatch):
+    single_path = tmp_path / "single.krn"
+    double_path = tmp_path / "double.krn"
+    single_text = "**kern\n=1\n4c\n*-\n"
+    double_text = "**kern\t**kern\n=1\t=1\n4d\t4f\n*-\t*-\n"
+    single_path.write_text(single_text, encoding="utf-8")
+    double_path.write_text(double_text, encoding="utf-8")
+
+    source_index = build_source_index(tmp_path)
+    recipe = ProductionRecipe(
+        composition=CompositionPolicy(
+            segment_count_weights=((2, 1.0),),
+            min_total_measures=1,
+            max_total_measures=8,
+            max_selection_attempts=4,
+        )
+    )
+
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.composer._choose_entries",
+        lambda available_entries, recipe, rng, excluded_paths=None: (
+            next(entry for entry in available_entries if entry.path == single_path),
+            next(entry for entry in available_entries if entry.path == double_path),
+        ),
+    )
+
+    plan = plan_sample(source_index, recipe, sample_idx=0, base_seed=0)
+
+    assert plan.segment_count == 2
+    assert plan.source_max_initial_spine_count == 2
+
+
 def test_choose_entries_can_append_sources_with_different_boundary_widths(tmp_path: Path):
     anchor_text = "*clefG2\n=1\n4c\n*^"
     compatible_text = "**kern\t**kern\n*clefG2\t*clefG2\n=1\t=1\n4d\t4f\n*-\t*-\n"

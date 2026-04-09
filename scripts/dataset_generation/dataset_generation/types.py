@@ -53,6 +53,7 @@ class SamplePlan:
     label_transcription: str
     source_measure_count: int
     source_non_empty_line_count: int
+    source_max_initial_spine_count: int
     segment_count: int
 
 
@@ -114,6 +115,9 @@ class WorkerSuccess:
     truncation_attempted: bool
     truncation_rescued: bool
     full_render_system_count: int | None = None
+    full_render_content_height_px: int | None = None
+    full_render_vertical_fill_ratio: float | None = None
+    full_render_rejection_reason: str | None = None
     accepted_render_system_count: int | None = None
     preferred_5_6_rescue_attempted: bool = False
     preferred_5_6_rescue_succeeded: bool = False
@@ -127,6 +131,9 @@ class WorkerFailure:
     truncation_attempted: bool
     truncation_rescued: bool = False
     full_render_system_count: int | None = None
+    full_render_content_height_px: int | None = None
+    full_render_vertical_fill_ratio: float | None = None
+    full_render_rejection_reason: str | None = None
     accepted_render_system_count: int | None = None
     preferred_5_6_rescue_attempted: bool = False
     preferred_5_6_rescue_succeeded: bool = False

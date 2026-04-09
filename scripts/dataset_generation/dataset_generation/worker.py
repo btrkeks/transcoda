@@ -126,6 +126,9 @@ def evaluate_sample_plan(
     full_decision = decide_acceptance(full_render, recipe, truncation_applied=False)
     truncation_mode = classify_truncation_mode(full_render.svg_diagnostics, recipe)
     full_render_system_count = full_render.svg_diagnostics.system_count
+    full_render_content_height_px = full_render.content_height_px
+    full_render_vertical_fill_ratio = full_render.vertical_fill_ratio
+    full_render_rejection_reason = full_render.rejection_reason
     preferred_5_6_rescue_attempted = False
     preferred_5_6_rescue_succeeded = False
     truncation_attempted = False
@@ -153,6 +156,9 @@ def evaluate_sample_plan(
             truncation_attempted=False,
             truncation_rescued=False,
             full_render_system_count=full_render_system_count,
+            full_render_content_height_px=full_render_content_height_px,
+            full_render_vertical_fill_ratio=full_render_vertical_fill_ratio,
+            full_render_rejection_reason=full_render_rejection_reason,
             accepted_render_system_count=full_render_system_count,
             preferred_5_6_rescue_attempted=False,
             preferred_5_6_rescue_succeeded=False,
@@ -197,6 +203,9 @@ def evaluate_sample_plan(
                 truncation_attempted=False,
                 truncation_rescued=False,
                 full_render_system_count=full_render_system_count,
+                full_render_content_height_px=full_render_content_height_px,
+                full_render_vertical_fill_ratio=full_render_vertical_fill_ratio,
+                full_render_rejection_reason=full_render_rejection_reason,
                 accepted_render_system_count=rescue_render.svg_diagnostics.system_count,
                 preferred_5_6_rescue_attempted=True,
                 preferred_5_6_rescue_succeeded=True,
@@ -233,6 +242,9 @@ def evaluate_sample_plan(
                     truncation_attempted=True,
                     truncation_rescued=True,
                     full_render_system_count=full_render_system_count,
+                    full_render_content_height_px=full_render_content_height_px,
+                    full_render_vertical_fill_ratio=full_render_vertical_fill_ratio,
+                    full_render_rejection_reason=full_render_rejection_reason,
                     accepted_render_system_count=candidate_render.svg_diagnostics.system_count,
                     preferred_5_6_rescue_attempted=preferred_5_6_rescue_attempted,
                     preferred_5_6_rescue_succeeded=preferred_5_6_rescue_succeeded,
@@ -255,6 +267,9 @@ def evaluate_sample_plan(
         truncation_attempted=truncation_attempted,
         truncation_rescued=False,
         full_render_system_count=full_render_system_count,
+        full_render_content_height_px=full_render_content_height_px,
+        full_render_vertical_fill_ratio=full_render_vertical_fill_ratio,
+        full_render_rejection_reason=full_render_rejection_reason,
         accepted_render_system_count=None,
         preferred_5_6_rescue_attempted=preferred_5_6_rescue_attempted,
         preferred_5_6_rescue_succeeded=False,

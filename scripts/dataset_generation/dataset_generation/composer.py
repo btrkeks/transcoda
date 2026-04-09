@@ -83,6 +83,7 @@ def plan_sample(
         label_transcription=label_transcription,
         source_measure_count=sum(entry.measure_count for entry in entries),
         source_non_empty_line_count=sum(entry.non_empty_line_count for entry in entries),
+        source_max_initial_spine_count=max(entry.initial_spine_count for entry in entries),
         segment_count=len(entries),
     )
 
