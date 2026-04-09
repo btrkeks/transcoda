@@ -97,8 +97,12 @@ final-barline-line ::= final-barline (tab final-barline)*
 final-barline ::= "==" | "=:|!"
 
 # Spine manipulation line (splits and joins only, no mixing with other interpretations)
-spine-op-line ::= spine-op (tab spine-op)*
-spine-op ::= "*" | "*^" | "*v"
+# Humdrum requires join markers (*v) to appear in adjacent groups of at least two.
+# This encodes the local line-level legality rule, but not full cross-line spine semantics.
+spine-op-line ::= spine-op-group (tab spine-op-group)*
+spine-op-group ::= spine-op | join-group
+spine-op ::= "*" | "*^"
+join-group ::= "*v" (tab "*v")+
 
 # Tandem interpretation line (inline changes, no spine splits/joins)
 interp-line ::= interp (tab interp)*
