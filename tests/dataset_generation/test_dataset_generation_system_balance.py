@@ -655,3 +655,74 @@ def test_run_calibration_writes_expected_json(tmp_path: Path):
     assert payload["records"][0]["source_max_initial_spine_count"] == 1
     assert payload["records"][0]["full_render_content_height_px"] == 1069
     assert payload["records"][0]["full_render_rejection_reason"] is None
+
+
+def test_run_calibration_records_planning_errors(tmp_path: Path, monkeypatch):
+    tokenizer_dir = _make_tokenizer_dir(tmp_path)
+    input_dir = tmp_path / "input"
+    output_json = tmp_path / "calibration.json"
+    input_dir.mkdir()
+    (input_dir / "piece.krn").write_text("*clefG2\n=1\n4c\n*-\n", encoding="utf-8")
+
+    def fake_plan_sample(source_index, recipe, sample_idx: int, base_seed: int):
+        del source_index, recipe, base_seed
+        if sample_idx == 0:
+            raise ValueError("boundary mismatch")
+        return SamplePlan(
+            sample_id=f"sample_{sample_idx:08d}",
+            seed=sample_idx,
+            segments=(
+                SourceSegment(
+                    source_id="piece",
+                    path=input_dir / "piece.krn",
+                    order=0,
+                ),
+            ),
+            label_transcription="*clefG2\n=1\n4c\n*-\n",
+            source_measure_count=1,
+            source_non_empty_line_count=4,
+            source_max_initial_spine_count=1,
+            segment_count=1,
+        )
+
+    def fake_render(render_text, recipe, *, seed, renderer):
+        del render_text, recipe, seed, renderer
+        image = np.full((1485, 1050, 3), 255, dtype=np.uint8)
+        image[10:70, 10:600] = 0
+        return RenderResult(
+            image=image,
+            render_layers=None,
+            svg_diagnostics=SvgLayoutDiagnostics(system_count=2, page_count=1),
+            bottom_whitespace_ratio=0.10,
+            vertical_fill_ratio=0.72,
+            bottom_whitespace_px=149,
+            top_whitespace_px=33,
+            content_height_px=1069,
+        )
+
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.calibrate_system_balance._plan_sample",
+        fake_plan_sample,
+    )
+
+    summary = run_calibration(
+        input_dirs=(input_dir,),
+        tokenizer_path=tokenizer_dir,
+        sample_budget=2,
+        output_json=output_json,
+        renderer=object(),
+        render_fn=fake_render,
+        augment_fn=lambda plan, render_result, recipe: render_result.image,
+        quiet=True,
+    )
+
+    payload = json.loads(output_json.read_text(encoding="utf-8"))
+
+    assert summary["attempted_samples"] == 2
+    assert summary["accepted_samples"] == 1
+    assert payload["attempted_samples"] == 2
+    assert payload["accepted_samples"] == 1
+    assert payload["records"][0]["accepted"] is False
+    assert payload["records"][0]["failure_reason"] == "planning_error:boundary mismatch"
+    assert payload["records"][0]["source_non_empty_line_count"] is None
+    assert payload["records"][1]["accepted"] is True

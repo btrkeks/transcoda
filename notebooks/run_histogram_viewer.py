@@ -58,9 +58,12 @@ def collect_histograms(info: dict) -> dict[str, dict[int, int]]:
     for key, value in snapshot.items():
         if not key.endswith("_histogram") or not isinstance(value, dict) or not value:
             continue
-        # Skip nested histograms (e.g. accepted_system_histogram is keyed by
-        # spine class → system count → count); these are handled separately.
+        # Nested histograms (e.g. accepted_system_histogram is keyed by
+        # spine class → system count → count) can't be parsed as flat
+        # {int: int}; store an empty placeholder so the key is still visible
+        # to plot_histograms (which handles it via the heatmap branch).
         if any(isinstance(v, dict) for v in value.values()):
+            histograms[key] = {}
             continue
         histograms[key] = {int(hist_key): int(count) for hist_key, count in value.items()}
     return histograms

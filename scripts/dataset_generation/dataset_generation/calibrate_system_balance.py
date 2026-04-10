@@ -31,7 +31,7 @@ from scripts.dataset_generation.dataset_generation.types import SamplePlan, Work
 from scripts.dataset_generation.dataset_generation.worker import (
     evaluate_sample_plan,
     init_generation_worker,
-    process_sample_plan,
+    process_calibration_sample_plan,
 )
 
 
@@ -59,6 +59,8 @@ def run_calibration(
     failure_policy = resolve_failure_policy("balanced")
 
     records: list[dict[str, object]] = []
+    last_progress_at = time.monotonic()
+    progress_interval_seconds = 30.0
     use_process_pool = (
         int(num_workers) > 1
         and render_fn is None
@@ -99,18 +101,39 @@ def run_calibration(
         ) as pool:
             while next_sample_idx < sample_budget or futures_by_handle:
                 while next_sample_idx < sample_budget and len(futures_by_handle) < max_in_flight:
-                    plan = _plan_sample(source_index, active_recipe, next_sample_idx, base_seed)
+                    try:
+                        plan = _plan_sample(source_index, active_recipe, next_sample_idx, base_seed)
+                    except ValueError as exc:
+                        records.append(
+                            _build_planning_error_record(
+                                sample_idx=next_sample_idx,
+                                failure_reason=f"planning_error:{exc}",
+                            )
+                        )
+                        next_sample_idx += 1
+                        continue
                     root_labels = _source_root_labels(plan, entry_by_path)
                     future = pool.schedule(
-                        process_sample_plan,
+                        process_calibration_sample_plan,
                         args=(plan,),
                         timeout=failure_policy.task_timeout_seconds,
                     )
                     futures_by_handle[future] = (next_sample_idx, plan, root_labels)
                     next_sample_idx += 1
 
+                if not futures_by_handle:
+                    continue
                 done, _ = wait(tuple(futures_by_handle), timeout=0.5, return_when=FIRST_COMPLETED)
                 if not done:
+                    last_progress_at = _maybe_report_calibration_progress(
+                        quiet=quiet,
+                        records_count=len(records),
+                        sample_budget=sample_budget,
+                        scheduled_count=next_sample_idx,
+                        in_flight_count=len(futures_by_handle),
+                        last_progress_at=last_progress_at,
+                        progress_interval_seconds=progress_interval_seconds,
+                    )
                     continue
                 for future in done:
                     sample_idx, plan, root_labels = futures_by_handle.pop(future)
@@ -176,10 +199,28 @@ def run_calibration(
                                 outcome=outcome,
                             )
                         )
+                last_progress_at = _maybe_report_calibration_progress(
+                    quiet=quiet,
+                    records_count=len(records),
+                    sample_budget=sample_budget,
+                    scheduled_count=next_sample_idx,
+                    in_flight_count=len(futures_by_handle),
+                    last_progress_at=last_progress_at,
+                    progress_interval_seconds=progress_interval_seconds,
+                )
     else:
         sync_renderer = renderer or VerovioRenderer()
         for sample_idx in range(sample_budget):
-            plan = _plan_sample(source_index, active_recipe, sample_idx, base_seed)
+            try:
+                plan = _plan_sample(source_index, active_recipe, sample_idx, base_seed)
+            except ValueError as exc:
+                records.append(
+                    _build_planning_error_record(
+                        sample_idx=sample_idx,
+                        failure_reason=f"planning_error:{exc}",
+                    )
+                )
+                continue
             root_labels = _source_root_labels(plan, entry_by_path)
             outcome = evaluate_sample_plan(
                 plan,
@@ -201,6 +242,15 @@ def run_calibration(
                     source_root_labels=root_labels,
                     outcome=outcome,
                 )
+            )
+            last_progress_at = _maybe_report_calibration_progress(
+                quiet=quiet,
+                records_count=len(records),
+                sample_budget=sample_budget,
+                scheduled_count=sample_idx + 1,
+                in_flight_count=0,
+                last_progress_at=last_progress_at,
+                progress_interval_seconds=progress_interval_seconds,
             )
 
     artifact = build_calibration_artifact(
@@ -344,6 +394,56 @@ def _build_record(
         "segment_count": int(plan.segment_count),
         "source_root_labels": list(source_root_labels),
     }
+
+
+def _build_planning_error_record(
+    *,
+    sample_idx: int,
+    failure_reason: str,
+) -> dict[str, object]:
+    return {
+        "sample_idx": int(sample_idx),
+        "sample_id": f"sample_{sample_idx:08d}",
+        "source_non_empty_line_count": None,
+        "source_max_initial_spine_count": None,
+        "spine_class": None,
+        "full_render_system_count": None,
+        "full_render_content_height_px": None,
+        "full_render_vertical_fill_ratio": None,
+        "full_render_rejection_reason": failure_reason,
+        "accepted_render_system_count": None,
+        "accepted": False,
+        "failure_reason": failure_reason,
+        "truncation_applied": False,
+        "preferred_5_6_status": None,
+        "segment_count": None,
+        "source_root_labels": [],
+    }
+
+
+def _maybe_report_calibration_progress(
+    *,
+    quiet: bool,
+    records_count: int,
+    sample_budget: int,
+    scheduled_count: int,
+    in_flight_count: int,
+    last_progress_at: float,
+    progress_interval_seconds: float,
+) -> float:
+    if quiet:
+        return last_progress_at
+    now = time.monotonic()
+    if records_count < sample_budget and now - last_progress_at < progress_interval_seconds:
+        return last_progress_at
+    print(
+        "Calibration progress: "
+        f"{records_count}/{sample_budget} terminal, "
+        f"{scheduled_count} scheduled, "
+        f"{in_flight_count} in flight",
+        flush=True,
+    )
+    return now
 
 
 def _normalize_input_dirs(

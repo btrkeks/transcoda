@@ -84,6 +84,27 @@ def process_sample_plan(plan: SamplePlan) -> WorkerOutcome:
     )
 
 
+def process_calibration_sample_plan(plan: SamplePlan) -> WorkerOutcome:
+    assert _WORKER_RECIPE is not None, "Worker recipe not initialized"
+    assert _WORKER_RENDERER is not None, "Worker renderer not initialized"
+    return evaluate_sample_plan(
+        plan,
+        recipe=_WORKER_RECIPE,
+        renderer=_WORKER_RENDERER,
+        augment_fn=_skip_calibration_image_bytes,
+        capture_verovio_diagnostics=_WORKER_CAPTURE_VEROVIO_DIAGNOSTICS,
+    )
+
+
+def _skip_calibration_image_bytes(
+    plan: SamplePlan,
+    render_result: RenderResult,
+    recipe: ProductionRecipe,
+) -> bytes:
+    del plan, render_result, recipe
+    return b""
+
+
 def evaluate_sample_plan(
     plan: SamplePlan,
     *,
