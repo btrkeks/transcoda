@@ -532,6 +532,7 @@ def run_dataset_generation(
                 resume_store.commit(snapshot=_snapshot_from_counters(counters), sample_rows=pending_rows)
                 pending_rows = []
 
+        resume_store.commit(snapshot=_snapshot_from_counters(counters), sample_rows=[])
         generation_seconds = time.perf_counter() - generation_start
         finalization = resume_store.finalize()
         runtime_seconds = {

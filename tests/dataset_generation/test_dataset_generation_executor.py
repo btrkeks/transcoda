@@ -1044,6 +1044,39 @@ def test_executor_resume_preserves_retry_counters_after_interrupted_finalize(
     assert info["snapshot"]["retry_counts"]["timeout"] == 1
 
 
+def test_executor_final_snapshot_preserves_counters_without_pending_rows(tmp_path, monkeypatch):
+    input_dir = _make_simple_input_dir(tmp_path, ("piece",))
+    output_dir = tmp_path / "output"
+    _install_fake_pool(
+        monkeypatch,
+        outcomes_by_sample_idx={
+            0: [_make_worker_success],
+            1: [_make_worker_success],
+        },
+        serial_wait=True,
+    )
+    _install_fake_balanced_planner(monkeypatch, {0: [0], 1: [0]})
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=1,
+        num_workers=2,
+        max_attempts=2,
+        quiet=True,
+    )
+
+    info = _read_json(summary.run_artifacts_dir / "info.json")
+    progress = _read_json(summary.run_artifacts_dir / "progress.json")
+
+    assert summary.accepted_samples == 1
+    assert summary.attempted_samples == 2
+    assert progress["failure_reason_counts"]["discarded_after_target"] == 1
+    assert info["snapshot"]["next_sample_idx"] == 2
+    assert info["snapshot"]["failure_reason_counts"]["discarded_after_target"] == 1
+    assert info["finalization"]["snapshot"]["failure_reason_counts"]["discarded_after_target"] == 1
+
+
 def test_executor_end_to_end_save_and_load_with_real_renderer(tmp_path):
     pytest.importorskip("verovio")
 
