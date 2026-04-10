@@ -58,6 +58,10 @@ def collect_histograms(info: dict) -> dict[str, dict[int, int]]:
     for key, value in snapshot.items():
         if not key.endswith("_histogram") or not isinstance(value, dict) or not value:
             continue
+        # Skip nested histograms (e.g. accepted_system_histogram is keyed by
+        # spine class → system count → count); these are handled separately.
+        if any(isinstance(v, dict) for v in value.values()):
+            continue
         histograms[key] = {int(hist_key): int(count) for hist_key, count in value.items()}
     return histograms
 
@@ -77,7 +81,7 @@ def _plot_spine_system_heatmap(ax, dataset) -> None:
     )
 
     spine_values = list(range(1, 5))
-    system_values = list(range(1, 7))
+    system_values = list(range(1, 8))
     grid = np.array(
         [
             [pair_counts.get((spine, system), 0) for spine in spine_values]
