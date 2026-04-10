@@ -1,20 +1,28 @@
 import json
+from collections import Counter, defaultdict
+from concurrent.futures import Future, TimeoutError
+from pathlib import Path
+
 import numpy as np
 import pytest
-from collections import Counter
-from concurrent.futures import Future, TimeoutError
 from datasets import load_from_disk
-from pathlib import Path
 from pebble import ProcessExpired
 from tokenizers import Tokenizer, models, pre_tokenizers
 
 import scripts.dataset_generation.dataset_generation.executor as executor_module
 from scripts.dataset_generation.dataset_generation.composer import compose_label_transcription
-from scripts.dataset_generation.dataset_generation.io import encode_jpeg_image
 from scripts.dataset_generation.dataset_generation.executor import run_dataset_generation
+from scripts.dataset_generation.dataset_generation.io import encode_jpeg_image
 from scripts.dataset_generation.dataset_generation.recipe import (
     ProductionRecipe,
     RenderOnlyAugmentationPolicy,
+)
+from scripts.dataset_generation.dataset_generation.system_balance import (
+    DEFAULT_TOKENIZER_DIR,
+    CandidatePlanScore,
+    compute_recipe_fingerprint,
+    compute_tokenizer_fingerprint,
+    load_system_balance_spec,
 )
 from scripts.dataset_generation.dataset_generation.types import (
     AcceptedSample,
@@ -22,15 +30,9 @@ from scripts.dataset_generation.dataset_generation.types import (
     SamplePlan,
     SourceSegment,
     SvgLayoutDiagnostics,
+    VerovioDiagnosticEvent,
     WorkerFailure,
     WorkerSuccess,
-)
-from scripts.dataset_generation.dataset_generation.system_balance import CandidatePlanScore
-from scripts.dataset_generation.dataset_generation.system_balance import (
-    DEFAULT_TOKENIZER_DIR,
-    compute_recipe_fingerprint,
-    compute_tokenizer_fingerprint,
-    load_system_balance_spec,
 )
 
 
@@ -85,6 +87,64 @@ def _make_worker_success(plan: SamplePlan) -> WorkerSuccess:
         content_height_px=1069,
     )
     return WorkerSuccess(sample=sample, truncation_attempted=False, truncation_rescued=False)
+
+
+def _make_worker_success_with_verovio_diagnostic(plan: SamplePlan) -> WorkerSuccess:
+    outcome = _make_worker_success(plan)
+    return WorkerSuccess(
+        sample=outcome.sample,
+        truncation_attempted=outcome.truncation_attempted,
+        truncation_rescued=outcome.truncation_rescued,
+        full_render_system_count=outcome.full_render_system_count,
+        full_render_content_height_px=outcome.full_render_content_height_px,
+        full_render_vertical_fill_ratio=outcome.full_render_vertical_fill_ratio,
+        full_render_rejection_reason=outcome.full_render_rejection_reason,
+        accepted_render_system_count=outcome.accepted_render_system_count,
+        preferred_5_6_rescue_attempted=outcome.preferred_5_6_rescue_attempted,
+        preferred_5_6_rescue_succeeded=outcome.preferred_5_6_rescue_succeeded,
+        preferred_5_6_status=outcome.preferred_5_6_status,
+        verovio_diagnostics=(
+            VerovioDiagnosticEvent(
+                event="verovio_diagnostic",
+                sample_id=plan.sample_id,
+                sample_idx=int(plan.sample_id.split("_")[-1]),
+                source_paths=tuple(str(segment.path.resolve()) for segment in plan.segments),
+                stage="full",
+                seed=plan.seed,
+                render_attempt_idx=1,
+                diagnostic_kind="inconsistent_rhythm_analysis",
+                raw_message="Error: Inconsistent rhythm analysis occurring near line 12",
+                near_line=12,
+                expected_duration_from_start="64",
+                found_duration_from_start="62",
+                line_text="4G\t.\t.\t4c 4e",
+            ),
+        ),
+    )
+
+
+def _make_worker_failure_with_verovio_diagnostic(plan: SamplePlan) -> WorkerFailure:
+    return WorkerFailure(
+        sample_id=plan.sample_id,
+        failure_reason="truncation_exhausted",
+        truncation_attempted=True,
+        verovio_diagnostics=(
+            VerovioDiagnosticEvent(
+                event="verovio_diagnostic",
+                sample_id=plan.sample_id,
+                sample_idx=int(plan.sample_id.split("_")[-1]),
+                source_paths=tuple(str(segment.path.resolve()) for segment in plan.segments),
+                stage="truncation_candidate",
+                seed=plan.seed + 17,
+                render_attempt_idx=1,
+                diagnostic_kind="verovio_error",
+                raw_message="Error: Generic Verovio error",
+                truncation_chunk_count=1,
+                truncation_total_chunks=2,
+                truncation_ratio=0.5,
+            ),
+        ),
+    )
 
 
 def _make_fake_plan_sample(entry_groups_by_sample_idx):
@@ -275,7 +335,7 @@ def test_plan_with_quarantine_preserves_planning_exhausted_error(tmp_path, monke
                 mode="spine_aware_line_proxy",
                 spec=object(),
             ),
-            accepted_system_histogram=Counter(),
+            accepted_system_histogram=defaultdict(Counter),
         )
 
 
@@ -305,7 +365,7 @@ def test_plan_with_quarantine_keeps_no_schedulable_message_for_true_empty_case(
                 mode="spine_aware_line_proxy",
                 spec=object(),
             ),
-            accepted_system_histogram=Counter(),
+            accepted_system_histogram=defaultdict(Counter),
         )
 
 
@@ -321,7 +381,7 @@ def test_executor_smoke_run_writes_truncated_hf_dataset(tmp_path, monkeypatch):
     def fake_render(render_text, recipe, *, seed, renderer):
         image = np.full((1485, 1050, 3), 255, dtype=np.uint8)
         image[10:70, 10:600] = 0
-        system_count = 7 if "=4" in render_text else 4
+        system_count = 8 if "=4" in render_text else 4
         return RenderResult(
             image=image,
             render_layers=None,
@@ -381,6 +441,73 @@ def test_executor_smoke_run_writes_truncated_hf_dataset(tmp_path, monkeypatch):
     assert info["system_balance"]["mandatory"] is True
     assert info["system_balance"]["mode"] == "spine_aware_line_proxy"
     assert info["system_balance"]["spec_path"].endswith("balance.json")
+
+
+def test_executor_writes_verovio_events_jsonl(tmp_path, monkeypatch):
+    input_dir = _make_simple_input_dir(tmp_path, ("a",))
+    output_dir = tmp_path / "output"
+    _install_fake_pool(
+        monkeypatch,
+        outcomes_by_sample_idx={0: [_make_worker_success_with_verovio_diagnostic]},
+    )
+    _install_fake_balanced_planner(monkeypatch, {0: [0]})
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=1,
+        num_workers=2,
+        max_attempts=1,
+        quiet=True,
+    )
+
+    info = _read_json(summary.run_artifacts_dir / "info.json")
+    events_path = summary.run_artifacts_dir / "verovio_events.jsonl"
+    events = [json.loads(line) for line in events_path.read_text(encoding="utf-8").splitlines()]
+
+    assert info["capture_verovio_diagnostics"] is True
+    assert info["verovio_events_path"] == str(events_path)
+    assert len(events) == 1
+    assert events[0]["event"] == "verovio_diagnostic"
+    assert events[0]["sample_id"] == "sample_00000000"
+    assert events[0]["stage"] == "full"
+    assert events[0]["diagnostic_kind"] == "inconsistent_rhythm_analysis"
+    assert events[0]["near_line"] == 12
+    assert events[0]["source_paths"] == [str((input_dir / "a.krn").resolve())]
+
+
+def test_executor_writes_verovio_events_for_rejected_outcomes(tmp_path, monkeypatch):
+    input_dir = _make_simple_input_dir(tmp_path, ("a", "b"))
+    output_dir = tmp_path / "output"
+    _install_fake_pool(
+        monkeypatch,
+        outcomes_by_sample_idx={
+            0: [_make_worker_failure_with_verovio_diagnostic],
+            1: [_make_worker_success],
+        },
+    )
+    _install_fake_balanced_planner(monkeypatch, {0: [0], 1: [1]})
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=1,
+        num_workers=2,
+        max_attempts=2,
+        quiet=True,
+    )
+
+    events_path = summary.run_artifacts_dir / "verovio_events.jsonl"
+    events = [json.loads(line) for line in events_path.read_text(encoding="utf-8").splitlines()]
+
+    assert summary.rejected_samples == 1
+    assert len(events) == 1
+    assert events[0]["sample_id"] == "sample_00000000"
+    assert events[0]["stage"] == "truncation_candidate"
+    assert events[0]["diagnostic_kind"] == "verovio_error"
+    assert events[0]["truncation_chunk_count"] == 1
+    assert events[0]["truncation_total_chunks"] == 2
+    assert events[0]["truncation_ratio"] == 0.5
 
 
 def test_executor_skips_invalid_sources_and_records_auto_quarantine(tmp_path, monkeypatch):

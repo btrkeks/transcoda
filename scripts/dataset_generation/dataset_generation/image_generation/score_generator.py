@@ -15,6 +15,7 @@ from .image_post import (
 )
 from .metadata_generator import generate_metadata_prefix
 from .rendering.verovio_backend import (
+    VEROVIO_FONTS,
     VerovioRenderer,
     VerovioRenderOptions,
 )
@@ -546,9 +547,13 @@ def _sample_render_options(
             value to render at higher resolution before downscaling for quality.
     """
     if layout_profile == "target_5_6_systems":
-        return _sample_render_options_target_5_6_systems(image_width)
+        options = _sample_render_options_target_5_6_systems(image_width)
+        options["font"] = random.choice(VEROVIO_FONTS)
+        return options
     if layout_profile == "polish_5_6_systems":
-        return _sample_render_options_polish_5_6_systems(image_width)
+        options = _sample_render_options_polish_5_6_systems(image_width)
+        options["font"] = random.choice(VEROVIO_FONTS)
+        return options
     if layout_profile != "default":
         raise ValueError(
             f"Unsupported render_layout_profile: {layout_profile}"
@@ -579,6 +584,7 @@ def _sample_render_options(
             "pageMarginTop": _clamp_int(int(round(page_width * margin_ratio())), 0, 500),
             "pageMarginBottom": _clamp_int(int(round(page_width * margin_ratio())), 0, 500),
             "pageWidth": page_width,
+            "font": random.choice(VEROVIO_FONTS),
             "breaksNoWidow": True,
             "justifyVertically": True,
             "noJustification": False,
@@ -738,6 +744,7 @@ def _sample_render_options(
         "pageMarginTop": page_margin_top,
         "pageMarginBottom": page_margin_bottom,
         "pageWidth": page_width,
+        "font": random.choice(VEROVIO_FONTS),
         "breaksNoWidow": _bernoulli(0.30),
         "justifyVertically": _bernoulli(0.15),
         "noJustification": _bernoulli(0.08),

@@ -32,9 +32,11 @@ def _compute_post_merge_spine_count(merge_line: str) -> int:
     count = 0
     i = 0
     while i < len(tokens):
-        if tokens[i] == "*v" and i + 1 < len(tokens) and tokens[i + 1] == "*v":
+        if tokens[i] == "*v":
             count += 1
-            i += 2
+            while i < len(tokens) and tokens[i] == "*v":
+                i += 1
+            continue
         else:
             count += 1
             i += 1

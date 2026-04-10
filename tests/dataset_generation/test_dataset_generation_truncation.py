@@ -14,11 +14,11 @@ def test_truncation_mode_is_forbidden_for_four_or_fewer_systems():
     assert mode == "forbidden"
 
 
-def test_truncation_mode_is_preferred_for_five_or_six_systems():
+def test_truncation_mode_is_preferred_for_five_to_seven_systems():
     recipe = ProductionRecipe()
 
     mode = classify_truncation_mode(
-        SvgLayoutDiagnostics(system_count=6, page_count=1),
+        SvgLayoutDiagnostics(system_count=7, page_count=1),
         recipe,
     )
 
@@ -30,7 +30,7 @@ def test_truncation_mode_is_required_for_overfull_or_multi_page_renders():
 
     assert (
         classify_truncation_mode(
-            SvgLayoutDiagnostics(system_count=7, page_count=1),
+            SvgLayoutDiagnostics(system_count=8, page_count=1),
             recipe,
         )
         == "required"

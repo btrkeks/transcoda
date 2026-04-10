@@ -66,6 +66,75 @@ class SvgLayoutDiagnostics:
 
 
 @dataclass(frozen=True)
+class VerovioDiagnostic:
+    diagnostic_kind: str
+    raw_message: str
+    render_attempt_idx: int | None = None
+    near_line: int | None = None
+    expected_duration_from_start: str | None = None
+    found_duration_from_start: str | None = None
+    line_text: str | None = None
+
+
+@dataclass(frozen=True)
+class VerovioDiagnosticEvent:
+    event: str
+    sample_id: str
+    sample_idx: int
+    source_paths: tuple[str, ...]
+    stage: str
+    seed: int
+    render_attempt_idx: int | None
+    diagnostic_kind: str
+    raw_message: str
+    near_line: int | None = None
+    expected_duration_from_start: str | None = None
+    found_duration_from_start: str | None = None
+    line_text: str | None = None
+    truncation_chunk_count: int | None = None
+    truncation_total_chunks: int | None = None
+    truncation_ratio: float | None = None
+
+
+@dataclass(frozen=True)
+class AugmentationTraceEvent:
+    event: str  # always "augmentation_trace"
+    sample_id: str
+    sample_idx: int
+    seed: int
+
+    # Band selection (augmentation.py)
+    band: str  # "roomy" | "balanced" | "tight"
+
+    # Offline augment decisions
+    branch: str  # "geometric" | "none"
+    geom_transform_applied: bool
+    geom_conservative_retry: bool
+    geom_oob_outcome: str  # "pass" | "retry_pass" | "retry_fail"
+
+    # Augraphy
+    augraphy_outcome: str  # "applied" | "noop" | "error" | "invalid_input"
+    augraphy_normalize_accepted: bool
+    augraphy_fallback_attempted: bool
+    augraphy_fallback_outcome: str | None
+    augraphy_fallback_normalize_accepted: bool | None
+
+    # Outer gate (augmentation.py)
+    outer_gate_passed: bool
+
+    # Final classification
+    final_outcome: str
+    # "fully_augmented" | "clean_gate_rejected" | "augraphy_on_base" |
+    # "clean_augraphy_failed" | "clean_early_exit"
+
+    # Timings (ms)
+    offline_geom_ms: float
+    offline_gates_ms: float
+    offline_augraphy_ms: float
+    offline_texture_ms: float
+
+
+@dataclass(frozen=True)
 class RenderResult:
     image: np.ndarray | None
     render_layers: RenderedPage | None
@@ -77,6 +146,7 @@ class RenderResult:
     content_height_px: int | None = None
     rejection_reason: str | None = None
     metadata_prefix: str = ""
+    verovio_diagnostics: tuple[VerovioDiagnostic, ...] = ()
 
     @property
     def succeeded(self) -> bool:
@@ -123,6 +193,8 @@ class WorkerSuccess:
     preferred_5_6_rescue_attempted: bool = False
     preferred_5_6_rescue_succeeded: bool = False
     preferred_5_6_status: PreferredFiveSixStatus | None = None
+    verovio_diagnostics: tuple[VerovioDiagnosticEvent, ...] = ()
+    augmentation_trace: AugmentationTraceEvent | None = None
 
 
 @dataclass(frozen=True)
@@ -139,6 +211,7 @@ class WorkerFailure:
     preferred_5_6_rescue_attempted: bool = False
     preferred_5_6_rescue_succeeded: bool = False
     preferred_5_6_status: PreferredFiveSixStatus | None = None
+    verovio_diagnostics: tuple[VerovioDiagnosticEvent, ...] = ()
 
 
 WorkerOutcome = WorkerSuccess | WorkerFailure
@@ -152,7 +225,7 @@ class ResumeSnapshot:
     failure_reason_counts: dict[str, int]
     truncation_counts: dict[str, int]
     full_render_system_histogram: dict[str, int]
-    accepted_system_histogram: dict[str, int]
+    accepted_system_histogram: dict[str, dict[str, int]]
     truncated_output_system_histogram: dict[str, int]
     preferred_5_6_counts: dict[str, int]
     bottom_whitespace_px_histogram: dict[str, int]
@@ -164,3 +237,6 @@ class ResumeSnapshot:
     candidate_hit_counts: dict[str, int]
     retry_counts: dict[str, int]
     quarantined_sources: tuple[str, ...]
+    augmentation_outcome_counts: dict[str, int]
+    augmentation_band_counts: dict[str, int]
+    augmentation_branch_counts: dict[str, int]

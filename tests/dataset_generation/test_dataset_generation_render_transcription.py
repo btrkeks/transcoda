@@ -49,3 +49,13 @@ def test_build_render_transcription_does_not_duplicate_existing_terminator():
     )
 
     assert render_text.count("*-\t*-") == 1
+
+
+def test_build_render_transcription_appends_topology_correct_terminator_after_split():
+    render_text = build_render_transcription(
+        "**kern\t**kern\n*clefG2\t*clefF4\n=1\t=1\n4c\t4C\n*\t*^",
+        _make_recipe(),
+        seed=7,
+    )
+
+    assert render_text.splitlines()[-1] == "*-\t*-\t*-"

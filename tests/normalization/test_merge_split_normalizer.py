@@ -355,17 +355,57 @@ class TestMergeSplitNormalizer:
         pass_obj = MergeSplitNormalizer()
         ctx = NormalizationContext()
 
-        # 3→2 merge, then split to 3 (not matching original) - should preserve
-        # Actually this is 3→2→3 which matches, let's do 4→2→3 instead
-        # 4 spines merge to 2, barline, split to 3 (not 4)
+        # 4 spines merge to 1, barline, split to 2 (not 4), so it should not collapse.
         input_text = "*v\t*v\t*v\t*v\n=\t=\n*^\t*"
+        expected = "*v\t*v\t*v\t*v\n=\n*^\t*"
 
         pass_obj.prepare(input_text, ctx)
         result = pass_obj.transform(input_text, ctx)
         pass_obj.validate(result, ctx)
 
-        # Split restores to 3, not 4, so should NOT collapse
-        assert result == "*v\t*v\t*v\t*v\n=\t=\n*^\t*"
+        assert result == expected
+
+    def test_preserves_triple_merge_when_following_split_does_not_restore_original_width(self):
+        """Should use post-merge width for preserved triple-merge barlines."""
+        pass_obj = MergeSplitNormalizer()
+        ctx = NormalizationContext()
+
+        input_text = "*v\t*v\t*v\t*\n=\t=\n*\t*^"
+        expected = "*v\t*v\t*v\t*\n=\t=\n*\t*^"
+
+        pass_obj.prepare(input_text, ctx)
+        result = pass_obj.transform(input_text, ctx)
+        pass_obj.validate(result, ctx)
+
+        assert result == expected
+
+    def test_preserves_trailing_triple_merge_before_non_split_content(self):
+        """Should preserve a 5-spine triple-merge with a 3-field barline."""
+        pass_obj = MergeSplitNormalizer()
+        ctx = NormalizationContext()
+
+        input_text = "*\t*\t*v\t*v\t*v\n=\t=\t=\n4c\t4e\t4g"
+        expected = input_text
+
+        pass_obj.prepare(input_text, ctx)
+        result = pass_obj.transform(input_text, ctx)
+        pass_obj.validate(result, ctx)
+
+        assert result == expected
+
+    def test_normalizes_triple_merge_before_terminator(self):
+        """Should restore original width for merge→barline→terminator."""
+        pass_obj = MergeSplitNormalizer()
+        ctx = NormalizationContext()
+
+        input_text = "*v\t*v\t*v\t*\n=\t=\n*-\t*-"
+        expected = "=\t=\t=\t=\n*-\t*-\t*-\t*-"
+
+        pass_obj.prepare(input_text, ctx)
+        result = pass_obj.transform(input_text, ctx)
+        pass_obj.validate(result, ctx)
+
+        assert result == expected
 
     def test_merge_without_barline_preserved(self):
         """Should preserve merge lines that aren't followed by barline."""

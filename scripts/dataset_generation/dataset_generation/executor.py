@@ -5,23 +5,23 @@ from __future__ import annotations
 import json
 import multiprocessing as mp
 import time
-from collections import Counter
+from collections import Counter, defaultdict
+from collections.abc import Callable
 from concurrent.futures import FIRST_COMPLETED, TimeoutError, wait
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable
 
 from datasets import Features, Image, Sequence, Value
 from pebble import ProcessExpired, ProcessPool
 
-from scripts.dataset_generation.dataset_generation.image_generation.rendering.verovio_backend import (
-    VerovioRenderer,
-)
 from scripts.dataset_generation.dataset_generation.augmentation import augment_accepted_render
 from scripts.dataset_generation.dataset_generation.crash_repro import write_crash_artifact
 from scripts.dataset_generation.dataset_generation.failure_policy import (
     FailurePolicySettings,
     resolve_failure_policy,
+)
+from scripts.dataset_generation.dataset_generation.image_generation.rendering.verovio_backend import (
+    VerovioRenderer,
 )
 from scripts.dataset_generation.dataset_generation.io import append_jsonl, write_json
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
@@ -38,13 +38,14 @@ from scripts.dataset_generation.dataset_generation.source_index import (
     build_source_index,
 )
 from scripts.dataset_generation.dataset_generation.system_balance import (
-    DEFAULT_TOKENIZER_DIR,
     DEFAULT_CANDIDATE_PLAN_COUNT,
+    DEFAULT_TOKENIZER_DIR,
     choose_balanced_plan,
-    compute_tokenizer_fingerprint,
     compute_recipe_fingerprint,
+    compute_tokenizer_fingerprint,
     load_bundled_system_balance_spec,
     resolve_tokenizer_dir,
+    spine_class_for_count,
 )
 from scripts.dataset_generation.dataset_generation.types import (
     ResumeSnapshot,
@@ -121,6 +122,7 @@ def run_dataset_generation(
     quarantine_in: str | Path | None = None,
     quarantine_out: str | Path | None = None,
     quiet: bool = False,
+    capture_verovio_diagnostics: bool = True,
     recipe: ProductionRecipe | None = None,
     renderer: VerovioRenderer | None = None,
     render_fn: Callable[..., object] | None = None,
@@ -271,6 +273,7 @@ def run_dataset_generation(
                     renderer=sync_renderer,
                     render_fn=sync_render_callable,
                     augment_fn=sync_augment_callable,
+                    capture_verovio_diagnostics=capture_verovio_diagnostics,
                 )
                 pending_terminal[next_to_schedule] = outcome
                 next_to_schedule += 1
@@ -282,6 +285,7 @@ def run_dataset_generation(
                     next_to_commit_ref=next_to_commit_ref,
                     recipe=active_recipe,
                     target_samples=target_samples,
+                    run_context=run_context,
                 )
                 next_to_commit = next_to_commit_ref[0]
                 last_progress_at_ref = [last_progress_at]
@@ -307,7 +311,7 @@ def run_dataset_generation(
                 max_workers=resolved_num_workers,
                 max_tasks=_MAX_TASKS_PER_WORKER,
                 initializer=init_generation_worker,
-                initargs=(active_recipe,),
+                initargs=(active_recipe, capture_verovio_diagnostics),
                 context=mp.get_context("spawn"),
             ) as pool:
                 while True:
@@ -507,6 +511,7 @@ def run_dataset_generation(
                         next_to_commit_ref=next_to_commit_ref,
                         recipe=active_recipe,
                         target_samples=target_samples,
+                        run_context=run_context,
                     )
                     next_to_commit = next_to_commit_ref[0]
 
@@ -554,6 +559,7 @@ def run_dataset_generation(
             base_seed=base_seed,
             resume_mode=resume_mode,
             failure_policy=resolved_failure_policy.as_dict(),
+            capture_verovio_diagnostics=capture_verovio_diagnostics,
             quarantine_in=str(Path(quarantine_in).expanduser().resolve()) if quarantine_in else None,
             quarantine_out=str(quarantine_out_path),
             system_balance=_serialize_system_balance_runtime(balance_runtime),
@@ -601,6 +607,7 @@ def run_dataset_generation(
             base_seed=base_seed,
             resume_mode=resume_mode,
             failure_policy=resolved_failure_policy.as_dict(),
+            capture_verovio_diagnostics=capture_verovio_diagnostics,
             quarantine_in=str(Path(quarantine_in).expanduser().resolve()) if quarantine_in else None,
             quarantine_out=str(quarantine_out_path),
             system_balance=_serialize_system_balance_runtime(balance_runtime),
@@ -933,7 +940,7 @@ def _build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object
             "failure_reason_counts": Counter(),
             "truncation_counts": Counter({"attempted": 0, "rescued": 0, "failed": 0}),
             "full_render_system_histogram": Counter(),
-            "accepted_system_histogram": Counter(),
+            "accepted_system_histogram": defaultdict(Counter),
             "truncated_output_system_histogram": Counter(),
             "preferred_5_6_counts": Counter(
                 {
@@ -952,6 +959,9 @@ def _build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object
             "candidate_hit_counts": Counter(),
             "retry_counts": Counter(),
             "quarantined_sources": set(),
+            "augmentation_outcome_counts": Counter(),
+            "augmentation_band_counts": Counter(),
+            "augmentation_branch_counts": Counter(),
         }
     return {
         "next_sample_idx": snapshot.next_sample_idx,
@@ -962,8 +972,14 @@ def _build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object
         "full_render_system_histogram": Counter(
             {int(key): int(value) for key, value in snapshot.full_render_system_histogram.items()}
         ),
-        "accepted_system_histogram": Counter(
-            {int(key): int(value) for key, value in snapshot.accepted_system_histogram.items()}
+        "accepted_system_histogram": defaultdict(
+            Counter,
+            {
+                str(spine_cls): Counter(
+                    {int(bucket): int(count) for bucket, count in bucket_counts.items()}
+                )
+                for spine_cls, bucket_counts in snapshot.accepted_system_histogram.items()
+            },
         ),
         "truncated_output_system_histogram": Counter(
             {
@@ -1003,6 +1019,9 @@ def _build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object
         "candidate_hit_counts": Counter(snapshot.candidate_hit_counts),
         "retry_counts": Counter(snapshot.retry_counts),
         "quarantined_sources": {Path(path).expanduser().resolve() for path in snapshot.quarantined_sources},
+        "augmentation_outcome_counts": Counter(snapshot.augmentation_outcome_counts),
+        "augmentation_band_counts": Counter(snapshot.augmentation_band_counts),
+        "augmentation_branch_counts": Counter(snapshot.augmentation_branch_counts),
     }
 
 
@@ -1014,14 +1033,17 @@ def _commit_contiguous_results(
     next_to_commit_ref: list[int],
     recipe: ProductionRecipe,
     target_samples: int,
+    run_context: RunContext,
 ) -> list[dict[str, object]]:
     next_to_commit = next_to_commit_ref[0]
     while next_to_commit in pending_terminal:
         outcome = pending_terminal.pop(next_to_commit)
+        _write_verovio_events(run_context=run_context, outcome=outcome)
+        _write_augmentation_events(run_context=run_context, outcome=outcome)
         truncation_counts: Counter = counters["truncation_counts"]  # type: ignore[assignment]
         failure_counts: Counter = counters["failure_reason_counts"]  # type: ignore[assignment]
         full_render_histogram: Counter = counters["full_render_system_histogram"]  # type: ignore[assignment]
-        system_histogram: Counter = counters["accepted_system_histogram"]  # type: ignore[assignment]
+        system_histogram: defaultdict[str, Counter] = counters["accepted_system_histogram"]  # type: ignore[assignment]
         truncated_output_histogram: Counter = counters["truncated_output_system_histogram"]  # type: ignore[assignment]
         preferred_5_6_counts: Counter = counters["preferred_5_6_counts"]  # type: ignore[assignment]
         bottom_whitespace_px_histogram: Counter = counters["bottom_whitespace_px_histogram"]  # type: ignore[assignment]
@@ -1042,7 +1064,10 @@ def _commit_contiguous_results(
             if int(counters["accepted_samples"]) < target_samples:
                 pending_rows.append(outcome_to_dataset_row(outcome, recipe=recipe))
                 counters["accepted_samples"] = int(counters["accepted_samples"]) + 1
-                system_histogram[int(outcome.sample.system_count)] += 1
+                accepted_spine_class = spine_class_for_count(
+                    outcome.sample.initial_kern_spine_count
+                )
+                system_histogram[accepted_spine_class][int(outcome.sample.system_count)] += 1
                 if outcome.sample.bottom_whitespace_px is not None:
                     bottom_whitespace_px_histogram[int(outcome.sample.bottom_whitespace_px)] += 1
                 if outcome.sample.top_whitespace_px is not None:
@@ -1051,6 +1076,13 @@ def _commit_contiguous_results(
                     content_height_px_histogram[int(outcome.sample.content_height_px)] += 1
                 if outcome.sample.truncation_applied:
                     truncated_output_histogram[int(outcome.sample.system_count)] += 1
+                if outcome.augmentation_trace is not None:
+                    aug_outcome_counts: Counter = counters["augmentation_outcome_counts"]  # type: ignore[assignment]
+                    aug_band_counts: Counter = counters["augmentation_band_counts"]  # type: ignore[assignment]
+                    aug_branch_counts: Counter = counters["augmentation_branch_counts"]  # type: ignore[assignment]
+                    aug_outcome_counts[outcome.augmentation_trace.final_outcome] += 1
+                    aug_band_counts[outcome.augmentation_trace.band] += 1
+                    aug_branch_counts[outcome.augmentation_trace.branch] += 1
             else:
                 failure_counts["discarded_after_target"] += 1
         else:
@@ -1061,6 +1093,32 @@ def _commit_contiguous_results(
     counters["next_sample_idx"] = next_to_commit
     next_to_commit_ref[0] = next_to_commit
     return pending_rows
+
+
+def _write_verovio_events(
+    *,
+    run_context: RunContext,
+    outcome: WorkerSuccess | WorkerFailure,
+) -> None:
+    if not outcome.verovio_diagnostics:
+        return
+    append_jsonl(
+        run_context.verovio_events_path,
+        [asdict(event) for event in outcome.verovio_diagnostics],
+    )
+
+
+def _write_augmentation_events(
+    *,
+    run_context: RunContext,
+    outcome: WorkerSuccess | WorkerFailure,
+) -> None:
+    if not isinstance(outcome, WorkerSuccess) or outcome.augmentation_trace is None:
+        return
+    append_jsonl(
+        run_context.augmentation_events_path,
+        [asdict(outcome.augmentation_trace)],
+    )
 
 
 def _maybe_flush_and_report(
@@ -1097,8 +1155,11 @@ def _maybe_flush_and_report(
                 for key, value in dict(counters["full_render_system_histogram"]).items()
             },
             "accepted_system_histogram": {
-                str(key): int(value)
-                for key, value in dict(counters["accepted_system_histogram"]).items()
+                str(spine_cls): {
+                    str(bucket): int(count)
+                    for bucket, count in dict(bucket_counts).items()
+                }
+                for spine_cls, bucket_counts in dict(counters["accepted_system_histogram"]).items()
             },
             "truncated_output_system_histogram": {
                 str(key): int(value)
@@ -1116,6 +1177,9 @@ def _maybe_flush_and_report(
             "terminal_process_expired_crash_artifacts": int(
                 counters["terminal_process_expired_crash_artifacts"]
             ),
+            "augmentation_outcome_counts": dict(counters["augmentation_outcome_counts"]),
+            "augmentation_band_counts": dict(counters["augmentation_band_counts"]),
+            "augmentation_branch_counts": dict(counters["augmentation_branch_counts"]),
         }
         progress_payload.update(_build_layout_summary(counters))
         write_json(run_context.progress_path, progress_payload)
@@ -1144,8 +1208,11 @@ def _snapshot_from_counters(counters: dict[str, object]) -> RuntimeSnapshot:
             for key, value in dict(counters["full_render_system_histogram"]).items()
         },
         accepted_system_histogram={
-            str(key): int(value)
-            for key, value in dict(counters["accepted_system_histogram"]).items()
+            str(spine_cls): {
+                str(bucket): int(count)
+                for bucket, count in dict(bucket_counts).items()
+            }
+            for spine_cls, bucket_counts in dict(counters["accepted_system_histogram"]).items()
         },
         truncated_output_system_histogram={
             str(key): int(value)
@@ -1177,6 +1244,9 @@ def _snapshot_from_counters(counters: dict[str, object]) -> RuntimeSnapshot:
         quarantined_sources=tuple(
             sorted(str(path) for path in counters["quarantined_sources"])  # type: ignore[arg-type]
         ),
+        augmentation_outcome_counts=dict(counters["augmentation_outcome_counts"]),
+        augmentation_band_counts=dict(counters["augmentation_band_counts"]),
+        augmentation_branch_counts=dict(counters["augmentation_branch_counts"]),
     )
 
 

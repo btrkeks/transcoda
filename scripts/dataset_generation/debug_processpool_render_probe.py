@@ -171,7 +171,7 @@ def _probe_one(file_path: str, variant_idx: int) -> dict[str, Any]:
             }
 
         pre_metrics = _compute_metrics(result.image)
-        post_image = offline_augment(
+        post_image, _, _ = offline_augment(
             result.image,
             filename=filename,
             variant_idx=variant_idx,

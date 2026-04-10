@@ -1,7 +1,8 @@
-import pytest
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 from scripts.dataset_generation.dataset_generation import main as main_module
 
@@ -73,6 +74,28 @@ def test_main_defaults_explicit_output_dir_to_sibling_runs(monkeypatch):
     assert captured["artifacts_out_dir"] is None
 
 
+def test_main_passes_capture_verovio_diagnostics_flag(monkeypatch):
+    captured = {}
+
+    def fake_run_dataset_generation(**kwargs):
+        captured.update(kwargs)
+        return object()
+
+    monkeypatch.setattr(main_module, "run_dataset_generation", fake_run_dataset_generation)
+    monkeypatch.setattr(main_module, "asdict", lambda summary: {"ok": True})
+
+    result = main_module.main(
+        "data/interim/train/pdmx/3_normalized",
+        name="smoke_v1",
+        target_samples=4,
+        quiet=True,
+        capture_verovio_diagnostics=False,
+    )
+
+    assert result == {"ok": True}
+    assert captured["capture_verovio_diagnostics"] is False
+
+
 def test_main_rejects_name_and_output_dir_together():
     with pytest.raises(ValueError, match="either output_dir or name"):
         main_module.main(
@@ -133,6 +156,34 @@ def test_cli_rejects_removed_balance_flags(flag_args):
                 "true",
             ]
         )
+
+
+def test_cli_parses_capture_verovio_diagnostics(monkeypatch):
+    captured = {}
+
+    def fake_main(*input_dirs, **kwargs):
+        captured["input_dirs"] = input_dirs
+        captured.update(kwargs)
+        return {"ok": True}
+
+    monkeypatch.setattr(main_module, "main", fake_main)
+
+    result = main_module.cli(
+        [
+            "data/interim/train/pdmx/3_normalized",
+            "--name",
+            "smoke_v1",
+            "--target_samples",
+            "4",
+            "--capture_verovio_diagnostics",
+            "false",
+            "--quiet",
+            "true",
+        ]
+    )
+
+    assert result == 0
+    assert captured["capture_verovio_diagnostics"] is False
 
 
 def test_python_module_help_smoke():

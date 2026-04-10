@@ -26,7 +26,7 @@ from augraphy import (
 ImageU8 = npt.NDArray[np.uint8]
 
 
-def augraphy_augment(image: ImageU8, seed: int | None = None) -> ImageU8:
+def augraphy_augment(image: ImageU8, seed: int | None = None) -> tuple[ImageU8, str]:
     """
     Apply Augraphy-based, document-style degradations to a rendered music page.
 
@@ -37,24 +37,23 @@ def augraphy_augment(image: ImageU8, seed: int | None = None) -> ImageU8:
     failures should fall back to the original image rather than failing the
     whole sample. (Workers stream results directly into the HF dataset.)
 
-    Responsibilities
-    ----------------
-    1) No-op rate: With 5% probability, return the image unchanged.
-    2) Lazy, per-process pipeline: Build an AugraphyPipeline once per worker and cache.
-    3) Pipeline design: light-to-moderate artifacts typical of scanned music.
-    4) Type & shape guarantees: return uint8, (H,W,3), C-contiguous.
-    5) Determinism: optional AUGRAPHY_SEED.
-    6) Robustness: try/except around augmentation; fallback to original.
-    7) Performance: reuse cached pipeline; conservative probabilities.
+    Returns
+    -------
+    tuple[ImageU8, str]
+        The (possibly augmented) image and an outcome tag:
+        - ``"applied"``       – pipeline ran without exception
+        - ``"noop"``          – 5 % random skip
+        - ``"error"``         – exception caught, returned original
+        - ``"invalid_input"`` – input validation failed, returned original
     """
     # 1) Validate and normalize input
     if not isinstance(image, np.ndarray):
         print("[WARNING] augraphy_augment: Input is not a NumPy array, returning original")
-        return image
+        return image, "invalid_input"
 
     if image.dtype != np.uint8:
         print("[WARNING] augraphy_augment: Input dtype is not uint8, returning original")
-        return image
+        return image, "invalid_input"
 
     # Convert grayscale to RGB if needed
     if image.ndim == 2:
@@ -63,7 +62,7 @@ def augraphy_augment(image: ImageU8, seed: int | None = None) -> ImageU8:
         image = np.repeat(image, 3, axis=2)
     elif image.ndim != 3 or image.shape[2] not in (3, 4):
         print(f"[WARNING] augraphy_augment: Unexpected shape {image.shape}, returning original")
-        return image
+        return image, "invalid_input"
 
     # Drop alpha if RGBA
     if image.shape[2] == 4:
@@ -81,7 +80,7 @@ def augraphy_augment(image: ImageU8, seed: int | None = None) -> ImageU8:
     try:
         # 2) 5% no-op rate
         if np.random.random() < 0.05:
-            return np.ascontiguousarray(image)
+            return np.ascontiguousarray(image), "noop"
 
         # 3) Apply augmentation pipeline (robustness wrapper)
         pipeline = _get_pipeline(seed=seed)
@@ -98,11 +97,11 @@ def augraphy_augment(image: ImageU8, seed: int | None = None) -> ImageU8:
         elif output.ndim == 3 and output.shape[2] == 1:
             output = np.repeat(output, 3, axis=2)
 
-        return np.ascontiguousarray(output)
+        return np.ascontiguousarray(output), "applied"
 
     except Exception as e:
         print(f"[WARNING] augraphy_augment failed: {e}. Returning original image.")
-        return np.ascontiguousarray(image)
+        return np.ascontiguousarray(image), "error"
     finally:
         if seed is not None and np_state is not None and py_state is not None:
             np.random.set_state(np_state)

@@ -1,21 +1,35 @@
 import numpy as np
-import cv2
 
 from scripts.dataset_generation.dataset_generation.image_augmentation.geometric_augment import (
-    GeometricTransform,
-    apply_geometric_transform,
     geometric_augment,
 )
 from scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment import (
-    _background_border_value,
-    _detect_border_fill,
+    OfflineAugmentTrace,
     _passes_out_of_bounds_gate_from_masks,
-    required_padding_for_safe_crop,
     offline_augment,
     passes_quality_gate,
     passes_transform_consistency,
 )
 from scripts.dataset_generation.dataset_generation.image_generation.types import RenderedPage
+
+
+def _make_good_candidate(base):
+    """Build a (fg, alpha, mask, True) tuple that passes the OOB gate."""
+    fg = base.copy()
+    alpha = np.where(np.min(base, axis=2) < 255, 255, 0).astype(np.uint8)
+    mask = alpha.copy()
+    return fg, alpha, mask, True
+
+
+def _make_bad_candidate(shape):
+    """Build a (fg, alpha, mask, True) tuple that fails the OOB gate."""
+    h, w = shape[:2]
+    return (
+        np.zeros((h, w, 3), dtype=np.uint8),
+        np.zeros((h, w), dtype=np.uint8),
+        np.zeros((h, w), dtype=np.uint8),
+        True,
+    )
 
 
 def test_geometric_augment_preserves_shape_dtype():
@@ -86,23 +100,27 @@ def test_passes_transform_consistency_accepts_small_shift():
     assert passes_transform_consistency(base, shifted)
 
 
-def test_offline_augment_falls_back_to_base_when_all_fail(monkeypatch):
+def test_offline_augment_falls_back_to_textured_candidate_when_augraphy_fails(monkeypatch):
     base = np.full((64, 64, 3), 255, dtype=np.uint8)
     base[20:44, 16:48] = 0
-    bad = np.zeros((64, 64, 3), dtype=np.uint8)
     invalid = np.zeros((10, 10, 3), dtype=np.uint8)
 
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment._build_augmented_candidate",
-        lambda **kwargs: (bad, np.zeros((64, 64), dtype=np.uint8)),
+        lambda **kwargs: _make_bad_candidate(base.shape),
     )
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment.augraphy_augment",
-        lambda image, seed=None: invalid,
+        lambda image, seed=None: (invalid, "applied"),
     )
 
-    out = offline_augment(base, filename="x.krn", variant_idx=0, augment_seed=7)
-    assert np.array_equal(out, base)
+    out, _, trace = offline_augment(base, filename="x.krn", variant_idx=0, augment_seed=7)
+    assert out.shape == base.shape
+    assert out.dtype == np.uint8
+    assert isinstance(trace, OfflineAugmentTrace)
+    assert trace.augraphy_fallback_attempted
+    assert not trace.augraphy_normalize_accepted
+    assert trace.augraphy_fallback_normalize_accepted is False
 
 
 def test_offline_augment_accepts_post_augraphy_output_without_quality_gate(monkeypatch):
@@ -112,99 +130,101 @@ def test_offline_augment_accepts_post_augraphy_output_without_quality_gate(monke
 
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment._build_augmented_candidate",
-        lambda **kwargs: (base, np.where(base[:, :, 0] < 255, 255, 0).astype(np.uint8)),
+        lambda **kwargs: _make_good_candidate(base),
     )
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment.augraphy_augment",
-        lambda image, seed=None: dark,
+        lambda image, seed=None: (dark, "applied"),
     )
 
-    out = offline_augment(base, filename="x.krn", variant_idx=0, augment_seed=7)
+    out, _, trace = offline_augment(base, filename="x.krn", variant_idx=0, augment_seed=7)
     assert np.array_equal(out, dark)
+    assert trace.augraphy_outcome == "applied"
+    assert trace.augraphy_normalize_accepted
 
 
 def test_offline_augment_retries_conservative_when_oob_gate_fails(monkeypatch):
     base = np.full((64, 64, 3), 255, dtype=np.uint8)
     base[20:44, 16:48] = 0
-    bad = np.zeros((64, 64, 3), dtype=np.uint8)
     calls = []
+
+    good = _make_good_candidate(base)
+    bad = _make_bad_candidate(base.shape)
 
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment._build_augmented_candidate",
         lambda conservative, **kwargs: (
-            calls.append(conservative) or (
-                (base, np.where(base[:, :, 0] < 255, 255, 0).astype(np.uint8))
-                if conservative
-                else (bad, np.zeros((64, 64), dtype=np.uint8))
-            )
+            calls.append(conservative) or (good if conservative else bad)
         ),
     )
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment.augraphy_augment",
-        lambda image, seed=None: image,
+        lambda image, seed=None: (image, "applied"),
     )
 
-    out = offline_augment(base, filename="x.krn", variant_idx=1, augment_seed=7)
-    assert np.array_equal(out, base)
+    out, _, trace = offline_augment(base, filename="x.krn", variant_idx=1, augment_seed=7)
+    assert out.shape == base.shape
+    assert out.dtype == np.uint8
     assert calls == [False, True]
+    assert trace.geom_conservative_retry
+    assert trace.geom_oob_outcome == "retry_pass"
 
 
-def test_offline_augment_returns_substage_timings(monkeypatch):
+def test_offline_augment_returns_trace_with_timings(monkeypatch):
     base = np.full((64, 64, 3), 255, dtype=np.uint8)
     base[20:44, 16:48] = 0
 
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment._build_augmented_candidate",
-        lambda **kwargs: (base, np.where(base[:, :, 0] < 255, 255, 0).astype(np.uint8)),
+        lambda **kwargs: _make_good_candidate(base),
     )
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment.augraphy_augment",
-        lambda image, seed=None: image,
+        lambda image, seed=None: (image, "applied"),
     )
 
-    out, timings = offline_augment(
+    out, _, trace = offline_augment(
         base,
         filename="x.krn",
         variant_idx=0,
         augment_seed=11,
-        return_timings=True,
     )
-    assert np.array_equal(out, base)
-    assert set(timings.keys()) == {
-        "offline_geom_ms",
-        "offline_gates_ms",
-        "offline_augraphy_ms",
-        "offline_texture_ms",
-    }
-    assert timings["offline_geom_ms"] >= 0.0
-    assert timings["offline_gates_ms"] >= 0.0
-    assert timings["offline_augraphy_ms"] >= 0.0
-    assert timings["offline_texture_ms"] >= 0.0
+    assert out.shape == base.shape
+    assert isinstance(trace, OfflineAugmentTrace)
+    assert trace.offline_geom_ms >= 0.0
+    assert trace.offline_gates_ms >= 0.0
+    assert trace.offline_augraphy_ms >= 0.0
+    assert trace.offline_texture_ms >= 0.0
+    assert trace.branch == "geometric"
 
 
-def test_offline_augment_realistic_branch_avoids_white_wedges(monkeypatch):
+def test_offline_augment_trace_records_augraphy_fallback(monkeypatch):
     base = np.full((64, 64, 3), 255, dtype=np.uint8)
     base[20:44, 16:48] = 0
-    layers = RenderedPage(image=base, foreground=base.copy(), alpha=(255 - base[:, :, 0]).astype(np.uint8))
+    bad_shape = np.zeros((10, 10, 3), dtype=np.uint8)
+
+    call_count = [0]
+
+    def mock_augraphy(image, seed=None):
+        call_count[0] += 1
+        if call_count[0] == 1:
+            return bad_shape, "applied"  # will fail normalize
+        return image, "applied"  # fallback succeeds
 
     monkeypatch.setattr(
-        "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment._sample_branch_choice",
-        lambda rng: "realistic",
+        "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment._build_augmented_candidate",
+        lambda **kwargs: _make_good_candidate(base),
     )
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment.augraphy_augment",
-        lambda image, seed=None: image,
+        mock_augraphy,
     )
 
-    out = offline_augment(
-        base,
-        render_layers=layers,
-        filename="x.krn",
-        variant_idx=0,
-        augment_seed=5,
-    )
-    assert out.shape == base.shape
-    assert not np.any(np.all(out == 255, axis=2))
+    out, _, trace = offline_augment(base, filename="x.krn", variant_idx=0, augment_seed=5)
+    assert not trace.augraphy_normalize_accepted
+    assert trace.augraphy_fallback_attempted
+    assert trace.augraphy_fallback_outcome == "applied"
+    assert trace.augraphy_fallback_normalize_accepted
 
 
 def test_gate_rejects_visible_extra_notation_even_if_alpha_mask_misses_it():
@@ -221,84 +241,8 @@ def test_gate_rejects_visible_extra_notation_even_if_alpha_mask_misses_it():
     assert _passes_out_of_bounds_gate_from_masks(base_mask, candidate_mask)
 
 
-def test_required_padding_for_safe_crop_identity_returns_safety_pad():
-    assert required_padding_for_safe_crop(None, (128, 96)) == (8, 8)
-
-
-def test_required_padding_for_safe_crop_grows_for_translation():
-    transform = GeometricTransform(
-        affine=np.array([[1.0, 0.0, 18.0], [0.0, 1.0, -11.0]], dtype=np.float32),
-        perspective=None,
-    )
-    pad_y, pad_x = required_padding_for_safe_crop(transform, (128, 96))
-    assert pad_x >= 26
-    assert pad_y >= 19
-
-
-def test_required_padding_for_safe_crop_handles_perspective():
-    transform = GeometricTransform(
-        affine=np.array([[1.0, 0.0, 6.0], [0.0, 1.0, 4.0]], dtype=np.float32),
-        perspective=np.array(
-            [[1.0, 0.0, 3.0], [0.0, 1.0, 2.0], [0.0008, 0.0004, 1.0]],
-            dtype=np.float32,
-        ),
-    )
-    pad_y, pad_x = required_padding_for_safe_crop(transform, (128, 96))
-    assert pad_x >= 8
-    assert pad_y >= 8
-    assert pad_x < 200
-    assert pad_y < 200
-
-
-def test_realistic_branch_fixed_transform_does_not_create_reflected_right_strip():
-    from scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment import (
-        _center_crop,
-        _embed_in_canvas,
-        _normalize_render_layers,
-        _realistic_branch,
-        _translate_transform,
-    )
-
-    base = np.full((128, 128, 3), 255, dtype=np.uint8)
-    base[22:104, 12:108] = 0
-    layers = _normalize_render_layers(base, None)
-    transform = GeometricTransform(
-        affine=np.array(
-            [[0.75544864, -0.01353208, 50.862587], [0.01676752, 0.93607205, 22.991432]],
-            dtype=np.float32,
-        ),
-        perspective=None,
-    )
-
-    out, visible_mask = _realistic_branch(
-        base,
-        layers,
-        transform,
-        textures=[],
-        rng=np.random.default_rng(17),
-    )
-
-    pad_y, pad_x = required_padding_for_safe_crop(transform, base.shape[:2])
-    alpha_canvas = _embed_in_canvas(layers.alpha, (128 + (2 * pad_y), 128 + (2 * pad_x)), (pad_y, pad_x), 0)
-    adjusted_transform = _translate_transform(transform, offset_x=pad_x, offset_y=pad_y)
-    warped_alpha = apply_geometric_transform(
-        alpha_canvas,
-        adjusted_transform,
-        border_mode=cv2.BORDER_CONSTANT,
-        border_value=0,
-        interpolation=cv2.INTER_LINEAR,
-    )
-    cropped_alpha = _center_crop(warped_alpha, (128, 128), (pad_y, pad_x))
-    expected_support = cv2.dilate((cropped_alpha >= 8).astype(np.uint8), np.ones((3, 3), np.uint8))
-    border_value = _background_border_value(np.full((128 + (2 * pad_y), 128 + (2 * pad_x), 3), 245, dtype=np.uint8))
-
-    assert out.shape == base.shape
-    assert visible_mask.shape == base.shape[:2]
-    assert not np.any((visible_mask > 0) & (expected_support == 0))
-    assert not _detect_border_fill(out, border_value, band_px=4)
-
-
-def test_offline_augment_foreground_branch_composites_without_hard_seams(monkeypatch):
+def test_offline_augment_composites_with_blended_alpha(monkeypatch):
+    """With partial alpha, output should have blended (intermediate) pixel values."""
     base = np.full((64, 64, 3), 255, dtype=np.uint8)
     base[20:44, 16:48] = 0
     alpha = np.zeros((64, 64), dtype=np.uint8)
@@ -308,15 +252,11 @@ def test_offline_augment_foreground_branch_composites_without_hard_seams(monkeyp
     layers = RenderedPage(image=base, foreground=foreground, alpha=alpha)
 
     monkeypatch.setattr(
-        "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment._sample_branch_choice",
-        lambda rng: "foreground",
-    )
-    monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment.augraphy_augment",
-        lambda image, seed=None: image,
+        lambda image, seed=None: (image, "applied"),
     )
 
-    out = offline_augment(
+    out, _, trace = offline_augment(
         base,
         render_layers=layers,
         filename="x.krn",
@@ -325,3 +265,27 @@ def test_offline_augment_foreground_branch_composites_without_hard_seams(monkeyp
     )
     assert out.shape == base.shape
     assert np.any((out[:, :, 0] > 0) & (out[:, :, 0] < 255))
+    assert trace.branch == "geometric"
+
+
+def test_retry_fail_still_gets_textured_background(monkeypatch):
+    """Even when both OOB gate attempts fail, the output should have a textured
+    (non-white) background rather than the original white Verovio render."""
+    base = np.full((64, 64, 3), 255, dtype=np.uint8)
+    base[20:44, 16:48] = 0
+
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment._build_augmented_candidate",
+        lambda **kwargs: _make_bad_candidate(base.shape),
+    )
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment.augraphy_augment",
+        lambda image, seed=None: (image, "applied"),
+    )
+
+    out, _, trace = offline_augment(base, filename="x.krn", variant_idx=0, augment_seed=42)
+    assert out.shape == base.shape
+    assert trace.geom_oob_outcome == "retry_fail"
+    # The non-notation region should have textured background (not all 255)
+    bg_region = out[0:19, 0:15]  # top-left corner, well away from notation
+    assert not np.all(bg_region == 255), "Background should be textured, not plain white"

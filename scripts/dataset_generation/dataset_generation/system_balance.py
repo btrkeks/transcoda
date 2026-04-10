@@ -17,7 +17,7 @@ from scripts.dataset_generation.dataset_generation.source_index import SourceInd
 from scripts.dataset_generation.dataset_generation.types import SamplePlan
 
 DEFAULT_TOKENIZER_DIR = Path("vocab/bpe3k-splitspaces")
-TARGET_SYSTEM_BUCKETS = (1, 2, 3, 4, 5, 6)
+TARGET_SYSTEM_BUCKETS = (1, 2, 3, 4, 5, 6, 7)
 DEFAULT_CANDIDATE_PLAN_COUNT = 8
 DEFAULT_BUNDLED_SYSTEM_BALANCE_SPEC_PATH = (
     Path(__file__).resolve().parent / "default_system_balance_spec.json"
@@ -183,18 +183,23 @@ def load_bundled_system_balance_spec() -> SystemBalanceSpec:
     return load_system_balance_spec(DEFAULT_BUNDLED_SYSTEM_BALANCE_SPEC_PATH)
 
 
-def choose_target_bucket(accepted_system_histogram: Mapping[int | str, int]) -> int:
+def choose_target_bucket(
+    accepted_system_histogram: Mapping[int | str, int],
+    *,
+    available_buckets: tuple[int, ...] | None = None,
+) -> int:
+    buckets = available_buckets if available_buckets is not None else TARGET_SYSTEM_BUCKETS
     bucket_counts = {
         bucket: int(
             accepted_system_histogram.get(bucket, accepted_system_histogram.get(str(bucket), 0))  # type: ignore[arg-type]
         )
-        for bucket in TARGET_SYSTEM_BUCKETS
+        for bucket in buckets
     }
     min_count = min(bucket_counts.values())
-    for bucket in TARGET_SYSTEM_BUCKETS:
+    for bucket in buckets:
         if bucket_counts[bucket] == min_count:
             return bucket
-    return TARGET_SYSTEM_BUCKETS[0]
+    return buckets[0]
 
 
 def choose_balanced_plan(
@@ -205,7 +210,7 @@ def choose_balanced_plan(
     base_seed: int,
     excluded_paths: set[Path] | None,
     spec: SystemBalanceSpec,
-    accepted_system_histogram: Mapping[int | str, int],
+    accepted_system_histogram: Mapping[str, Mapping[int | str, int]],
     candidate_plan_count: int | None = None,
 ) -> CandidatePlanScore:
     available_buckets = tuple(
@@ -213,14 +218,6 @@ def choose_balanced_plan(
     )
     if not available_buckets:
         raise ValueError("System balance spec does not define any target buckets")
-    bucket_counts = {
-        bucket: int(
-            accepted_system_histogram.get(bucket, accepted_system_histogram.get(str(bucket), 0))  # type: ignore[arg-type]
-        )
-        for bucket in available_buckets
-    }
-    min_count = min(bucket_counts.values())
-    target_bucket = next(bucket for bucket in available_buckets if bucket_counts[bucket] == min_count)
 
     total_candidates = max(1, int(candidate_plan_count or spec.candidate_plan_count or 1))
     best_score: CandidatePlanScore | None = None
@@ -245,6 +242,8 @@ def choose_balanced_plan(
         line_count = int(plan.source_non_empty_line_count)
         source_max_initial_spine_count = int(plan.source_max_initial_spine_count)
         spine_class = spine_class_for_count(source_max_initial_spine_count)
+        class_histogram = accepted_system_histogram.get(spine_class, {})
+        target_bucket = choose_target_bucket(class_histogram, available_buckets=available_buckets)
         bucket = _resolve_line_count_bucket(spec=spec, spine_class=spine_class, target_bucket=target_bucket)
         vertical_fit_bucket = _resolve_vertical_fit_bucket(
             spec=spec,

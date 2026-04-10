@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from src.core.kern_utils import split_into_same_spine_nr_chunks_and_measures
+from src.core.kern_utils import (
+    is_spinemerge_line,
+    is_spinesplit_line,
+    split_into_same_spine_nr_chunks_and_measures,
+)
 
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.types import (
@@ -45,7 +49,9 @@ class PrefixTruncationSpace:
                 f"chunk_count must be in [1, {total_chunks}], got {chunk_count}"
             )
 
-        transcription = "".join(self.chunks[:chunk_count]).rstrip("\n")
+        transcription = _strip_trailing_spine_transition_lines(
+            "".join(self.chunks[:chunk_count]).rstrip("\n")
+        )
         if not transcription.strip():
             return None
         ratio = float(chunk_count) / float(total_chunks)
@@ -60,6 +66,13 @@ class PrefixTruncationSpace:
 def build_prefix_truncation_space(kern_text: str) -> PrefixTruncationSpace:
     chunks = tuple(split_into_same_spine_nr_chunks_and_measures(kern_text))
     return PrefixTruncationSpace(chunks=chunks)
+
+
+def _strip_trailing_spine_transition_lines(text: str) -> str:
+    lines = text.rstrip("\n").split("\n")
+    while lines and (is_spinesplit_line(lines[-1]) or is_spinemerge_line(lines[-1])):
+        lines.pop()
+    return "\n".join(lines)
 
 
 def truncate_by_chunk_count(kern_text: str, chunk_count: int) -> tuple[str, float]:

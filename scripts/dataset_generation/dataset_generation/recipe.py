@@ -45,8 +45,8 @@ class RenderOnlyAugmentationPolicy:
 class TruncationPolicy:
     accept_without_truncation_max_systems: int = 4
     preferred_min_systems: int = 5
-    preferred_max_systems: int = 6
-    required_over_systems: int = 6
+    preferred_max_systems: int = 7
+    required_over_systems: int = 7
     max_candidate_trials: int = 24
 
 

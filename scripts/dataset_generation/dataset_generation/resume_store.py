@@ -46,7 +46,7 @@ class RuntimeSnapshot:
     failure_reason_counts: dict[str, int]
     truncation_counts: dict[str, int]
     full_render_system_histogram: dict[str, int]
-    accepted_system_histogram: dict[str, int]
+    accepted_system_histogram: dict[str, dict[str, int]]
     truncated_output_system_histogram: dict[str, int]
     preferred_5_6_counts: dict[str, int]
     bottom_whitespace_px_histogram: dict[str, int]
@@ -58,6 +58,9 @@ class RuntimeSnapshot:
     candidate_hit_counts: dict[str, int]
     retry_counts: dict[str, int]
     quarantined_sources: tuple[str, ...]
+    augmentation_outcome_counts: dict[str, int]
+    augmentation_band_counts: dict[str, int]
+    augmentation_branch_counts: dict[str, int]
 
 
 class ResumableShardStore:
@@ -205,6 +208,9 @@ class ResumableShardStore:
             self._set_meta(conn, "candidate_hit_counts", snapshot.candidate_hit_counts)
             self._set_meta(conn, "retry_counts", snapshot.retry_counts)
             self._set_meta(conn, "quarantined_sources", list(snapshot.quarantined_sources))
+            self._set_meta(conn, "augmentation_outcome_counts", snapshot.augmentation_outcome_counts)
+            self._set_meta(conn, "augmentation_band_counts", snapshot.augmentation_band_counts)
+            self._set_meta(conn, "augmentation_branch_counts", snapshot.augmentation_branch_counts)
             self._set_meta(conn, "terminal_status", "running")
             self._set_meta(conn, "last_flush_at", time.time())
 
@@ -257,6 +263,15 @@ class ResumableShardStore:
                 candidate_hit_counts=dict(self._get_meta(conn, "candidate_hit_counts", {})),
                 retry_counts=dict(self._get_meta(conn, "retry_counts", {})),
                 quarantined_sources=tuple(self._get_meta(conn, "quarantined_sources", [])),
+                augmentation_outcome_counts=dict(
+                    self._get_meta(conn, "augmentation_outcome_counts", {})
+                ),
+                augmentation_band_counts=dict(
+                    self._get_meta(conn, "augmentation_band_counts", {})
+                ),
+                augmentation_branch_counts=dict(
+                    self._get_meta(conn, "augmentation_branch_counts", {})
+                ),
             )
 
         if not shard_rows:
@@ -381,6 +396,9 @@ class ResumableShardStore:
             self._set_meta(conn, "candidate_hit_counts", {})
             self._set_meta(conn, "retry_counts", {})
             self._set_meta(conn, "quarantined_sources", [])
+            self._set_meta(conn, "augmentation_outcome_counts", {})
+            self._set_meta(conn, "augmentation_band_counts", {})
+            self._set_meta(conn, "augmentation_branch_counts", {})
             self._set_meta(conn, "completed", False)
             self._set_meta(conn, "terminal_status", "running")
 
@@ -430,6 +448,15 @@ class ResumableShardStore:
                 candidate_hit_counts=dict(self._get_meta(conn, "candidate_hit_counts", {})),
                 retry_counts=dict(self._get_meta(conn, "retry_counts", {})),
                 quarantined_sources=tuple(self._get_meta(conn, "quarantined_sources", [])),
+                augmentation_outcome_counts=dict(
+                    self._get_meta(conn, "augmentation_outcome_counts", {})
+                ),
+                augmentation_band_counts=dict(
+                    self._get_meta(conn, "augmentation_band_counts", {})
+                ),
+                augmentation_branch_counts=dict(
+                    self._get_meta(conn, "augmentation_branch_counts", {})
+                ),
             )
 
     def _write_pending_shard(self, pending_rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -505,6 +532,7 @@ def write_run_info(
     base_seed: int,
     resume_mode: str,
     failure_policy: dict[str, int | str] | None = None,
+    capture_verovio_diagnostics: bool = True,
     quarantine_in: str | None = None,
     quarantine_out: str | None = None,
     system_balance: dict[str, object] | None = None,
@@ -531,8 +559,11 @@ def write_run_info(
         "base_seed": base_seed,
         "resume_mode": resume_mode,
         "failure_policy": failure_policy,
+        "capture_verovio_diagnostics": capture_verovio_diagnostics,
         "quarantine_in": quarantine_in,
         "quarantine_out": quarantine_out,
+        "verovio_events_path": str(run_context.verovio_events_path),
+        "augmentation_events_path": str(run_context.augmentation_events_path),
         "system_balance": system_balance,
         "recipe_version": recipe.version,
         "runtime_seconds": runtime_seconds,

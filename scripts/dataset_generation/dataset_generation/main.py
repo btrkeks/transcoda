@@ -61,6 +61,7 @@ def main(
     quarantine_in: str | None = None,
     quarantine_out: str | None = None,
     quiet: bool = False,
+    capture_verovio_diagnostics: bool = True,
 ) -> dict[str, object]:
     resolved_output_dir, resolved_artifacts_out_dir = _resolve_output_layout(
         output_dir=output_dir,
@@ -80,6 +81,7 @@ def main(
         quarantine_in=quarantine_in,
         quarantine_out=quarantine_out,
         quiet=quiet,
+        capture_verovio_diagnostics=capture_verovio_diagnostics,
     )
     return asdict(summary)
 
@@ -182,6 +184,12 @@ def cli(argv: list[str] | None = None) -> int:
         default=False,
         help="Whether to suppress executor progress logging (true/false).",
     )
+    parser.add_argument(
+        "--capture_verovio_diagnostics",
+        type=_parse_bool,
+        default=True,
+        help="Whether to capture native Verovio diagnostics into run artifacts (true/false).",
+    )
 
     args = parser.parse_args(argv)
     summary = main(
@@ -198,6 +206,7 @@ def cli(argv: list[str] | None = None) -> int:
         quarantine_in=args.quarantine_in,
         quarantine_out=args.quarantine_out,
         quiet=args.quiet,
+        capture_verovio_diagnostics=args.capture_verovio_diagnostics,
     )
     print(json.dumps(summary, sort_keys=True, default=_json_default))
     return 0

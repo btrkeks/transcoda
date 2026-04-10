@@ -196,7 +196,7 @@
     "/home/daniel/.local/share/src/Transcoda/reports/dataset_generation/system_balance/pdmx_val_plan_safe_subset"
   ],
   "mode": "spine_aware_line_proxy",
-  "recipe_fingerprint": "e642d5ff661cad20a88c4060b464aa79cc08fead07db6e437bbaeddc62fde8be",
+  "recipe_fingerprint": "2a41924e5a5ac323ff18087bd8524cca6fa67eb292424c7d697cce831cfee340",
   "recipe_version": "dataset_generation_v1",
   "recommended_line_count_ranges": {
     "1": {
@@ -229,6 +229,11 @@
         "center": 222.0,
         "max": 223,
         "min": 220
+      },
+      "7": {
+        "center": 474.0,
+        "max": 474,
+        "min": 474
       }
     },
     "2": {
@@ -310,6 +315,11 @@
         "center": 308.0,
         "max": 422,
         "min": 222
+      },
+      "7": {
+        "center": 474.0,
+        "max": 474,
+        "min": 474
       }
     }
   },
@@ -6420,6 +6430,23 @@
           "q80": 223,
           "q90": 224
         }
+      },
+      "7": {
+        "accepted_count": 0,
+        "calibration_count": 1,
+        "full_render_count": 1,
+        "line_count": {
+          "max": 474,
+          "mean": 474.0,
+          "median": 474.0,
+          "min": 474,
+          "q10": 474,
+          "q20": 474,
+          "q25": 474,
+          "q75": 474,
+          "q80": 474,
+          "q90": 474
+        }
       }
     },
     "2": {
@@ -6681,6 +6708,23 @@
           "q80": 422,
           "q90": 446
         }
+      },
+      "7": {
+        "accepted_count": 0,
+        "calibration_count": 1,
+        "full_render_count": 1,
+        "line_count": {
+          "max": 474,
+          "mean": 474.0,
+          "median": 474.0,
+          "min": 474,
+          "q10": 474,
+          "q20": 474,
+          "q25": 474,
+          "q75": 474,
+          "q80": 474,
+          "q90": 474
+        }
       }
     }
   },
@@ -6719,6 +6763,11 @@
         "median_content_height_px": 467.0,
         "safe_max_line_count": 223,
         "safe_sample_count": 2
+      },
+      "7": {
+        "median_content_height_px": 724.0,
+        "safe_max_line_count": 474,
+        "safe_sample_count": 1
       }
     },
     "2": {
@@ -6800,6 +6849,11 @@
         "median_content_height_px": 486.0,
         "safe_max_line_count": 324,
         "safe_sample_count": 3
+      },
+      "7": {
+        "median_content_height_px": 724.0,
+        "safe_max_line_count": 474,
+        "safe_sample_count": 1
       }
     }
   }

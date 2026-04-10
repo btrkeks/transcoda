@@ -15,7 +15,10 @@ logger = logging.getLogger(__name__)
 
 _SYSTEM_CLASS_PATTERN = re.compile(r'<g\b[^>]*\bclass="[^"]*\bsystem\b[^"]*"')
 
+VEROVIO_FONTS: list[str] = ["Leipzig", "Bravura", "Gootville", "Leland", "Petaluma"]
+
 __all__ = [
+    "VEROVIO_FONTS",
     "VerovioRenderer",
     "VerovioRenderOptions",
     "count_nr_of_systems_in_svg",
@@ -50,6 +53,7 @@ class VerovioRenderOptions(TypedDict, total=False):
     adjustPageWidth: bool
     shrinkToFit: bool
     pageWidth: int
+    font: str
     footer: str
     breaks: str
 

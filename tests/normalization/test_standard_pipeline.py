@@ -1,6 +1,10 @@
 import pytest
 
-from scripts.dataset_generation.normalization.presets import normalize_kern_transcription
+from scripts.dataset_generation.normalization.presets import (
+    normalize_kern_transcription,
+    normalize_kern_transcription_with_context,
+)
+from src.core.kern_concatenation import diagnose_spine_topology
 from src.core.spine_state import InvalidSpineOperationError
 
 
@@ -131,3 +135,39 @@ def test_standard_pipeline_accepts_consecutive_valid_manipulator_rows():
 
     normalized = normalize_kern_transcription(transcription)
     assert "4c\t4g" in normalized
+
+
+def test_standard_pipeline_preserves_valid_triple_merge_excerpt_from_grandstaff_003867():
+    transcription = """**kern\t**kern
+*clefF4\t*clefG2
+*k[b-e-a-d-g-]\t*k[b-e-a-d-g-]
+*M2/4\t*M2/4
+*^\t*
+*\t*^\t*
+8d-L\t2d-\t2BB-\t16.fLL
+.\t.\t.\t32eJJk
+8E\t.\t.\t4.g
+8G\t.\t.\t.
+8EJ\t.\t.\t.
+*\t*v\t*v\t*
+=\t=\t=
+*\t*^\t*
+8d-L\t2d-\t2BB-\t16.fLL
+.\t.\t.\t32eJJk
+8E\t.\t.\t4g
+8G\t.\t.\t.
+8EJ\t.\t.\t16.gLL
+.\t.\t.\t32dd-JJk
+*v\t*v\t*v\t*
+=\t=
+*\t*^
+8r\t8dd-L\t8r
+8AA 8F\t16.ccL\t8c
+.\t32fJJk\t.
+"""
+
+    normalized, _ = normalize_kern_transcription_with_context(transcription)
+
+    assert diagnose_spine_topology(normalized) is None
+    assert "*v\t*v\t*v\t*" in normalized
+    assert "=\t=\n*\t*^" in normalized

@@ -52,3 +52,23 @@ def test_build_prefix_truncation_space_builds_chunk_aligned_candidates():
     assert candidate.chunk_count == 2
     assert candidate.ratio == 2 / 5
     assert "=3" not in candidate.transcription
+
+
+def test_prefix_candidate_strips_trailing_split_line():
+    space = build_prefix_truncation_space("**kern\n=1\n4c\n*^\n4d\t4e\n=2\t=2")
+
+    candidate = space.candidate_for_chunk_count(2)
+
+    assert candidate is not None
+    assert candidate.transcription.endswith("4c")
+    assert "*^" not in candidate.transcription.splitlines()[-1]
+
+
+def test_prefix_candidate_strips_trailing_merge_line():
+    space = build_prefix_truncation_space("**kern\n=1\n4c\n*^\n4d\t4e\n*v\t*v\n4f\n=2")
+
+    candidate = space.candidate_for_chunk_count(3)
+
+    assert candidate is not None
+    assert candidate.transcription.endswith("4d\t4e")
+    assert "*v\t*v" not in candidate.transcription.splitlines()[-1]

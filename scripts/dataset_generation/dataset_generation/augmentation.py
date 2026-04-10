@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import time
+
 import numpy as np
 
 from scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment import (
+    OfflineAugmentTrace,
     offline_augment,
     passes_quality_gate,
     passes_transform_consistency,
@@ -15,6 +18,7 @@ from scripts.dataset_generation.dataset_generation.recipe import (
 )
 from scripts.dataset_generation.dataset_generation.types import (
     AugmentationBand,
+    AugmentationTraceEvent,
     RenderResult,
     SamplePlan,
 )
@@ -50,14 +54,16 @@ def augment_accepted_render(
     plan: SamplePlan,
     render_result: RenderResult,
     recipe: ProductionRecipe,
-) -> np.ndarray:
+) -> tuple[np.ndarray, AugmentationTraceEvent]:
+    """Augment an accepted render and return both the image and a structured trace."""
     if render_result.image is None:
         raise ValueError("Cannot augment a render result without image data")
 
     band_name = select_augmentation_band(plan, render_result, recipe)
     band_policy = getattr(recipe.offline_aug, band_name)
     base_image = np.ascontiguousarray(render_result.image)
-    augmented = offline_augment(
+
+    augmented_image, pre_augraphy_candidate, offline_trace = offline_augment(
         base_image,
         render_layers=render_result.render_layers,
         texturize_image=True,
@@ -69,10 +75,53 @@ def augment_accepted_render(
         geom_x_squeeze_max_scale=band_policy.geom_x_squeeze_max_scale,
         geom_x_squeeze_apply_in_conservative=band_policy.geom_x_squeeze_apply_in_conservative,
     )
-    augmented_image = augmented[0] if isinstance(augmented, tuple) else augmented
-    if not _passes_augmented_image_gates(base_image, augmented_image):
-        return base_image
-    return np.ascontiguousarray(augmented_image)
+
+    outer_gate_passed = _passes_augmented_image_gates(base_image, pre_augraphy_candidate)
+    if not outer_gate_passed:
+        result_image = base_image
+    else:
+        result_image = np.ascontiguousarray(augmented_image)
+
+    final_outcome = _classify_final_outcome(offline_trace, outer_gate_passed)
+
+    sample_idx = int(plan.sample_id.split("_")[-1])
+    trace_event = AugmentationTraceEvent(
+        event="augmentation_trace",
+        sample_id=plan.sample_id,
+        sample_idx=sample_idx,
+        seed=plan.seed,
+        band=band_name,
+        branch=offline_trace.branch,
+        geom_transform_applied=offline_trace.geom_transform_applied,
+        geom_conservative_retry=offline_trace.geom_conservative_retry,
+        geom_oob_outcome=offline_trace.geom_oob_outcome,
+        augraphy_outcome=offline_trace.augraphy_outcome,
+        augraphy_normalize_accepted=offline_trace.augraphy_normalize_accepted,
+        augraphy_fallback_attempted=offline_trace.augraphy_fallback_attempted,
+        augraphy_fallback_outcome=offline_trace.augraphy_fallback_outcome,
+        augraphy_fallback_normalize_accepted=offline_trace.augraphy_fallback_normalize_accepted,
+        outer_gate_passed=outer_gate_passed,
+        final_outcome=final_outcome,
+        offline_geom_ms=offline_trace.offline_geom_ms,
+        offline_gates_ms=offline_trace.offline_gates_ms,
+        offline_augraphy_ms=offline_trace.offline_augraphy_ms,
+        offline_texture_ms=offline_trace.offline_texture_ms,
+    )
+
+    return result_image, trace_event
+
+
+def _classify_final_outcome(trace: OfflineAugmentTrace, outer_gate_passed: bool) -> str:
+    """Derive a single outcome label from the trace and outer gate result."""
+    if trace.branch == "none":
+        return "clean_early_exit"
+    if not outer_gate_passed:
+        return "clean_gate_rejected"
+    if trace.augraphy_normalize_accepted:
+        return "fully_augmented"
+    if trace.augraphy_fallback_attempted and trace.augraphy_fallback_normalize_accepted:
+        return "augraphy_on_base"
+    return "clean_augraphy_failed"
 
 
 def _passes_augmented_image_gates(base_image: np.ndarray, candidate: np.ndarray) -> bool:

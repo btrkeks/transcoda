@@ -24,8 +24,8 @@ These decisions are fixed unless explicitly revisited.
 - Combined labels should use literal concatenation.
 - To keep the result valid `.krn`, headers must be removed from every file after the first before concatenation.
 - System-count detection should be based on SVG structure, not inferred later from raster output.
-- Samples with more than 6 systems should always be truncated.
-- Samples with 5 or 6 systems should prefer truncation.
+- Samples with more than 7 systems should always be truncated.
+- Samples with 5 to 7 systems should prefer truncation.
 - Samples with 4 or fewer systems should never be truncated.
 - V1 should prioritize generation quality and correctness over orchestration features such as resume/progress/quarantine.
 
@@ -305,12 +305,12 @@ This policy is fixed for the rewrite.
   - truncation is forbidden
   - accept or reject based on normal render-quality criteria only
 
-- `system_count in {5, 6}`
+- `system_count in {5, 6, 7}`
   - truncation is preferred
   - the pipeline should attempt truncation and compare candidates
-  - it may still keep the untruncated version if the recipe later decides that some 5/6-system samples are desirable, but the current default should bias toward truncation
+  - it may still keep the untruncated version if the recipe later decides that some 5-7-system samples are desirable, but the current default should bias toward truncation
 
-- `system_count > 6`
+- `system_count > 7`
   - truncation is required
   - the full render should never be emitted as a final sample
 
@@ -478,7 +478,7 @@ At minimum, add tests for:
 - header removal for second and later files
 - deterministic `SamplePlan` creation from a seed
 - SVG-derived system-count extraction
-- truncation policy behavior for `<=4`, `5/6`, and `>6` systems
+- truncation policy behavior for `<=4`, `5-7`, and `>7` systems
 - truncation preserving valid `.krn`
 - augmentation fallback when transforms would move notation out of bounds
 - final dataset record schema
@@ -525,7 +525,7 @@ These do not need to block the rewrite:
 
 - the exact probabilities used by the single recipe
 - the exact thresholds for augmentation bands
-- whether some 5/6-system renders should still be kept untruncated in special cases
+- whether some 5-7-system renders should still be kept untruncated in special cases
 - whether future composition should move from whole-file concatenation to span-based composition
 
 Those are tuning questions. The architecture should make them easy to adjust without reopening the core design.

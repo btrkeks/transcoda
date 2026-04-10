@@ -31,6 +31,8 @@ class RunContext:
     quarantined_sources_path: Path
     timeout_events_path: Path
     process_expired_events_path: Path
+    verovio_events_path: Path
+    augmentation_events_path: Path
     crash_samples_dir: Path
 
 
@@ -71,5 +73,7 @@ def build_run_context(
         quarantined_sources_path=run_artifacts_dir / "quarantined_sources.json",
         timeout_events_path=run_artifacts_dir / "timeout_events.jsonl",
         process_expired_events_path=run_artifacts_dir / "process_expired_events.jsonl",
+        verovio_events_path=run_artifacts_dir / "verovio_events.jsonl",
+        augmentation_events_path=run_artifacts_dir / "augmentation_events.jsonl",
         crash_samples_dir=run_artifacts_dir / "crash_samples",
     )

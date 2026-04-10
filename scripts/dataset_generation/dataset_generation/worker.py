@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-import os
+import inspect
 import re
-import sys
-from contextlib import contextmanager
-from typing import Callable
+from collections.abc import Callable
+from pathlib import Path
 
+from scripts.dataset_generation.dataset_generation.acceptance import decide_acceptance
+from scripts.dataset_generation.dataset_generation.augmentation import augment_accepted_render
 from scripts.dataset_generation.dataset_generation.image_generation.rendering.verovio_backend import (
     VerovioRenderer,
 )
-from scripts.dataset_generation.dataset_generation.acceptance import decide_acceptance
-from scripts.dataset_generation.dataset_generation.augmentation import augment_accepted_render
 from scripts.dataset_generation.dataset_generation.io import encode_jpeg_image
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.records import build_dataset_row
@@ -20,8 +19,8 @@ from scripts.dataset_generation.dataset_generation.render_transcription import (
     build_render_transcription,
     ensure_render_header,
 )
-from scripts.dataset_generation.dataset_generation.renderer import render_sample
 from scripts.dataset_generation.dataset_generation.renderer import (
+    render_sample,
     render_sample_with_layout_rescue,
 )
 from scripts.dataset_generation.dataset_generation.truncation import (
@@ -30,8 +29,10 @@ from scripts.dataset_generation.dataset_generation.truncation import (
 )
 from scripts.dataset_generation.dataset_generation.types import (
     AcceptedSample,
+    AugmentationTraceEvent,
     RenderResult,
     SamplePlan,
+    VerovioDiagnosticEvent,
     WorkerFailure,
     WorkerOutcome,
     WorkerSuccess,
@@ -39,6 +40,7 @@ from scripts.dataset_generation.dataset_generation.types import (
 
 _WORKER_RECIPE: ProductionRecipe | None = None
 _WORKER_RENDERER: VerovioRenderer | None = None
+_WORKER_CAPTURE_VEROVIO_DIAGNOSTICS = True
 _RATIONAL_DURATION_PATTERN = re.compile(r"\d%-?\d")
 
 
@@ -61,40 +63,14 @@ def ensure_kern_header(content: str) -> str:
     return ensure_render_header(content)
 
 
-@contextmanager
-def _capture_stderr_fd():
-    stderr_fd = sys.stderr.fileno()
-    saved_stderr_fd = os.dup(stderr_fd)
-    read_fd, write_fd = os.pipe()
-
-    try:
-        os.dup2(write_fd, stderr_fd)
-        os.close(write_fd)
-
-        captured: list[str] = []
-        yield captured
-
-        sys.stderr.flush()
-        os.dup2(saved_stderr_fd, stderr_fd)
-
-        os.set_blocking(read_fd, False)
-        try:
-            while True:
-                data = os.read(read_fd, 4096)
-                if not data:
-                    break
-                captured.append(data.decode("utf-8", errors="replace"))
-        except BlockingIOError:
-            pass
-    finally:
-        os.close(saved_stderr_fd)
-        os.close(read_fd)
-
-
-def init_generation_worker(recipe: ProductionRecipe) -> None:
-    global _WORKER_RECIPE, _WORKER_RENDERER
+def init_generation_worker(
+    recipe: ProductionRecipe,
+    capture_verovio_diagnostics: bool = True,
+) -> None:
+    global _WORKER_RECIPE, _WORKER_RENDERER, _WORKER_CAPTURE_VEROVIO_DIAGNOSTICS
     _WORKER_RECIPE = recipe
     _WORKER_RENDERER = VerovioRenderer()
+    _WORKER_CAPTURE_VEROVIO_DIAGNOSTICS = capture_verovio_diagnostics
 
 
 def process_sample_plan(plan: SamplePlan) -> WorkerOutcome:
@@ -104,6 +80,7 @@ def process_sample_plan(plan: SamplePlan) -> WorkerOutcome:
         plan,
         recipe=_WORKER_RECIPE,
         renderer=_WORKER_RENDERER,
+        capture_verovio_diagnostics=_WORKER_CAPTURE_VEROVIO_DIAGNOSTICS,
     )
 
 
@@ -115,14 +92,19 @@ def evaluate_sample_plan(
     render_fn: Callable[..., RenderResult] = render_sample,
     rescue_render_fn: Callable[..., RenderResult] | None = None,
     augment_fn: Callable[..., object] = augment_accepted_render,
+    capture_verovio_diagnostics: bool = True,
 ) -> WorkerOutcome:
+    verovio_events: list[VerovioDiagnosticEvent] = []
     render_transcription = build_render_transcription(plan.label_transcription, recipe, seed=plan.seed)
-    full_render = render_fn(
+    full_render = _call_render(
+        render_fn,
         render_transcription,
         recipe,
         seed=plan.seed,
         renderer=renderer,
+        capture_verovio_diagnostics=capture_verovio_diagnostics,
     )
+    verovio_events.extend(_build_verovio_events(plan=plan, stage="full", seed=plan.seed, result=full_render))
     full_decision = decide_acceptance(full_render, recipe, truncation_applied=False)
     truncation_mode = classify_truncation_mode(full_render.svg_diagnostics, recipe)
     full_render_system_count = full_render.svg_diagnostics.system_count
@@ -142,17 +124,18 @@ def evaluate_sample_plan(
             <= recipe.truncation.preferred_max_systems
             else None
         )
+        sample, aug_trace = _finalize_sample(
+            plan=plan,
+            render_result=full_render,
+            transcription=plan.label_transcription,
+            truncation_applied=False,
+            truncation_ratio=None,
+            truncation_reason=None,
+            recipe=recipe,
+            augment_fn=augment_fn,
+        )
         return WorkerSuccess(
-            sample=_finalize_sample(
-                plan=plan,
-                render_result=full_render,
-                transcription=plan.label_transcription,
-                truncation_applied=False,
-                truncation_ratio=None,
-                truncation_reason=None,
-                recipe=recipe,
-                augment_fn=augment_fn,
-            ),
+            sample=sample,
             truncation_attempted=False,
             truncation_rescued=False,
             full_render_system_count=full_render_system_count,
@@ -163,6 +146,8 @@ def evaluate_sample_plan(
             preferred_5_6_rescue_attempted=False,
             preferred_5_6_rescue_succeeded=False,
             preferred_5_6_status=preferred_status,
+            verovio_diagnostics=tuple(verovio_events),
+            augmentation_trace=aug_trace,
         )
 
     if (
@@ -176,11 +161,21 @@ def evaluate_sample_plan(
         rescue_callable = rescue_render_fn
         if rescue_callable is None and render_fn is render_sample:
             rescue_callable = render_sample_with_layout_rescue
-        rescue_render = (rescue_callable or render_fn)(
+        rescue_render = _call_render(
+            rescue_callable or render_fn,
             render_transcription,
             recipe,
             seed=rescue_seed,
             renderer=renderer,
+            capture_verovio_diagnostics=capture_verovio_diagnostics,
+        )
+        verovio_events.extend(
+            _build_verovio_events(
+                plan=plan,
+                stage="preferred_5_6_rescue",
+                seed=rescue_seed,
+                result=rescue_render,
+            )
         )
         rescue_decision = decide_acceptance(
             rescue_render,
@@ -189,17 +184,18 @@ def evaluate_sample_plan(
         )
         if rescue_decision.action == "accept_without_truncation":
             preferred_5_6_rescue_succeeded = True
+            sample, aug_trace = _finalize_sample(
+                plan=plan,
+                render_result=rescue_render,
+                transcription=plan.label_transcription,
+                truncation_applied=False,
+                truncation_ratio=None,
+                truncation_reason=None,
+                recipe=recipe,
+                augment_fn=augment_fn,
+            )
             return WorkerSuccess(
-                sample=_finalize_sample(
-                    plan=plan,
-                    render_result=rescue_render,
-                    transcription=plan.label_transcription,
-                    truncation_applied=False,
-                    truncation_ratio=None,
-                    truncation_reason=None,
-                    recipe=recipe,
-                    augment_fn=augment_fn,
-                ),
+                sample=sample,
                 truncation_attempted=False,
                 truncation_rescued=False,
                 full_render_system_count=full_render_system_count,
@@ -210,17 +206,32 @@ def evaluate_sample_plan(
                 preferred_5_6_rescue_attempted=True,
                 preferred_5_6_rescue_succeeded=True,
                 preferred_5_6_status="preferred_5_6_rescued",
+                verovio_diagnostics=tuple(verovio_events),
+                augmentation_trace=aug_trace,
             )
 
     if truncation_mode in {"preferred", "required"}:
         for candidate in build_prefix_candidates(plan.label_transcription, recipe):
             truncation_attempted = True
             candidate_seed = (plan.seed + candidate.chunk_count * 17) & 0xFFFFFFFF
-            candidate_render = render_fn(
+            candidate_render = _call_render(
+                render_fn,
                 build_render_transcription(candidate.transcription, recipe, seed=candidate_seed),
                 recipe,
                 seed=candidate_seed,
                 renderer=renderer,
+                capture_verovio_diagnostics=capture_verovio_diagnostics,
+            )
+            verovio_events.extend(
+                _build_verovio_events(
+                    plan=plan,
+                    stage="truncation_candidate",
+                    seed=candidate_seed,
+                    result=candidate_render,
+                    truncation_chunk_count=candidate.chunk_count,
+                    truncation_total_chunks=candidate.total_chunks,
+                    truncation_ratio=candidate.ratio,
+                )
             )
             candidate_decision = decide_acceptance(
                 candidate_render,
@@ -228,17 +239,18 @@ def evaluate_sample_plan(
                 truncation_applied=True,
             )
             if candidate_decision.action == "accept_with_truncation":
+                sample, aug_trace = _finalize_sample(
+                    plan=plan,
+                    render_result=candidate_render,
+                    transcription=candidate.transcription,
+                    truncation_applied=True,
+                    truncation_ratio=candidate.ratio,
+                    truncation_reason="system_count_policy",
+                    recipe=recipe,
+                    augment_fn=augment_fn,
+                )
                 return WorkerSuccess(
-                    sample=_finalize_sample(
-                        plan=plan,
-                        render_result=candidate_render,
-                        transcription=candidate.transcription,
-                        truncation_applied=True,
-                        truncation_ratio=candidate.ratio,
-                        truncation_reason="system_count_policy",
-                        recipe=recipe,
-                        augment_fn=augment_fn,
-                    ),
+                    sample=sample,
                     truncation_attempted=True,
                     truncation_rescued=True,
                     full_render_system_count=full_render_system_count,
@@ -256,6 +268,8 @@ def evaluate_sample_plan(
                         <= recipe.truncation.preferred_max_systems
                         else None
                     ),
+                    verovio_diagnostics=tuple(verovio_events),
+                    augmentation_trace=aug_trace,
                 )
 
     failure_reason = full_decision.reason or full_render.rejection_reason or "rejected"
@@ -281,6 +295,73 @@ def evaluate_sample_plan(
             <= recipe.truncation.preferred_max_systems
             else None
         ),
+        verovio_diagnostics=tuple(verovio_events),
+    )
+
+
+def _call_render(
+    render_callable: Callable[..., RenderResult],
+    render_transcription: str,
+    recipe: ProductionRecipe,
+    *,
+    seed: int,
+    renderer: VerovioRenderer,
+    capture_verovio_diagnostics: bool,
+) -> RenderResult:
+    kwargs = {
+        "seed": seed,
+        "renderer": renderer,
+    }
+    if _callable_accepts_capture_flag(render_callable):
+        kwargs["capture_verovio_diagnostics"] = capture_verovio_diagnostics
+    return render_callable(render_transcription, recipe, **kwargs)
+
+
+def _callable_accepts_capture_flag(render_callable: Callable[..., object]) -> bool:
+    try:
+        signature = inspect.signature(render_callable)
+    except (TypeError, ValueError):
+        return False
+    if "capture_verovio_diagnostics" in signature.parameters:
+        return True
+    return any(
+        parameter.kind == inspect.Parameter.VAR_KEYWORD
+        for parameter in signature.parameters.values()
+    )
+
+
+def _build_verovio_events(
+    *,
+    plan: SamplePlan,
+    stage: str,
+    seed: int,
+    result: RenderResult,
+    truncation_chunk_count: int | None = None,
+    truncation_total_chunks: int | None = None,
+    truncation_ratio: float | None = None,
+) -> tuple[VerovioDiagnosticEvent, ...]:
+    sample_idx = int(plan.sample_id.split("_")[-1])
+    source_paths = tuple(str(Path(segment.path).resolve()) for segment in plan.segments)
+    return tuple(
+        VerovioDiagnosticEvent(
+            event="verovio_diagnostic",
+            sample_id=plan.sample_id,
+            sample_idx=sample_idx,
+            source_paths=source_paths,
+            stage=stage,
+            seed=seed,
+            render_attempt_idx=diagnostic.render_attempt_idx,
+            diagnostic_kind=diagnostic.diagnostic_kind,
+            raw_message=diagnostic.raw_message,
+            near_line=diagnostic.near_line,
+            expected_duration_from_start=diagnostic.expected_duration_from_start,
+            found_duration_from_start=diagnostic.found_duration_from_start,
+            line_text=diagnostic.line_text,
+            truncation_chunk_count=truncation_chunk_count,
+            truncation_total_chunks=truncation_total_chunks,
+            truncation_ratio=truncation_ratio,
+        )
+        for diagnostic in result.verovio_diagnostics
     )
 
 
@@ -294,13 +375,18 @@ def _finalize_sample(
     truncation_reason: str | None,
     recipe: ProductionRecipe,
     augment_fn: Callable[..., object],
-) -> AcceptedSample:
-    augmented_image = augment_fn(plan, render_result, recipe)
+) -> tuple[AcceptedSample, AugmentationTraceEvent | None]:
+    augmented_result = augment_fn(plan, render_result, recipe)
+    if isinstance(augmented_result, tuple):
+        augmented_image, aug_trace = augmented_result
+    else:
+        augmented_image = augmented_result
+        aug_trace = None
     if not isinstance(augmented_image, bytes):
         image_bytes = encode_jpeg_image(augmented_image)
     else:
         image_bytes = augmented_image
-    return AcceptedSample(
+    sample = AcceptedSample(
         sample_id=plan.sample_id,
         label_transcription=transcription,
         image_bytes=image_bytes,
@@ -319,6 +405,7 @@ def _finalize_sample(
         top_whitespace_px=render_result.top_whitespace_px,
         content_height_px=render_result.content_height_px,
     )
+    return sample, aug_trace
 
 
 def outcome_to_dataset_row(

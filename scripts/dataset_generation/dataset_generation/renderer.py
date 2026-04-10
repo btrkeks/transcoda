@@ -12,13 +12,18 @@ from scripts.dataset_generation.dataset_generation.image_generation.image_post i
     resize_to_width,
 )
 from scripts.dataset_generation.dataset_generation.image_generation.rendering.verovio_backend import (
-    VerovioRenderOptions,
+    VEROVIO_FONTS,
     VerovioRenderer,
+    VerovioRenderOptions,
     count_nr_of_systems_in_svg,
 )
 from scripts.dataset_generation.dataset_generation.image_generation.types import RenderedPage
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.types import RenderResult, SvgLayoutDiagnostics
+from scripts.dataset_generation.dataset_generation.verovio_diagnostics import (
+    capture_native_stderr,
+    parse_verovio_diagnostics,
+)
 
 _RETRYABLE_REJECTION_REASONS = {
     "top_clearance",
@@ -40,6 +45,7 @@ def render_sample(
     *,
     seed: int,
     renderer: VerovioRenderer | None = None,
+    capture_verovio_diagnostics: bool = True,
 ) -> RenderResult:
     return _render_sample_impl(
         render_transcription,
@@ -47,6 +53,7 @@ def render_sample(
         seed=seed,
         renderer=renderer,
         mode="default",
+        capture_verovio_diagnostics=capture_verovio_diagnostics,
     )
 
 
@@ -56,6 +63,7 @@ def render_sample_with_layout_rescue(
     *,
     seed: int,
     renderer: VerovioRenderer | None = None,
+    capture_verovio_diagnostics: bool = True,
 ) -> RenderResult:
     return _render_sample_impl(
         render_transcription,
@@ -63,6 +71,7 @@ def render_sample_with_layout_rescue(
         seed=seed,
         renderer=renderer,
         mode="preferred_5_6_rescue",
+        capture_verovio_diagnostics=capture_verovio_diagnostics,
     )
 
 
@@ -98,6 +107,7 @@ def _render_sample_impl(
     seed: int,
     renderer: VerovioRenderer | None = None,
     mode: str = "default",
+    capture_verovio_diagnostics: bool = True,
 ) -> RenderResult:
     active_renderer = renderer or VerovioRenderer()
     prepared_attempt = prepare_render_attempt(
@@ -110,14 +120,23 @@ def _render_sample_impl(
     renderable = str(prepared_attempt["renderable"])
     render_options = dict(prepared_attempt["render_options"])
     max_attempts = int(prepared_attempt["max_attempts"])
+    verovio_diagnostics = []
 
     for attempt_idx in range(1, max_attempts + 1):
+        captured_stderr: list[str] = []
         try:
-            rendered_page, system_count, page_count = active_renderer.render_with_counts(
-                renderable,
-                render_options,
-            )
+            with capture_native_stderr(capture_verovio_diagnostics) as captured_stderr:
+                rendered_page, system_count, page_count = active_renderer.render_with_counts(
+                    renderable,
+                    render_options,
+                )
         except Exception as exc:  # pragma: no cover - defensive fallback
+            verovio_diagnostics.extend(
+                parse_verovio_diagnostics(
+                    "".join(captured_stderr),
+                    render_attempt_idx=attempt_idx,
+                )
+            )
             return RenderResult(
                 image=None,
                 render_layers=None,
@@ -129,7 +148,14 @@ def _render_sample_impl(
                 content_height_px=None,
                 rejection_reason=f"render_error:{exc}",
                 metadata_prefix=metadata_prefix,
+                verovio_diagnostics=tuple(verovio_diagnostics),
             )
+        verovio_diagnostics.extend(
+            parse_verovio_diagnostics(
+                "".join(captured_stderr),
+                render_attempt_idx=attempt_idx,
+            )
+        )
 
         diagnostics = SvgLayoutDiagnostics(system_count=system_count, page_count=page_count)
         if page_count > 1:
@@ -144,6 +170,7 @@ def _render_sample_impl(
                 content_height_px=None,
                 rejection_reason="multi_page",
                 metadata_prefix=metadata_prefix,
+                verovio_diagnostics=tuple(verovio_diagnostics),
             )
 
         image, render_layers = _resize_rendered_page(rendered_page, recipe.image_width)
@@ -173,6 +200,7 @@ def _render_sample_impl(
                 content_height_px=_coerce_int(metrics.get("content_height_px")),
                 rejection_reason=None,
                 metadata_prefix=metadata_prefix,
+                verovio_diagnostics=tuple(verovio_diagnostics),
             )
 
         if (
@@ -203,6 +231,7 @@ def _render_sample_impl(
             content_height_px=_coerce_int(metrics.get("content_height_px")),
             rejection_reason=rejection_reason,
             metadata_prefix=metadata_prefix,
+            verovio_diagnostics=tuple(verovio_diagnostics),
         )
     return RenderResult(
         image=None,
@@ -215,6 +244,7 @@ def _render_sample_impl(
         content_height_px=None,
         rejection_reason="no_content_detected",
         metadata_prefix=metadata_prefix,
+        verovio_diagnostics=tuple(verovio_diagnostics),
     )
 
 
@@ -254,8 +284,11 @@ def _sample_render_options(recipe: ProductionRecipe) -> VerovioRenderOptions:
     if layout_profile == "target_5_6_systems":
         page_width_factor = random.uniform(2.42, 2.54)
         page_width = int(round(image_width * page_width_factor))
-        margin = lambda: max(0, min(500, int(round(page_width * random.uniform(0.01, 0.025)))))
-        return {
+
+        def margin() -> int:
+            return max(0, min(500, int(round(page_width * random.uniform(0.01, 0.025)))))
+
+        options: VerovioRenderOptions = {
             "scale": random.randint(46, 58),
             "barLineWidth": random.uniform(0.16, 0.70),
             "beamMaxSlope": random.randint(4, 16),
@@ -265,48 +298,54 @@ def _sample_render_options(recipe: ProductionRecipe) -> VerovioRenderOptions:
             "thickBarlineThickness": random.uniform(0.60, 1.60),
             "spacingLinear": random.uniform(0.13, 0.20),
             "spacingNonLinear": random.uniform(0.20, 0.36),
-            "spacingStaff": random.randint(4, 8),
-            "spacingSystem": random.randint(3, 6),
+            "spacingStaff": random.randint(4, 20),
+            "spacingSystem": random.randint(3, 10),
             "measureMinWidth": random.randint(4, 10),
             "pageMarginLeft": margin(),
             "pageMarginRight": margin(),
             "pageMarginTop": margin(),
             "pageMarginBottom": margin(),
             "pageWidth": page_width,
+            "font": random.choice(VEROVIO_FONTS),
             "breaksNoWidow": False,
             "justifyVertically": False,
             "noJustification": False,
             "footer": "none",
             "breaks": "auto",
         }
+    else:
+        page_width_factor = random.uniform(1.80, 2.40)
+        page_width = int(round(image_width * page_width_factor))
 
-    page_width_factor = random.uniform(1.80, 2.40)
-    page_width = int(round(image_width * page_width_factor))
-    margin = lambda: max(0, min(500, int(round(page_width * random.uniform(0.015, 0.05)))))
-    return {
-        "scale": random.randint(52, 84),
-        "barLineWidth": random.uniform(0.16, 0.72),
-        "beamMaxSlope": random.randint(4, 16),
-        "staffLineWidth": random.uniform(0.10, 0.26),
-        "stemWidth": random.uniform(0.10, 0.36),
-        "ledgerLineThickness": random.uniform(0.10, 0.40),
-        "thickBarlineThickness": random.uniform(0.60, 1.80),
-        "spacingLinear": random.uniform(0.16, 0.32),
-        "spacingNonLinear": random.uniform(0.24, 0.56),
-        "spacingStaff": random.randint(4, 12),
-        "spacingSystem": random.randint(4, 10),
-        "measureMinWidth": random.randint(6, 18),
-        "pageMarginLeft": margin(),
-        "pageMarginRight": margin(),
-        "pageMarginTop": margin(),
-        "pageMarginBottom": margin(),
-        "pageWidth": page_width,
-        "breaksNoWidow": False,
-        "justifyVertically": False,
-        "noJustification": False,
-        "footer": "none",
-        "breaks": "auto",
-    }
+        def margin() -> int:
+            return max(0, min(500, int(round(page_width * random.uniform(0.015, 0.05)))))
+
+        options = {
+            "scale": random.randint(52, 84),
+            "barLineWidth": random.uniform(0.16, 0.72),
+            "beamMaxSlope": random.randint(4, 16),
+            "staffLineWidth": random.uniform(0.10, 0.26),
+            "stemWidth": random.uniform(0.10, 0.36),
+            "ledgerLineThickness": random.uniform(0.10, 0.40),
+            "thickBarlineThickness": random.uniform(0.60, 1.80),
+            "spacingLinear": random.uniform(0.16, 0.32),
+            "spacingNonLinear": random.uniform(0.24, 0.56),
+            "spacingStaff": random.randint(4, 20),
+            "spacingSystem": random.randint(3, 10),
+            "measureMinWidth": random.randint(6, 18),
+            "pageMarginLeft": margin(),
+            "pageMarginRight": margin(),
+            "pageMarginTop": margin(),
+            "pageMarginBottom": margin(),
+            "pageWidth": page_width,
+            "font": random.choice(VEROVIO_FONTS),
+            "breaksNoWidow": False,
+            "justifyVertically": False,
+            "noJustification": False,
+            "footer": "none",
+            "breaks": "auto",
+        }
+    return options
 
 
 def _next_retry_render_options(
