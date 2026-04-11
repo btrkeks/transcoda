@@ -902,6 +902,58 @@ def test_executor_terminal_timeout_quarantines_all_sources_in_plan(tmp_path, mon
     assert json.loads(timeout_events[0])["dropped_pending_tasks"] == 1
 
 
+def test_executor_skips_done_batch_future_removed_by_terminal_timeout_quarantine(
+    tmp_path, monkeypatch
+):
+    input_dir = _make_simple_input_dir(tmp_path, ("a", "b", "c"))
+    output_dir = tmp_path / "output"
+    _install_fake_pool(
+        monkeypatch,
+        outcomes_by_sample_idx={
+            0: [TimeoutError()],
+            1: [_make_worker_success],
+            2: [_make_worker_success],
+        },
+    )
+    _install_fake_balanced_planner(monkeypatch, {0: [0, 1], 1: [1], 2: [2]})
+
+    def wait_done_batch(futures, timeout=None, return_when=None):
+        del timeout, return_when
+        future_list = list(futures)
+        return future_list, []
+
+    monkeypatch.setattr(executor_module, "wait", wait_done_batch)
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=1,
+        num_workers=3,
+        max_attempts=3,
+        failure_policy="throughput",
+        quiet=True,
+    )
+
+    ds = load_from_disk(str(output_dir))
+    info = _read_json(summary.run_artifacts_dir / "info.json")
+    quarantined = _read_json(summary.run_artifacts_dir / "quarantined_sources.json")
+    timeout_events = (summary.run_artifacts_dir / "timeout_events.jsonl").read_text(
+        encoding="utf-8"
+    ).strip().splitlines()
+
+    assert summary.accepted_samples == 1
+    assert summary.rejected_samples == 2
+    assert len(ds) == 1
+    assert ds[0]["source_ids"] == ["input/c"]
+    assert info["snapshot"]["failure_reason_counts"]["timeout"] == 1
+    assert info["snapshot"]["failure_reason_counts"]["quarantined"] == 1
+    assert set(quarantined["quarantined_sources"]) == {
+        str((input_dir / "a.krn").resolve()),
+        str((input_dir / "b.krn").resolve()),
+    }
+    assert json.loads(timeout_events[0])["dropped_pending_tasks"] == 1
+
+
 def test_executor_semantic_rejection_does_not_quarantine_sources(tmp_path, monkeypatch):
     input_dir = _make_simple_input_dir(tmp_path, ("a", "b"))
     output_dir = tmp_path / "output"

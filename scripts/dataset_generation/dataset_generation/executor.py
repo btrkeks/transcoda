@@ -369,7 +369,12 @@ def run_dataset_generation(
                         continue
 
                     for future in done:
-                        task = futures_by_handle.pop(future)
+                        # A terminal failure earlier in this same done batch can quarantine an
+                        # overlapping sibling and remove its future from the tracking map before
+                        # we iterate to it here.
+                        task = futures_by_handle.pop(future, None)
+                        if task is None:
+                            continue
                         tasks_by_sample_idx.pop(task.sample_idx, None)
                         before_result_ns = time.perf_counter_ns()
                         queue_wait_ms = (before_result_ns - task.scheduled_ns) / 1_000_000.0
