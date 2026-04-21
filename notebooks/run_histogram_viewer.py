@@ -142,6 +142,15 @@ def plot_histograms(
             ax.bar(x_values, y_values, width=0.9)
             ax.set_title(name.replace("_", " "))
             ax.set_xlabel("Value")
+        if name == "bottom_whitespace_px_histogram":
+            ax.axvline(
+                80,
+                color="crimson",
+                linestyle="--",
+                linewidth=2,
+                label="polish dataset median",
+            )
+            ax.legend()
         ax.set_ylabel("Count")
         ax.tick_params(axis="x", rotation=45)
 
