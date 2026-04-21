@@ -56,13 +56,9 @@ class GenerationConfig:
             raise ValueError("image_width must be positive")
         if self.image_height is not None and self.image_height <= 0:
             raise ValueError("image_height must be positive")
-        if self.render_layout_profile not in {
-            "default",
-            "target_5_6_systems",
-            "polish_5_6_systems",
-        }:
+        if self.render_layout_profile not in {"default", "target_5_6_systems"}:
             raise ValueError(
-                "render_layout_profile must be one of: default, target_5_6_systems, polish_5_6_systems"
+                "render_layout_profile must be one of: default, target_5_6_systems"
             )
 
 

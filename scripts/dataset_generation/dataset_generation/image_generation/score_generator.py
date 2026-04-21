@@ -554,10 +554,6 @@ def _sample_render_options(
         options = _sample_render_options_target_5_6_systems(image_width)
         options["font"] = random.choice(VEROVIO_FONTS)
         return options
-    if layout_profile == "polish_5_6_systems":
-        options = _sample_render_options_polish_5_6_systems(image_width)
-        options["font"] = random.choice(VEROVIO_FONTS)
-        return options
     if layout_profile != "default":
         raise ValueError(
             f"Unsupported render_layout_profile: {layout_profile}"
@@ -785,40 +781,6 @@ def _sample_render_options_target_5_6_systems(image_width: int) -> VerovioRender
         "pageWidth": page_width,
         "breaksNoWidow": False,
         "justifyVertically": False,
-        "noJustification": False,
-        "footer": "none",
-        "breaks": "auto",
-    }
-    _apply_render_option_guardrails(options, page_width_factor=page_width_factor)
-    return options
-
-
-def _sample_render_options_polish_5_6_systems(image_width: int) -> VerovioRenderOptions:
-    """Sample denser single-page options closer to real filled-sheet layouts."""
-    page_width_factor = random.uniform(1.18, 1.38)
-    page_width = int(round(image_width * page_width_factor))
-
-    margin_ratio = lambda: random.uniform(0.010, 0.022)
-    options: VerovioRenderOptions = {
-        "scale": random.randint(76, 90),
-        "barLineWidth": _clamp_float(random.uniform(0.18, 0.72), 0.10, 0.80),
-        "beamMaxSlope": random.randint(4, 16),
-        "staffLineWidth": _clamp_float(random.uniform(0.10, 0.24), 0.10, 0.30),
-        "stemWidth": _clamp_float(random.uniform(0.10, 0.36), 0.10, 0.45),
-        "ledgerLineThickness": _clamp_float(random.uniform(0.10, 0.38), 0.10, 0.50),
-        "thickBarlineThickness": _clamp_float(random.uniform(0.70, 1.80), 0.50, 2.00),
-        "spacingLinear": _clamp_float(random.uniform(0.24, 0.36), 0.12, 1.0),
-        "spacingNonLinear": _clamp_float(random.uniform(0.44, 0.68), 0.20, 1.5),
-        "spacingStaff": random.randint(6, 11),
-        "spacingSystem": random.randint(7, 13),
-        "measureMinWidth": random.randint(12, 22),
-        "pageMarginLeft": _clamp_int(int(round(page_width * margin_ratio())), 0, 500),
-        "pageMarginRight": _clamp_int(int(round(page_width * margin_ratio())), 0, 500),
-        "pageMarginTop": _clamp_int(int(round(page_width * margin_ratio())), 0, 500),
-        "pageMarginBottom": _clamp_int(int(round(page_width * margin_ratio())), 0, 500),
-        "pageWidth": page_width,
-        "breaksNoWidow": True,
-        "justifyVertically": True,
         "noJustification": False,
         "footer": "none",
         "breaks": "auto",

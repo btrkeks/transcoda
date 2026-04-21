@@ -147,21 +147,12 @@ def test_sample_render_options_target_5_6_systems_bounds():
         assert opts["breaksNoWidow"] is False
 
 
-def test_sample_render_options_polish_5_6_systems_bounds():
-    random.seed(8642)
-
-    for _ in range(1000):
-        opts = _sample_render_options(image_width=1050, layout_profile="polish_5_6_systems")
-        assert 76 <= opts["scale"] <= 90
-        assert 6 <= opts["spacingStaff"] <= 11
-        assert 7 <= opts["spacingSystem"] <= 13
-        assert 12 <= opts["measureMinWidth"] <= 22
-        assert int(round(1050 * 1.18)) <= opts["pageWidth"] <= int(round(1050 * 1.38))
-        assert 0.24 <= opts["spacingLinear"] <= 0.36
-        assert 0.44 <= opts["spacingNonLinear"] <= 0.68
-        assert opts["justifyVertically"] is True
-        assert opts["noJustification"] is False
-        assert opts["breaksNoWidow"] is True
+def test_generation_config_rejects_unsupported_layout_profile():
+    with pytest.raises(
+        ValueError,
+        match="render_layout_profile must be one of: default, target_5_6_systems",
+    ):
+        GenerationConfig(render_layout_profile="unsupported_layout_profile")
 
 
 def test_compact_page_guardrail_caps_vertical_spacing():
