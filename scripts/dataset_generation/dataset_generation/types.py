@@ -97,41 +97,124 @@ class VerovioDiagnosticEvent:
 
 
 @dataclass(frozen=True)
-class AugmentationTraceEvent:
-    event: str  # always "augmentation_trace"
-    sample_id: str
-    sample_idx: int
-    seed: int
+class MarginTrace:
+    top_px: int | None
+    bottom_px: int | None
+    left_px: int | None
+    right_px: int | None
 
-    # Band selection (augmentation.py)
-    band: str  # "roomy" | "balanced" | "tight"
 
-    # Offline augment decisions
+@dataclass(frozen=True)
+class GeometryTrace:
+    sampled: bool
+    conservative: bool
+    angle_deg: float | None
+    scale: float | None
+    tx_px: float | None
+    ty_px: float | None
+    x_scale: float | None
+    y_scale: float | None
+    perspective_applied: bool
+
+
+@dataclass(frozen=True)
+class BoundsGateTrace:
+    passed: bool
+    failure_reason: str | None
+    margins_px: MarginTrace | None
+    border_touch_count: int | None
+    dx_frac: float | None
+    dy_frac: float | None
+    area_retention: float | None
+
+
+@dataclass(frozen=True)
+class QualityGateTrace:
+    passed: bool
+    failure_reason: str | None
+    mean_luma: float | None
+    black_ratio: float | None
+    margins_px: MarginTrace | None
+    border_touch_count: int | None
+
+
+@dataclass(frozen=True)
+class OuterGateTrace:
+    passed: bool
+    failure_reason: str | None
+    quality_gate: QualityGateTrace
+    transform_consistency: BoundsGateTrace
+
+
+@dataclass(frozen=True)
+class OfflineAugmentTrace:
+    """Structured trace of every decision made inside ``offline_augment``."""
+
     branch: str  # "geometric" | "none"
-    geom_transform_applied: bool
-    geom_conservative_retry: bool
-    geom_oob_outcome: str  # "pass" | "retry_pass" | "retry_fail"
-
-    # Augraphy
+    initial_geometry: GeometryTrace
+    retry_geometry: GeometryTrace | None
+    selected_geometry: GeometryTrace
+    final_geometry_applied: bool
+    initial_oob_gate: BoundsGateTrace
+    retry_oob_gate: BoundsGateTrace | None
     augraphy_outcome: str  # "applied" | "noop" | "error" | "invalid_input"
     augraphy_normalize_accepted: bool
     augraphy_fallback_attempted: bool
     augraphy_fallback_outcome: str | None
     augraphy_fallback_normalize_accepted: bool | None
-
-    # Outer gate (augmentation.py)
-    outer_gate_passed: bool
-
-    # Final classification
-    final_outcome: str
-    # "fully_augmented" | "clean_gate_rejected" | "augraphy_on_base" |
-    # "clean_augraphy_failed" | "clean_early_exit"
-
-    # Timings (ms)
     offline_geom_ms: float
     offline_gates_ms: float
     offline_augraphy_ms: float
     offline_texture_ms: float
+
+
+@dataclass(frozen=True)
+class AugmentationTraceEvent:
+    event: str  # always "augmentation_trace"
+    sample_id: str
+    sample_idx: int
+    seed: int
+    render_height_px: int | None
+    bottom_padding_px: int | None
+    top_whitespace_px: int | None
+    bottom_whitespace_px: int | None
+    content_height_px: int | None
+    band: str  # "roomy" | "balanced" | "tight"
+    branch: str  # "geometric" | "none"
+    initial_geometry: GeometryTrace
+    retry_geometry: GeometryTrace | None
+    selected_geometry: GeometryTrace
+    final_geometry_applied: bool
+    initial_oob_gate: BoundsGateTrace
+    retry_oob_gate: BoundsGateTrace | None
+    augraphy_outcome: str  # "applied" | "noop" | "error" | "invalid_input"
+    augraphy_normalize_accepted: bool
+    augraphy_fallback_attempted: bool
+    augraphy_fallback_outcome: str | None
+    augraphy_fallback_normalize_accepted: bool | None
+    outer_gate: OuterGateTrace
+    final_outcome: str
+    # "fully_augmented" | "clean_gate_rejected" | "augraphy_on_base" |
+    # "clean_augraphy_failed" | "clean_early_exit"
+    offline_geom_ms: float
+    offline_gates_ms: float
+    offline_augraphy_ms: float
+    offline_texture_ms: float
+
+
+@dataclass(frozen=True)
+class AugmentationPreviewArtifacts:
+    base_image_jpeg: bytes
+    pre_augraphy_image_jpeg: bytes
+    final_image_jpeg: bytes
+
+
+@dataclass(frozen=True)
+class AugmentedRenderResult:
+    final_image: np.ndarray | bytes
+    trace: AugmentationTraceEvent | None
+    base_image: np.ndarray | None = None
+    pre_augraphy_image: np.ndarray | None = None
 
 
 @dataclass(frozen=True)
@@ -141,6 +224,8 @@ class RenderResult:
     svg_diagnostics: SvgLayoutDiagnostics
     bottom_whitespace_ratio: float | None
     vertical_fill_ratio: float | None
+    render_height_px: int | None = None
+    bottom_padding_px: int | None = None
     bottom_whitespace_px: int | None = None
     top_whitespace_px: int | None = None
     content_height_px: int | None = None
@@ -195,6 +280,7 @@ class WorkerSuccess:
     preferred_5_6_status: PreferredFiveSixStatus | None = None
     verovio_diagnostics: tuple[VerovioDiagnosticEvent, ...] = ()
     augmentation_trace: AugmentationTraceEvent | None = None
+    augmentation_preview: AugmentationPreviewArtifacts | None = None
 
 
 @dataclass(frozen=True)
@@ -240,3 +326,6 @@ class ResumeSnapshot:
     augmentation_outcome_counts: dict[str, int]
     augmentation_band_counts: dict[str, int]
     augmentation_branch_counts: dict[str, int]
+    final_geometry_counts: dict[str, int]
+    oob_failure_reason_counts: dict[str, int]
+    outer_gate_failure_reason_counts: dict[str, int]

@@ -10,8 +10,17 @@ import numpy.typing as npt
 
 from ..image_generation.image_post import alpha_composite, load_paper_textures, synthesize_background
 from ..image_generation.types import RenderedPage
+from ..types import (
+    BoundsGateTrace,
+    GeometryTrace,
+    MarginTrace,
+    OfflineAugmentTrace,
+    OuterGateTrace,
+    QualityGateTrace,
+)
 from .augraphy_augment import augraphy_augment
 from .geometric_augment import (
+    GeometricTransform,
     apply_geometric_transform,
     sample_geometric_transform,
 )
@@ -26,22 +35,71 @@ OfflineAugmentTimings = dict[str, float]
 
 
 @dataclass(frozen=True)
-class OfflineAugmentTrace:
-    """Structured trace of every decision made inside ``offline_augment``."""
+class AugmentedCandidate:
+    foreground: np.ndarray
+    alpha: np.ndarray
+    mask: np.ndarray
+    geometry: GeometryTrace
 
-    branch: str  # "geometric" | "none"
-    geom_transform_applied: bool
-    geom_conservative_retry: bool
-    geom_oob_outcome: str  # "pass" | "retry_pass" | "retry_fail"
-    augraphy_outcome: str  # "applied" | "noop" | "error" | "invalid_input"
-    augraphy_normalize_accepted: bool
-    augraphy_fallback_attempted: bool
-    augraphy_fallback_outcome: str | None
-    augraphy_fallback_normalize_accepted: bool | None
-    offline_geom_ms: float
-    offline_gates_ms: float
-    offline_augraphy_ms: float
-    offline_texture_ms: float
+
+def _geometry_trace_from_transform(
+    transform: GeometricTransform | None,
+    *,
+    conservative: bool,
+) -> GeometryTrace:
+    if transform is None:
+        return GeometryTrace(
+            sampled=False,
+            conservative=conservative,
+            angle_deg=None,
+            scale=None,
+            tx_px=None,
+            ty_px=None,
+            x_scale=None,
+            y_scale=None,
+            perspective_applied=False,
+        )
+    return GeometryTrace(
+        sampled=True,
+        conservative=conservative,
+        angle_deg=float(transform.angle_deg),
+        scale=float(transform.scale),
+        tx_px=float(transform.tx_px),
+        ty_px=float(transform.ty_px),
+        x_scale=float(transform.x_scale),
+        y_scale=float(transform.y_scale),
+        perspective_applied=transform.perspective is not None,
+    )
+
+
+def _coerce_augmented_candidate(
+    candidate: AugmentedCandidate | tuple[np.ndarray, np.ndarray, np.ndarray, bool],
+    *,
+    conservative: bool,
+) -> AugmentedCandidate:
+    if isinstance(candidate, AugmentedCandidate):
+        return candidate
+    foreground, alpha, mask, transform_applied = candidate
+    return AugmentedCandidate(
+        foreground=foreground,
+        alpha=alpha,
+        mask=mask,
+        geometry=(
+            GeometryTrace(
+                sampled=True,
+                conservative=conservative,
+                angle_deg=None,
+                scale=None,
+                tx_px=None,
+                ty_px=None,
+                x_scale=None,
+                y_scale=None,
+                perspective_applied=False,
+            )
+            if transform_applied
+            else _geometry_trace_from_transform(None, conservative=conservative)
+        ),
+    )
 
 
 def offline_augment(
@@ -100,7 +158,8 @@ def offline_augment(
 
     # --- Geometric transform (foreground + alpha only) ---
     geom_start_ns = time.perf_counter_ns()
-    warped_fg, warped_alpha, candidate_mask, geom_transform_applied = _build_augmented_candidate(
+    initial_candidate = _coerce_augmented_candidate(
+        _build_augmented_candidate(
         base_layers=base_layers,
         rng=rng,
         conservative=False,
@@ -109,18 +168,23 @@ def offline_augment(
         geom_x_squeeze_max_scale=geom_x_squeeze_max_scale,
         geom_x_squeeze_apply_in_conservative=geom_x_squeeze_apply_in_conservative,
         geom_x_squeeze_preview_force_scale=geom_x_squeeze_preview_force_scale,
+        ),
+        conservative=False,
     )
     offline_geom_ms = _elapsed_ms(geom_start_ns)
 
     # --- OOB gate check ---
     gates_start_ns = time.perf_counter_ns()
-    geom_conservative_retry = False
-    geom_oob_outcome = "pass"
+    initial_oob_gate = evaluate_oob_gate_from_masks(base_mask, initial_candidate.mask)
+    retry_candidate: AugmentedCandidate | None = None
+    retry_oob_gate: BoundsGateTrace | None = None
+    selected_candidate = initial_candidate
+    selected_geometry = initial_candidate.geometry
 
-    if not _passes_out_of_bounds_gate_from_masks(base_mask, candidate_mask):
-        geom_conservative_retry = True
+    if not initial_oob_gate.passed:
         retry_rng = np.random.default_rng(seed_base + 1)
-        retry_fg, retry_alpha, retry_mask, _ = _build_augmented_candidate(
+        retry_candidate = _coerce_augmented_candidate(
+            _build_augmented_candidate(
             base_layers=base_layers,
             rng=retry_rng,
             conservative=True,
@@ -129,17 +193,21 @@ def offline_augment(
             geom_x_squeeze_max_scale=geom_x_squeeze_max_scale,
             geom_x_squeeze_apply_in_conservative=geom_x_squeeze_apply_in_conservative,
             geom_x_squeeze_preview_force_scale=geom_x_squeeze_preview_force_scale,
+            ),
+            conservative=True,
         )
-        if _passes_out_of_bounds_gate_from_masks(base_mask, retry_mask):
-            warped_fg = retry_fg
-            warped_alpha = retry_alpha
-            candidate_mask = retry_mask
-            geom_oob_outcome = "retry_pass"
+        retry_oob_gate = evaluate_oob_gate_from_masks(base_mask, retry_candidate.mask)
+        if retry_oob_gate.passed:
+            selected_candidate = retry_candidate
+            selected_geometry = retry_candidate.geometry
         else:
-            warped_fg = base_layers.foreground
-            warped_alpha = base_layers.alpha
-            candidate_mask = base_mask
-            geom_oob_outcome = "retry_fail"
+            selected_candidate = AugmentedCandidate(
+                foreground=base_layers.foreground,
+                alpha=base_layers.alpha,
+                mask=base_mask.astype(np.uint8),
+                geometry=_geometry_trace_from_transform(None, conservative=False),
+            )
+            selected_geometry = selected_candidate.geometry
     offline_gates_ms = _elapsed_ms(gates_start_ns)
 
     # --- Background synthesis + compositing (always runs) ---
@@ -149,7 +217,9 @@ def offline_augment(
     background = synthesize_background(
         width, height, rng=texture_rng, textures=textures, allow_textures=bool(textures),
     )
-    result = np.ascontiguousarray(alpha_composite(background, warped_fg, warped_alpha))
+    result = np.ascontiguousarray(
+        alpha_composite(background, selected_candidate.foreground, selected_candidate.alpha)
+    )
     offline_texture_ms = _elapsed_ms(texture_start_ns)
 
     pre_augraphy_candidate = np.ascontiguousarray(result)
@@ -167,9 +237,12 @@ def offline_augment(
     if augraphy_normalize_accepted:
         trace = OfflineAugmentTrace(
             branch=branch_choice,
-            geom_transform_applied=geom_transform_applied,
-            geom_conservative_retry=geom_conservative_retry,
-            geom_oob_outcome=geom_oob_outcome,
+            initial_geometry=initial_candidate.geometry,
+            retry_geometry=retry_candidate.geometry if retry_candidate is not None else None,
+            selected_geometry=selected_geometry,
+            final_geometry_applied=selected_geometry.sampled,
+            initial_oob_gate=initial_oob_gate,
+            retry_oob_gate=retry_oob_gate,
             augraphy_outcome=augraphy_outcome,
             augraphy_normalize_accepted=True,
             augraphy_fallback_attempted=False,
@@ -194,9 +267,12 @@ def offline_augment(
     if augraphy_fallback_normalize_accepted:
         trace = OfflineAugmentTrace(
             branch=branch_choice,
-            geom_transform_applied=geom_transform_applied,
-            geom_conservative_retry=geom_conservative_retry,
-            geom_oob_outcome=geom_oob_outcome,
+            initial_geometry=initial_candidate.geometry,
+            retry_geometry=retry_candidate.geometry if retry_candidate is not None else None,
+            selected_geometry=selected_geometry,
+            final_geometry_applied=selected_geometry.sampled,
+            initial_oob_gate=initial_oob_gate,
+            retry_oob_gate=retry_oob_gate,
             augraphy_outcome=augraphy_outcome,
             augraphy_normalize_accepted=False,
             augraphy_fallback_attempted=True,
@@ -212,9 +288,12 @@ def offline_augment(
     # --- Both Augraphy passes failed; return textured candidate ---
     trace = OfflineAugmentTrace(
         branch=branch_choice,
-        geom_transform_applied=geom_transform_applied,
-        geom_conservative_retry=geom_conservative_retry,
-        geom_oob_outcome=geom_oob_outcome,
+        initial_geometry=initial_candidate.geometry,
+        retry_geometry=retry_candidate.geometry if retry_candidate is not None else None,
+        selected_geometry=selected_geometry,
+        final_geometry_applied=selected_geometry.sampled,
+        initial_oob_gate=initial_oob_gate,
+        retry_oob_gate=retry_oob_gate,
         augraphy_outcome=augraphy_outcome,
         augraphy_normalize_accepted=False,
         augraphy_fallback_attempted=True,
@@ -230,28 +309,7 @@ def offline_augment(
 
 def passes_quality_gate(image: ImageU8, *, min_margin_px: int = _MIN_MARGIN_PX) -> bool:
     """Balanced quality gate to reject obvious corruption failures."""
-    if image.dtype != np.uint8 or image.ndim != 3 or image.shape[2] not in (3, 4):
-        return False
-
-    rgb = image[:, :, :3]
-    gray = rgb.mean(axis=2)
-    mean_luma = float(gray.mean())
-    if mean_luma < 120.0 or mean_luma > 252.0:
-        return False
-
-    black_mask = gray <= 120.0
-    black_ratio = float(black_mask.mean())
-    if black_ratio < 0.005 or black_ratio > 0.35:
-        return False
-
-    bbox = _content_bbox_from_mask(black_mask)
-    if bbox is None:
-        return False
-    if not _has_minimum_margins(bbox, black_mask.shape, min_margin_px=min_margin_px):
-        return False
-    if _touches_too_many_borders(black_mask):
-        return False
-    return True
+    return evaluate_quality_gate(image, min_margin_px=min_margin_px).passed
 
 
 def passes_transform_consistency(
@@ -262,6 +320,100 @@ def passes_transform_consistency(
     min_area_retention: float = _MIN_AREA_RETENTION,
 ) -> bool:
     """Ensure augmentation does not move/crop notation unrealistically."""
+    return evaluate_transform_consistency(
+        base_image,
+        candidate,
+        max_centroid_shift_fraction=max_centroid_shift_fraction,
+        min_area_retention=min_area_retention,
+    ).passed
+
+
+def evaluate_quality_gate(
+    image: ImageU8,
+    *,
+    min_margin_px: int = _MIN_MARGIN_PX,
+) -> QualityGateTrace:
+    if image.dtype != np.uint8 or image.ndim != 3 or image.shape[2] not in (3, 4):
+        return QualityGateTrace(
+            passed=False,
+            failure_reason="invalid_input",
+            mean_luma=None,
+            black_ratio=None,
+            margins_px=None,
+            border_touch_count=None,
+        )
+
+    rgb = image[:, :, :3]
+    gray = rgb.mean(axis=2)
+    mean_luma = float(gray.mean())
+    black_mask = gray <= 120.0
+    black_ratio = float(black_mask.mean())
+    bbox = _content_bbox_from_mask(black_mask)
+    margins = _margins_from_bbox(bbox, black_mask.shape) if bbox is not None else None
+    border_touch_count = _border_touch_count(black_mask) if bbox is not None else None
+
+    if mean_luma < 120.0 or mean_luma > 252.0:
+        return QualityGateTrace(
+            passed=False,
+            failure_reason="mean_luma",
+            mean_luma=mean_luma,
+            black_ratio=black_ratio,
+            margins_px=margins,
+            border_touch_count=border_touch_count,
+        )
+    if black_ratio < 0.005 or black_ratio > 0.35:
+        return QualityGateTrace(
+            passed=False,
+            failure_reason="black_ratio",
+            mean_luma=mean_luma,
+            black_ratio=black_ratio,
+            margins_px=margins,
+            border_touch_count=border_touch_count,
+        )
+    if bbox is None:
+        return QualityGateTrace(
+            passed=False,
+            failure_reason="empty_content",
+            mean_luma=mean_luma,
+            black_ratio=black_ratio,
+            margins_px=None,
+            border_touch_count=None,
+        )
+    if not _has_minimum_margins(bbox, black_mask.shape, min_margin_px=min_margin_px):
+        return QualityGateTrace(
+            passed=False,
+            failure_reason="min_margin",
+            mean_luma=mean_luma,
+            black_ratio=black_ratio,
+            margins_px=margins,
+            border_touch_count=border_touch_count,
+        )
+    if border_touch_count is not None and border_touch_count >= 3:
+        return QualityGateTrace(
+            passed=False,
+            failure_reason="border_touches",
+            mean_luma=mean_luma,
+            black_ratio=black_ratio,
+            margins_px=margins,
+            border_touch_count=border_touch_count,
+        )
+    return QualityGateTrace(
+        passed=True,
+        failure_reason=None,
+        mean_luma=mean_luma,
+        black_ratio=black_ratio,
+        margins_px=margins,
+        border_touch_count=border_touch_count,
+    )
+
+
+def evaluate_transform_consistency(
+    base_image: ImageU8,
+    candidate: ImageU8,
+    *,
+    max_centroid_shift_fraction: float = _MAX_CENTROID_SHIFT_FRACTION,
+    min_area_retention: float = _MIN_AREA_RETENTION,
+) -> BoundsGateTrace:
     if (
         base_image.dtype != np.uint8
         or candidate.dtype != np.uint8
@@ -270,17 +422,51 @@ def passes_transform_consistency(
         or base_image.shape[2] not in (3, 4)
         or candidate.shape[2] not in (3, 4)
     ):
-        return False
+        return BoundsGateTrace(
+            passed=False,
+            failure_reason="invalid_input",
+            margins_px=None,
+            border_touch_count=None,
+            dx_frac=None,
+            dy_frac=None,
+            area_retention=None,
+        )
     if base_image.shape[:2] != candidate.shape[:2]:
-        return False
-
+        return BoundsGateTrace(
+            passed=False,
+            failure_reason="shape_mismatch",
+            margins_px=None,
+            border_touch_count=None,
+            dx_frac=None,
+            dy_frac=None,
+            area_retention=None,
+        )
     base_mask = _visible_notation_mask(base_image)
     candidate_mask = _visible_notation_mask(candidate)
-    return _passes_out_of_bounds_gate_from_masks(
+    return evaluate_oob_gate_from_masks(
         base_mask.astype(np.uint8) * 255,
         candidate_mask.astype(np.uint8) * 255,
         max_centroid_shift_fraction=max_centroid_shift_fraction,
         min_area_retention=min_area_retention,
+    )
+
+
+def evaluate_outer_gate(
+    base_image: ImageU8,
+    candidate: ImageU8,
+) -> OuterGateTrace:
+    quality_gate = evaluate_quality_gate(candidate)
+    transform_consistency = evaluate_transform_consistency(base_image, candidate)
+    failure_reason = None
+    if not quality_gate.passed:
+        failure_reason = f"quality:{quality_gate.failure_reason}"
+    elif not transform_consistency.passed:
+        failure_reason = f"transform_consistency:{transform_consistency.failure_reason}"
+    return OuterGateTrace(
+        passed=quality_gate.passed and transform_consistency.passed,
+        failure_reason=failure_reason,
+        quality_gate=quality_gate,
+        transform_consistency=transform_consistency,
     )
 
 
@@ -308,10 +494,10 @@ def _build_augmented_candidate(
     geom_x_squeeze_max_scale: float,
     geom_x_squeeze_apply_in_conservative: bool,
     geom_x_squeeze_preview_force_scale: float | None,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
+) -> AugmentedCandidate:
     """Warp foreground and alpha layers geometrically.
 
-    Returns ``(warped_foreground, warped_alpha, mask, transform_applied)``.
+    Returns the warped layers, visible mask, and sampled geometry metadata.
     Background synthesis is handled separately after the OOB gate.
     """
     height, width = base_layers.foreground.shape[:2]
@@ -325,8 +511,6 @@ def _build_augmented_candidate(
         x_squeeze_apply_in_conservative=geom_x_squeeze_apply_in_conservative,
         x_squeeze_force_scale=geom_x_squeeze_preview_force_scale,
     )
-    transform_applied = transform is not None
-
     warped_fg = apply_geometric_transform(
         base_layers.foreground,
         transform,
@@ -346,7 +530,12 @@ def _build_augmented_candidate(
         _visible_notation_mask(warped_fg),
         warped_alpha >= 8,
     )
-    return warped_fg, warped_alpha, visible_mask.astype(np.uint8) * 255, transform_applied
+    return AugmentedCandidate(
+        foreground=warped_fg,
+        alpha=warped_alpha,
+        mask=visible_mask.astype(np.uint8) * 255,
+        geometry=_geometry_trace_from_transform(transform, conservative=conservative),
+    )
 
 
 def _visible_notation_mask(image: ImageU8, *, threshold: int = _VISIBLE_MASK_THRESHOLD) -> np.ndarray:
@@ -373,14 +562,18 @@ def _merge_visible_and_hint_masks(visible_mask: np.ndarray, hint_mask: np.ndarra
 
 
 def _touches_too_many_borders(mask: np.ndarray) -> bool:
+    return _border_touch_count(mask) >= 3
+
+
+def _border_touch_count(mask: np.ndarray) -> int:
     coords = np.argwhere(mask)
     if coords.size == 0:
-        return True
+        return 4
     top = int(coords[:, 0].min()) == 0
     bottom = int(coords[:, 0].max()) == (mask.shape[0] - 1)
     left = int(coords[:, 1].min()) == 0
     right = int(coords[:, 1].max()) == (mask.shape[1] - 1)
-    return sum((top, bottom, left, right)) >= 3
+    return sum((top, bottom, left, right))
 
 
 def _content_bbox_from_mask(mask: np.ndarray) -> tuple[int, int, int, int] | None:
@@ -408,12 +601,148 @@ def _has_minimum_margins(
     )
 
 
+def _margins_from_bbox(
+    bbox: tuple[int, int, int, int] | None,
+    image_shape: tuple[int, int],
+) -> MarginTrace | None:
+    if bbox is None:
+        return None
+    top, bottom, left, right = bbox
+    height, width = image_shape
+    return MarginTrace(
+        top_px=int(top),
+        bottom_px=int(height - 1 - bottom),
+        left_px=int(left),
+        right_px=int(width - 1 - right),
+    )
+
+
 def _bbox_center_and_area(bbox: tuple[int, int, int, int]) -> tuple[float, float, float]:
     top, bottom, left, right = bbox
     return (
         (left + right) / 2.0,
         (top + bottom) / 2.0,
         float((right - left + 1) * (bottom - top + 1)),
+    )
+
+
+def evaluate_oob_gate_from_masks(
+    base_mask: np.ndarray,
+    candidate_mask: np.ndarray,
+    *,
+    min_margin_px: int = _MIN_MARGIN_PX,
+    max_centroid_shift_fraction: float = _MAX_CENTROID_SHIFT_FRACTION,
+    min_area_retention: float = _MIN_AREA_RETENTION,
+) -> BoundsGateTrace:
+    if base_mask.shape != candidate_mask.shape:
+        return BoundsGateTrace(
+            passed=False,
+            failure_reason="shape_mismatch",
+            margins_px=None,
+            border_touch_count=None,
+            dx_frac=None,
+            dy_frac=None,
+            area_retention=None,
+        )
+    base_bbox = _content_bbox_from_mask(base_mask > 0)
+    cand_bbox = _content_bbox_from_mask(candidate_mask > 0)
+    if base_bbox is None:
+        return BoundsGateTrace(
+            passed=False,
+            failure_reason="empty_base",
+            margins_px=None,
+            border_touch_count=None,
+            dx_frac=None,
+            dy_frac=None,
+            area_retention=None,
+        )
+    if cand_bbox is None:
+        return BoundsGateTrace(
+            passed=False,
+            failure_reason="empty_candidate",
+            margins_px=None,
+            border_touch_count=None,
+            dx_frac=None,
+            dy_frac=None,
+            area_retention=None,
+        )
+    margins = _margins_from_bbox(cand_bbox, candidate_mask.shape)
+    border_touch_count = _border_touch_count(candidate_mask > 0)
+    if not _has_minimum_margins(cand_bbox, candidate_mask.shape, min_margin_px=min_margin_px):
+        return BoundsGateTrace(
+            passed=False,
+            failure_reason="min_margin",
+            margins_px=margins,
+            border_touch_count=border_touch_count,
+            dx_frac=None,
+            dy_frac=None,
+            area_retention=None,
+        )
+    if border_touch_count >= 3:
+        return BoundsGateTrace(
+            passed=False,
+            failure_reason="border_touches",
+            margins_px=margins,
+            border_touch_count=border_touch_count,
+            dx_frac=None,
+            dy_frac=None,
+            area_retention=None,
+        )
+
+    base_cx, base_cy, base_area = _bbox_center_and_area(base_bbox)
+    cand_cx, cand_cy, cand_area = _bbox_center_and_area(cand_bbox)
+    if base_area <= 0:
+        return BoundsGateTrace(
+            passed=False,
+            failure_reason="empty_base",
+            margins_px=margins,
+            border_touch_count=border_touch_count,
+            dx_frac=None,
+            dy_frac=None,
+            area_retention=None,
+        )
+    height, width = base_mask.shape[:2]
+    dx_frac = abs(cand_cx - base_cx) / max(width, 1)
+    dy_frac = abs(cand_cy - base_cy) / max(height, 1)
+    area_retention = cand_area / base_area
+    if dx_frac > max_centroid_shift_fraction:
+        return BoundsGateTrace(
+            passed=False,
+            failure_reason="centroid_shift_x",
+            margins_px=margins,
+            border_touch_count=border_touch_count,
+            dx_frac=dx_frac,
+            dy_frac=dy_frac,
+            area_retention=area_retention,
+        )
+    if dy_frac > max_centroid_shift_fraction:
+        return BoundsGateTrace(
+            passed=False,
+            failure_reason="centroid_shift_y",
+            margins_px=margins,
+            border_touch_count=border_touch_count,
+            dx_frac=dx_frac,
+            dy_frac=dy_frac,
+            area_retention=area_retention,
+        )
+    if area_retention < min_area_retention:
+        return BoundsGateTrace(
+            passed=False,
+            failure_reason="area_retention",
+            margins_px=margins,
+            border_touch_count=border_touch_count,
+            dx_frac=dx_frac,
+            dy_frac=dy_frac,
+            area_retention=area_retention,
+        )
+    return BoundsGateTrace(
+        passed=True,
+        failure_reason=None,
+        margins_px=margins,
+        border_touch_count=border_touch_count,
+        dx_frac=dx_frac,
+        dy_frac=dy_frac,
+        area_retention=area_retention,
     )
 
 
@@ -425,29 +754,13 @@ def _passes_out_of_bounds_gate_from_masks(
     max_centroid_shift_fraction: float = _MAX_CENTROID_SHIFT_FRACTION,
     min_area_retention: float = _MIN_AREA_RETENTION,
 ) -> bool:
-    if base_mask.shape != candidate_mask.shape:
-        return False
-    base_bbox = _content_bbox_from_mask(base_mask > 0)
-    cand_bbox = _content_bbox_from_mask(candidate_mask > 0)
-    if base_bbox is None or cand_bbox is None:
-        return False
-    if not _has_minimum_margins(cand_bbox, candidate_mask.shape, min_margin_px=min_margin_px):
-        return False
-    if _touches_too_many_borders(candidate_mask > 0):
-        return False
-
-    base_cx, base_cy, base_area = _bbox_center_and_area(base_bbox)
-    cand_cx, cand_cy, cand_area = _bbox_center_and_area(cand_bbox)
-    if base_area <= 0:
-        return False
-    height, width = base_mask.shape[:2]
-    dx_frac = abs(cand_cx - base_cx) / max(width, 1)
-    dy_frac = abs(cand_cy - base_cy) / max(height, 1)
-    if dx_frac > max_centroid_shift_fraction or dy_frac > max_centroid_shift_fraction:
-        return False
-    if (cand_area / base_area) < min_area_retention:
-        return False
-    return True
+    return evaluate_oob_gate_from_masks(
+        base_mask,
+        candidate_mask,
+        min_margin_px=min_margin_px,
+        max_centroid_shift_fraction=max_centroid_shift_fraction,
+        min_area_retention=min_area_retention,
+    ).passed
 
 
 def _normalize_aug_output(base_image: ImageU8, candidate: ImageU8) -> ImageU8 | None:
@@ -487,9 +800,20 @@ def _early_exit_trace() -> OfflineAugmentTrace:
     """Trace for early-exit paths (invalid input)."""
     return OfflineAugmentTrace(
         branch="none",
-        geom_transform_applied=False,
-        geom_conservative_retry=False,
-        geom_oob_outcome="pass",
+        initial_geometry=_geometry_trace_from_transform(None, conservative=False),
+        retry_geometry=None,
+        selected_geometry=_geometry_trace_from_transform(None, conservative=False),
+        final_geometry_applied=False,
+        initial_oob_gate=BoundsGateTrace(
+            passed=True,
+            failure_reason=None,
+            margins_px=None,
+            border_touch_count=None,
+            dx_frac=None,
+            dy_frac=None,
+            area_retention=None,
+        ),
+        retry_oob_gate=None,
         augraphy_outcome="invalid_input",
         augraphy_normalize_accepted=False,
         augraphy_fallback_attempted=False,

@@ -10,6 +10,7 @@ from PIL import Image, ImageOps
 __all__ = [
     "resize_to_width",
     "pad_or_crop_to_height",
+    "pad_or_crop_alpha_to_height",
     "trim_bottom_white",
     "find_content_bottom_row",
     "apply_random_texture",
@@ -49,6 +50,23 @@ def pad_or_crop_to_height(image: np.ndarray, target_height: int) -> np.ndarray:
     else:
         padding = np.full((pad_height, image.shape[1]), 255, dtype=image.dtype)
     return np.concatenate([image, padding], axis=0)
+
+
+def pad_or_crop_alpha_to_height(alpha: np.ndarray, target_height: int) -> np.ndarray:
+    """Pad alpha with transparency or crop to exact target height."""
+    current_height = alpha.shape[0]
+    if current_height == target_height:
+        return alpha
+
+    if current_height > target_height:
+        return alpha[:target_height]
+
+    pad_height = target_height - current_height
+    if alpha.ndim == 3:
+        padding = np.zeros((pad_height, alpha.shape[1], alpha.shape[2]), dtype=alpha.dtype)
+    else:
+        padding = np.zeros((pad_height, alpha.shape[1]), dtype=alpha.dtype)
+    return np.concatenate([alpha, padding], axis=0)
 
 
 def resize_to_width(image: np.ndarray, target_width: int) -> np.ndarray:

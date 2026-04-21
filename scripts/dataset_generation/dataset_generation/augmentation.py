@@ -8,9 +8,8 @@ import numpy as np
 
 from scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment import (
     OfflineAugmentTrace,
+    evaluate_outer_gate,
     offline_augment,
-    passes_quality_gate,
-    passes_transform_consistency,
 )
 from scripts.dataset_generation.dataset_generation.recipe import (
     OfflineAugmentationBandPolicy,
@@ -18,7 +17,9 @@ from scripts.dataset_generation.dataset_generation.recipe import (
 )
 from scripts.dataset_generation.dataset_generation.types import (
     AugmentationBand,
+    AugmentedRenderResult,
     AugmentationTraceEvent,
+    OuterGateTrace,
     RenderResult,
     SamplePlan,
 )
@@ -54,7 +55,7 @@ def augment_accepted_render(
     plan: SamplePlan,
     render_result: RenderResult,
     recipe: ProductionRecipe,
-) -> tuple[np.ndarray, AugmentationTraceEvent]:
+) -> AugmentedRenderResult:
     """Augment an accepted render and return both the image and a structured trace."""
     if render_result.image is None:
         raise ValueError("Cannot augment a render result without image data")
@@ -76,13 +77,13 @@ def augment_accepted_render(
         geom_x_squeeze_apply_in_conservative=band_policy.geom_x_squeeze_apply_in_conservative,
     )
 
-    outer_gate_passed = _passes_augmented_image_gates(base_image, pre_augraphy_candidate)
-    if not outer_gate_passed:
+    outer_gate = evaluate_outer_gate(base_image, pre_augraphy_candidate)
+    if not outer_gate.passed:
         result_image = base_image
     else:
         result_image = np.ascontiguousarray(augmented_image)
 
-    final_outcome = _classify_final_outcome(offline_trace, outer_gate_passed)
+    final_outcome = _classify_final_outcome(offline_trace, outer_gate)
 
     sample_idx = int(plan.sample_id.split("_")[-1])
     trace_event = AugmentationTraceEvent(
@@ -90,17 +91,25 @@ def augment_accepted_render(
         sample_id=plan.sample_id,
         sample_idx=sample_idx,
         seed=plan.seed,
+        render_height_px=render_result.render_height_px,
+        bottom_padding_px=render_result.bottom_padding_px,
+        top_whitespace_px=render_result.top_whitespace_px,
+        bottom_whitespace_px=render_result.bottom_whitespace_px,
+        content_height_px=render_result.content_height_px,
         band=band_name,
         branch=offline_trace.branch,
-        geom_transform_applied=offline_trace.geom_transform_applied,
-        geom_conservative_retry=offline_trace.geom_conservative_retry,
-        geom_oob_outcome=offline_trace.geom_oob_outcome,
+        initial_geometry=offline_trace.initial_geometry,
+        retry_geometry=offline_trace.retry_geometry,
+        selected_geometry=offline_trace.selected_geometry,
+        final_geometry_applied=offline_trace.final_geometry_applied,
+        initial_oob_gate=offline_trace.initial_oob_gate,
+        retry_oob_gate=offline_trace.retry_oob_gate,
         augraphy_outcome=offline_trace.augraphy_outcome,
         augraphy_normalize_accepted=offline_trace.augraphy_normalize_accepted,
         augraphy_fallback_attempted=offline_trace.augraphy_fallback_attempted,
         augraphy_fallback_outcome=offline_trace.augraphy_fallback_outcome,
         augraphy_fallback_normalize_accepted=offline_trace.augraphy_fallback_normalize_accepted,
-        outer_gate_passed=outer_gate_passed,
+        outer_gate=outer_gate,
         final_outcome=final_outcome,
         offline_geom_ms=offline_trace.offline_geom_ms,
         offline_gates_ms=offline_trace.offline_gates_ms,
@@ -108,21 +117,22 @@ def augment_accepted_render(
         offline_texture_ms=offline_trace.offline_texture_ms,
     )
 
-    return result_image, trace_event
+    return AugmentedRenderResult(
+        final_image=result_image,
+        trace=trace_event,
+        base_image=base_image,
+        pre_augraphy_image=pre_augraphy_candidate,
+    )
 
 
-def _classify_final_outcome(trace: OfflineAugmentTrace, outer_gate_passed: bool) -> str:
+def _classify_final_outcome(trace: OfflineAugmentTrace, outer_gate: OuterGateTrace) -> str:
     """Derive a single outcome label from the trace and outer gate result."""
     if trace.branch == "none":
         return "clean_early_exit"
-    if not outer_gate_passed:
+    if not outer_gate.passed:
         return "clean_gate_rejected"
     if trace.augraphy_normalize_accepted:
         return "fully_augmented"
     if trace.augraphy_fallback_attempted and trace.augraphy_fallback_normalize_accepted:
         return "augraphy_on_base"
     return "clean_augraphy_failed"
-
-
-def _passes_augmented_image_gates(base_image: np.ndarray, candidate: np.ndarray) -> bool:
-    return passes_quality_gate(candidate) and passes_transform_consistency(base_image, candidate)

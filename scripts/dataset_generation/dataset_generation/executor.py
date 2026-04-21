@@ -48,6 +48,7 @@ from scripts.dataset_generation.dataset_generation.system_balance import (
     spine_class_for_count,
 )
 from scripts.dataset_generation.dataset_generation.types import (
+    AugmentationTraceEvent,
     ResumeSnapshot,
     SamplePlan,
     WorkerFailure,
@@ -61,6 +62,7 @@ from scripts.dataset_generation.dataset_generation.worker import (
 )
 
 _MAX_TASKS_PER_WORKER = 200
+_AUGMENTATION_PREVIEW_CAP = 12
 
 
 @dataclass(frozen=True)
@@ -967,6 +969,11 @@ def _build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object
             "augmentation_outcome_counts": Counter(),
             "augmentation_band_counts": Counter(),
             "augmentation_branch_counts": Counter(),
+            "final_geometry_counts": Counter(),
+            "oob_failure_reason_counts": Counter(),
+            "outer_gate_failure_reason_counts": Counter(),
+            "augmentation_preview_geometry_discarded": 0,
+            "augmentation_preview_outer_gate_rejected": 0,
         }
     return {
         "next_sample_idx": snapshot.next_sample_idx,
@@ -1027,6 +1034,11 @@ def _build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object
         "augmentation_outcome_counts": Counter(snapshot.augmentation_outcome_counts),
         "augmentation_band_counts": Counter(snapshot.augmentation_band_counts),
         "augmentation_branch_counts": Counter(snapshot.augmentation_branch_counts),
+        "final_geometry_counts": Counter(snapshot.final_geometry_counts),
+        "oob_failure_reason_counts": Counter(snapshot.oob_failure_reason_counts),
+        "outer_gate_failure_reason_counts": Counter(snapshot.outer_gate_failure_reason_counts),
+        "augmentation_preview_geometry_discarded": 0,
+        "augmentation_preview_outer_gate_rejected": 0,
     }
 
 
@@ -1045,6 +1057,7 @@ def _commit_contiguous_results(
         outcome = pending_terminal.pop(next_to_commit)
         _write_verovio_events(run_context=run_context, outcome=outcome)
         _write_augmentation_events(run_context=run_context, outcome=outcome)
+        _maybe_write_augmentation_preview(run_context=run_context, outcome=outcome, counters=counters)
         truncation_counts: Counter = counters["truncation_counts"]  # type: ignore[assignment]
         failure_counts: Counter = counters["failure_reason_counts"]  # type: ignore[assignment]
         full_render_histogram: Counter = counters["full_render_system_histogram"]  # type: ignore[assignment]
@@ -1088,6 +1101,10 @@ def _commit_contiguous_results(
                     aug_outcome_counts[outcome.augmentation_trace.final_outcome] += 1
                     aug_band_counts[outcome.augmentation_trace.band] += 1
                     aug_branch_counts[outcome.augmentation_trace.branch] += 1
+                    _update_augmentation_summary_counters(
+                        counters=counters,
+                        trace=outcome.augmentation_trace,
+                    )
             else:
                 failure_counts["discarded_after_target"] += 1
         else:
@@ -1124,6 +1141,73 @@ def _write_augmentation_events(
         run_context.augmentation_events_path,
         [asdict(outcome.augmentation_trace)],
     )
+
+
+def _update_augmentation_summary_counters(
+    *,
+    counters: dict[str, object],
+    trace: AugmentationTraceEvent,
+) -> None:
+    final_geometry_counts: Counter = counters["final_geometry_counts"]  # type: ignore[assignment]
+    oob_failure_reason_counts: Counter = counters["oob_failure_reason_counts"]  # type: ignore[assignment]
+    outer_gate_failure_reason_counts: Counter = counters["outer_gate_failure_reason_counts"]  # type: ignore[assignment]
+
+    if not trace.outer_gate.passed:
+        final_geometry_counts["base_image_returned"] += 1
+    elif trace.final_geometry_applied:
+        final_geometry_counts["geometry_survived"] += 1
+    else:
+        final_geometry_counts["geometry_discarded"] += 1
+
+    if trace.initial_oob_gate.failure_reason is not None:
+        oob_failure_reason_counts[trace.initial_oob_gate.failure_reason] += 1
+    if trace.retry_oob_gate is not None and trace.retry_oob_gate.failure_reason is not None:
+        oob_failure_reason_counts[trace.retry_oob_gate.failure_reason] += 1
+    if trace.outer_gate.failure_reason is not None:
+        outer_gate_failure_reason_counts[trace.outer_gate.failure_reason] += 1
+
+
+def _maybe_write_augmentation_preview(
+    *,
+    run_context: RunContext,
+    outcome: WorkerSuccess | WorkerFailure,
+    counters: dict[str, object],
+) -> None:
+    if not isinstance(outcome, WorkerSuccess):
+        return
+    if outcome.augmentation_trace is None or outcome.augmentation_preview is None:
+        return
+
+    geometry_discarded_selected = False
+    outer_gate_rejected_selected = False
+    if (
+        outcome.augmentation_trace.retry_geometry is not None
+        and not outcome.augmentation_trace.final_geometry_applied
+        and int(counters["augmentation_preview_geometry_discarded"]) < _AUGMENTATION_PREVIEW_CAP
+    ):
+        counters["augmentation_preview_geometry_discarded"] = (
+            int(counters["augmentation_preview_geometry_discarded"]) + 1
+        )
+        geometry_discarded_selected = True
+    if (
+        not outcome.augmentation_trace.outer_gate.passed
+        and int(counters["augmentation_preview_outer_gate_rejected"]) < _AUGMENTATION_PREVIEW_CAP
+    ):
+        counters["augmentation_preview_outer_gate_rejected"] = (
+            int(counters["augmentation_preview_outer_gate_rejected"]) + 1
+        )
+        outer_gate_rejected_selected = True
+    if not geometry_discarded_selected and not outer_gate_rejected_selected:
+        return
+
+    preview_dir = run_context.augmentation_previews_dir / outcome.sample.sample_id
+    preview_dir.mkdir(parents=True, exist_ok=True)
+    preview_dir.joinpath("base.jpg").write_bytes(outcome.augmentation_preview.base_image_jpeg)
+    preview_dir.joinpath("pre_augraphy.jpg").write_bytes(
+        outcome.augmentation_preview.pre_augraphy_image_jpeg
+    )
+    preview_dir.joinpath("final.jpg").write_bytes(outcome.augmentation_preview.final_image_jpeg)
+    write_json(preview_dir / "trace.json", asdict(outcome.augmentation_trace))
 
 
 def _maybe_flush_and_report(
@@ -1185,6 +1269,9 @@ def _maybe_flush_and_report(
             "augmentation_outcome_counts": dict(counters["augmentation_outcome_counts"]),
             "augmentation_band_counts": dict(counters["augmentation_band_counts"]),
             "augmentation_branch_counts": dict(counters["augmentation_branch_counts"]),
+            "final_geometry_counts": dict(counters["final_geometry_counts"]),
+            "oob_failure_reason_counts": dict(counters["oob_failure_reason_counts"]),
+            "outer_gate_failure_reason_counts": dict(counters["outer_gate_failure_reason_counts"]),
         }
         progress_payload.update(_build_layout_summary(counters))
         write_json(run_context.progress_path, progress_payload)
@@ -1252,6 +1339,9 @@ def _snapshot_from_counters(counters: dict[str, object]) -> RuntimeSnapshot:
         augmentation_outcome_counts=dict(counters["augmentation_outcome_counts"]),
         augmentation_band_counts=dict(counters["augmentation_band_counts"]),
         augmentation_branch_counts=dict(counters["augmentation_branch_counts"]),
+        final_geometry_counts=dict(counters["final_geometry_counts"]),
+        oob_failure_reason_counts=dict(counters["oob_failure_reason_counts"]),
+        outer_gate_failure_reason_counts=dict(counters["outer_gate_failure_reason_counts"]),
     )
 
 

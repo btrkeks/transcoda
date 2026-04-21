@@ -166,8 +166,10 @@ def test_offline_augment_retries_conservative_when_oob_gate_fails(monkeypatch):
     assert out.shape == base.shape
     assert out.dtype == np.uint8
     assert calls == [False, True]
-    assert trace.geom_conservative_retry
-    assert trace.geom_oob_outcome == "retry_pass"
+    assert trace.retry_geometry is not None
+    assert trace.retry_oob_gate is not None
+    assert trace.retry_oob_gate.passed
+    assert trace.final_geometry_applied
 
 
 def test_offline_augment_returns_trace_with_timings(monkeypatch):
@@ -285,7 +287,10 @@ def test_retry_fail_still_gets_textured_background(monkeypatch):
 
     out, _, trace = offline_augment(base, filename="x.krn", variant_idx=0, augment_seed=42)
     assert out.shape == base.shape
-    assert trace.geom_oob_outcome == "retry_fail"
+    assert trace.retry_geometry is not None
+    assert trace.retry_oob_gate is not None
+    assert trace.retry_oob_gate.failure_reason == "empty_candidate"
+    assert not trace.final_geometry_applied
     # The non-notation region should have textured background (not all 255)
     bg_region = out[0:19, 0:15]  # top-left corner, well away from notation
     assert not np.all(bg_region == 255), "Background should be textured, not plain white"

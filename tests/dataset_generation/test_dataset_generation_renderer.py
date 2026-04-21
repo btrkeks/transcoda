@@ -22,6 +22,16 @@ class _NoisyRenderer:
         return RenderedPage(image=image, foreground=image, alpha=np.full((1485, 1050), 255, dtype=np.uint8)), 1, 1
 
 
+class _ShortPageRenderer:
+    def render_with_counts(self, transcription, render_options):
+        del transcription, render_options
+        image = np.full((1202, 1050, 3), 255, dtype=np.uint8)
+        image[19:284, 40:700] = 0
+        alpha = np.zeros((1202, 1050), dtype=np.uint8)
+        alpha[19:284, 40:700] = 255
+        return RenderedPage(image=image, foreground=image, alpha=alpha), 3, 1
+
+
 def test_assess_frame_fit_reports_pixel_metrics_consistent_with_ratios():
     image = np.full((120, 80, 3), 255, dtype=np.uint8)
     image[15:55, 10:40] = 0
@@ -72,3 +82,17 @@ def test_render_sample_can_disable_verovio_diagnostic_capture():
 
     assert result.succeeded is True
     assert result.verovio_diagnostics == ()
+
+
+def test_render_sample_pads_alpha_with_transparency():
+    result = render_sample(
+        "**kern\n=1\n4c\n*-\n",
+        ProductionRecipe(),
+        seed=123,
+        renderer=_ShortPageRenderer(),
+    )
+
+    assert result.succeeded is True
+    assert result.render_layers is not None
+    assert result.render_layers.alpha.shape == (1485, 1050)
+    assert np.all(result.render_layers.alpha[1202:] == 0)

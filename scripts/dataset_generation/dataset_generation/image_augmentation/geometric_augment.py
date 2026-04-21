@@ -17,6 +17,13 @@ class GeometricTransform:
 
     affine: np.ndarray
     perspective: np.ndarray | None = None
+    angle_deg: float = 0.0
+    scale: float = 1.0
+    tx_px: float = 0.0
+    ty_px: float = 0.0
+    x_scale: float = 1.0
+    y_scale: float = 1.0
+    conservative: bool = False
 
 
 def transform_matrix(transform: GeometricTransform | None) -> np.ndarray | None:
@@ -154,7 +161,17 @@ def sample_geometric_transform(
         ).astype(np.float32)
         perspective = cv2.getPerspectiveTransform(src, dst)
 
-    return GeometricTransform(affine=affine.astype(np.float32), perspective=perspective)
+    return GeometricTransform(
+        affine=affine.astype(np.float32),
+        perspective=perspective,
+        angle_deg=angle,
+        scale=scale,
+        tx_px=tx,
+        ty_px=ty,
+        x_scale=sx,
+        y_scale=sy,
+        conservative=conservative,
+    )
 
 
 def apply_geometric_transform(

@@ -8,6 +8,7 @@ from contextlib import contextmanager
 import numpy as np
 
 from scripts.dataset_generation.dataset_generation.image_generation.image_post import (
+    pad_or_crop_alpha_to_height,
     pad_or_crop_to_height,
     resize_to_width,
 )
@@ -143,6 +144,8 @@ def _render_sample_impl(
                 svg_diagnostics=SvgLayoutDiagnostics(system_count=0, page_count=0),
                 bottom_whitespace_ratio=None,
                 vertical_fill_ratio=None,
+                render_height_px=None,
+                bottom_padding_px=None,
                 bottom_whitespace_px=None,
                 top_whitespace_px=None,
                 content_height_px=None,
@@ -165,6 +168,8 @@ def _render_sample_impl(
                 svg_diagnostics=diagnostics,
                 bottom_whitespace_ratio=None,
                 vertical_fill_ratio=None,
+                render_height_px=None,
+                bottom_padding_px=None,
                 bottom_whitespace_px=None,
                 top_whitespace_px=None,
                 content_height_px=None,
@@ -181,13 +186,18 @@ def _render_sample_impl(
             target_frame_margin_px=recipe.render_only_aug.target_frame_margin_px,
         )
         if passed:
+            bottom_padding_px = (
+                max(0, int(recipe.image_height) - int(image.shape[0]))
+                if recipe.image_height is not None
+                else 0
+            )
             final_image = pad_or_crop_to_height(image, recipe.image_height)
             final_layers = None
             if render_layers is not None:
                 final_layers = RenderedPage(
                     image=final_image,
                     foreground=pad_or_crop_to_height(render_layers.foreground, recipe.image_height),
-                    alpha=pad_or_crop_to_height(render_layers.alpha, recipe.image_height),
+                    alpha=pad_or_crop_alpha_to_height(render_layers.alpha, recipe.image_height),
                 )
             return RenderResult(
                 image=final_image,
@@ -195,6 +205,8 @@ def _render_sample_impl(
                 svg_diagnostics=diagnostics,
                 bottom_whitespace_ratio=_coerce_float(metrics.get("bottom_whitespace_ratio")),
                 vertical_fill_ratio=_coerce_float(metrics.get("vertical_fill_ratio")),
+                render_height_px=int(image.shape[0]),
+                bottom_padding_px=bottom_padding_px,
                 bottom_whitespace_px=_coerce_int(metrics.get("bottom_whitespace_px")),
                 top_whitespace_px=_coerce_int(metrics.get("top_whitespace_px")),
                 content_height_px=_coerce_int(metrics.get("content_height_px")),
@@ -226,6 +238,12 @@ def _render_sample_impl(
             svg_diagnostics=diagnostics,
             bottom_whitespace_ratio=_coerce_float(metrics.get("bottom_whitespace_ratio")),
             vertical_fill_ratio=_coerce_float(metrics.get("vertical_fill_ratio")),
+            render_height_px=_coerce_int(metrics.get("current_height")),
+            bottom_padding_px=(
+                max(0, int(recipe.image_height) - int(metrics["current_height"]))
+                if recipe.image_height is not None and metrics.get("current_height") is not None
+                else None
+            ),
             bottom_whitespace_px=_coerce_int(metrics.get("bottom_whitespace_px")),
             top_whitespace_px=_coerce_int(metrics.get("top_whitespace_px")),
             content_height_px=_coerce_int(metrics.get("content_height_px")),
@@ -239,6 +257,8 @@ def _render_sample_impl(
         svg_diagnostics=SvgLayoutDiagnostics(system_count=0, page_count=0),
         bottom_whitespace_ratio=None,
         vertical_fill_ratio=None,
+        render_height_px=None,
+        bottom_padding_px=None,
         bottom_whitespace_px=None,
         top_whitespace_px=None,
         content_height_px=None,

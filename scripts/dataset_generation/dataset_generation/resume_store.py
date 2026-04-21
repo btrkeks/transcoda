@@ -61,6 +61,9 @@ class RuntimeSnapshot:
     augmentation_outcome_counts: dict[str, int]
     augmentation_band_counts: dict[str, int]
     augmentation_branch_counts: dict[str, int]
+    final_geometry_counts: dict[str, int]
+    oob_failure_reason_counts: dict[str, int]
+    outer_gate_failure_reason_counts: dict[str, int]
 
 
 class ResumableShardStore:
@@ -211,6 +214,9 @@ class ResumableShardStore:
             self._set_meta(conn, "augmentation_outcome_counts", snapshot.augmentation_outcome_counts)
             self._set_meta(conn, "augmentation_band_counts", snapshot.augmentation_band_counts)
             self._set_meta(conn, "augmentation_branch_counts", snapshot.augmentation_branch_counts)
+            self._set_meta(conn, "final_geometry_counts", snapshot.final_geometry_counts)
+            self._set_meta(conn, "oob_failure_reason_counts", snapshot.oob_failure_reason_counts)
+            self._set_meta(conn, "outer_gate_failure_reason_counts", snapshot.outer_gate_failure_reason_counts)
             self._set_meta(conn, "terminal_status", "running")
             self._set_meta(conn, "last_flush_at", time.time())
 
@@ -271,6 +277,13 @@ class ResumableShardStore:
                 ),
                 augmentation_branch_counts=dict(
                     self._get_meta(conn, "augmentation_branch_counts", {})
+                ),
+                final_geometry_counts=dict(self._get_meta(conn, "final_geometry_counts", {})),
+                oob_failure_reason_counts=dict(
+                    self._get_meta(conn, "oob_failure_reason_counts", {})
+                ),
+                outer_gate_failure_reason_counts=dict(
+                    self._get_meta(conn, "outer_gate_failure_reason_counts", {})
                 ),
             )
 
@@ -399,6 +412,9 @@ class ResumableShardStore:
             self._set_meta(conn, "augmentation_outcome_counts", {})
             self._set_meta(conn, "augmentation_band_counts", {})
             self._set_meta(conn, "augmentation_branch_counts", {})
+            self._set_meta(conn, "final_geometry_counts", {})
+            self._set_meta(conn, "oob_failure_reason_counts", {})
+            self._set_meta(conn, "outer_gate_failure_reason_counts", {})
             self._set_meta(conn, "completed", False)
             self._set_meta(conn, "terminal_status", "running")
 
@@ -456,6 +472,13 @@ class ResumableShardStore:
                 ),
                 augmentation_branch_counts=dict(
                     self._get_meta(conn, "augmentation_branch_counts", {})
+                ),
+                final_geometry_counts=dict(self._get_meta(conn, "final_geometry_counts", {})),
+                oob_failure_reason_counts=dict(
+                    self._get_meta(conn, "oob_failure_reason_counts", {})
+                ),
+                outer_gate_failure_reason_counts=dict(
+                    self._get_meta(conn, "outer_gate_failure_reason_counts", {})
                 ),
             )
 
@@ -564,6 +587,7 @@ def write_run_info(
         "quarantine_out": quarantine_out,
         "verovio_events_path": str(run_context.verovio_events_path),
         "augmentation_events_path": str(run_context.augmentation_events_path),
+        "augmentation_previews_dir": str(run_context.augmentation_previews_dir),
         "system_balance": system_balance,
         "recipe_version": recipe.version,
         "runtime_seconds": runtime_seconds,

@@ -26,6 +26,13 @@ from scripts.dataset_generation.dataset_generation.system_balance import (
 )
 from scripts.dataset_generation.dataset_generation.types import (
     AcceptedSample,
+    AugmentationPreviewArtifacts,
+    AugmentationTraceEvent,
+    BoundsGateTrace,
+    GeometryTrace,
+    MarginTrace,
+    OuterGateTrace,
+    QualityGateTrace,
     RenderResult,
     SamplePlan,
     SourceSegment,
@@ -87,6 +94,112 @@ def _make_worker_success(plan: SamplePlan) -> WorkerSuccess:
         content_height_px=1069,
     )
     return WorkerSuccess(sample=sample, truncation_attempted=False, truncation_rescued=False)
+
+
+def _make_bounds_gate_trace(*, passed: bool, failure_reason: str | None) -> BoundsGateTrace:
+    return BoundsGateTrace(
+        passed=passed,
+        failure_reason=failure_reason,
+        margins_px=MarginTrace(top_px=20, bottom_px=1200, left_px=20, right_px=500),
+        border_touch_count=0,
+        dx_frac=0.01,
+        dy_frac=0.02,
+        area_retention=0.95,
+    )
+
+
+def _make_geometry_trace(*, sampled: bool, conservative: bool) -> GeometryTrace:
+    return GeometryTrace(
+        sampled=sampled,
+        conservative=conservative,
+        angle_deg=0.8 if sampled else None,
+        scale=1.02 if sampled else None,
+        tx_px=2.0 if sampled else None,
+        ty_px=3.0 if sampled else None,
+        x_scale=0.95 if sampled else None,
+        y_scale=1.0 if sampled else None,
+        perspective_applied=False,
+    )
+
+
+def _make_augmented_worker_success(
+    plan: SamplePlan,
+    *,
+    outer_gate_passed: bool,
+    final_geometry_applied: bool,
+    initial_oob_failure_reason: str | None = None,
+    retry_oob_failure_reason: str | None = None,
+    outer_gate_failure_reason: str | None = None,
+) -> WorkerSuccess:
+    outcome = _make_worker_success(plan)
+    image = np.full((1485, 1050, 3), 255, dtype=np.uint8)
+    image[10:70, 10:600] = 0
+    trace = AugmentationTraceEvent(
+        event="augmentation_trace",
+        sample_id=plan.sample_id,
+        sample_idx=int(plan.sample_id.split("_")[-1]),
+        seed=plan.seed,
+        render_height_px=1200,
+        bottom_padding_px=285,
+        top_whitespace_px=20,
+        bottom_whitespace_px=600,
+        content_height_px=580,
+        band="balanced",
+        branch="geometric",
+        initial_geometry=_make_geometry_trace(sampled=True, conservative=False),
+        retry_geometry=_make_geometry_trace(sampled=True, conservative=True),
+        selected_geometry=_make_geometry_trace(
+            sampled=final_geometry_applied,
+            conservative=not final_geometry_applied,
+        ),
+        final_geometry_applied=final_geometry_applied,
+        initial_oob_gate=_make_bounds_gate_trace(
+            passed=initial_oob_failure_reason is None,
+            failure_reason=initial_oob_failure_reason,
+        ),
+        retry_oob_gate=_make_bounds_gate_trace(
+            passed=retry_oob_failure_reason is None,
+            failure_reason=retry_oob_failure_reason,
+        ),
+        augraphy_outcome="applied",
+        augraphy_normalize_accepted=True,
+        augraphy_fallback_attempted=False,
+        augraphy_fallback_outcome=None,
+        augraphy_fallback_normalize_accepted=None,
+        outer_gate=OuterGateTrace(
+            passed=outer_gate_passed,
+            failure_reason=outer_gate_failure_reason,
+            quality_gate=QualityGateTrace(
+                passed=outer_gate_passed,
+                failure_reason=None if outer_gate_passed else "min_margin",
+                mean_luma=200.0,
+                black_ratio=0.1,
+                margins_px=MarginTrace(top_px=20, bottom_px=1200, left_px=20, right_px=500),
+                border_touch_count=0,
+            ),
+            transform_consistency=_make_bounds_gate_trace(
+                passed=outer_gate_passed,
+                failure_reason=None if outer_gate_passed else "min_margin",
+            ),
+        ),
+        final_outcome="fully_augmented" if outer_gate_passed else "clean_gate_rejected",
+        offline_geom_ms=1.0,
+        offline_gates_ms=0.5,
+        offline_augraphy_ms=2.0,
+        offline_texture_ms=0.25,
+    )
+    preview = AugmentationPreviewArtifacts(
+        base_image_jpeg=encode_jpeg_image(image),
+        pre_augraphy_image_jpeg=encode_jpeg_image(image),
+        final_image_jpeg=encode_jpeg_image(image),
+    )
+    return WorkerSuccess(
+        sample=outcome.sample,
+        truncation_attempted=outcome.truncation_attempted,
+        truncation_rescued=outcome.truncation_rescued,
+        augmentation_trace=trace,
+        augmentation_preview=preview,
+    )
 
 
 def _make_worker_success_with_verovio_diagnostic(plan: SamplePlan) -> WorkerSuccess:
@@ -508,6 +621,128 @@ def test_executor_writes_verovio_events_for_rejected_outcomes(tmp_path, monkeypa
     assert events[0]["truncation_chunk_count"] == 1
     assert events[0]["truncation_total_chunks"] == 2
     assert events[0]["truncation_ratio"] == 0.5
+
+
+def test_executor_writes_redesigned_augmentation_events_and_previews(tmp_path, monkeypatch):
+    input_dir = _make_simple_input_dir(tmp_path, ("a", "b"))
+    output_dir = tmp_path / "output"
+    _install_fake_pool(
+        monkeypatch,
+        outcomes_by_sample_idx={
+            0: [
+                lambda plan: _make_augmented_worker_success(
+                    plan,
+                    outer_gate_passed=False,
+                    final_geometry_applied=False,
+                    initial_oob_failure_reason="centroid_shift_x",
+                    retry_oob_failure_reason="min_margin",
+                    outer_gate_failure_reason="quality:min_margin",
+                )
+            ],
+            1: [
+                lambda plan: _make_augmented_worker_success(
+                    plan,
+                    outer_gate_passed=True,
+                    final_geometry_applied=False,
+                    initial_oob_failure_reason="centroid_shift_x",
+                    retry_oob_failure_reason="min_margin",
+                    outer_gate_failure_reason=None,
+                )
+            ],
+        },
+    )
+    _install_fake_balanced_planner(monkeypatch, {0: [0], 1: [1]})
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=2,
+        num_workers=2,
+        max_attempts=2,
+        quiet=True,
+    )
+
+    info = _read_json(summary.run_artifacts_dir / "info.json")
+    events_path = summary.run_artifacts_dir / "augmentation_events.jsonl"
+    events = [json.loads(line) for line in events_path.read_text(encoding="utf-8").splitlines()]
+    previews_dir = summary.run_artifacts_dir / "augmentation_previews"
+
+    assert info["augmentation_events_path"] == str(events_path)
+    assert info["augmentation_previews_dir"] == str(previews_dir)
+    assert len(events) == 2
+    assert events[0]["initial_geometry"]["sampled"] is True
+    assert events[0]["retry_geometry"]["conservative"] is True
+    assert events[0]["selected_geometry"]["sampled"] is False
+    assert events[0]["initial_oob_gate"]["failure_reason"] == "centroid_shift_x"
+    assert events[0]["retry_oob_gate"]["failure_reason"] == "min_margin"
+    assert events[0]["outer_gate"]["failure_reason"] == "quality:min_margin"
+    assert (previews_dir / "sample_00000000" / "base.jpg").exists()
+    assert (previews_dir / "sample_00000000" / "pre_augraphy.jpg").exists()
+    assert (previews_dir / "sample_00000000" / "final.jpg").exists()
+    assert (previews_dir / "sample_00000000" / "trace.json").exists()
+    assert (previews_dir / "sample_00000001" / "trace.json").exists()
+
+
+def test_executor_tracks_new_augmentation_summary_counters(tmp_path, monkeypatch):
+    input_dir = _make_simple_input_dir(tmp_path, ("a", "b", "c"))
+    output_dir = tmp_path / "output"
+    _install_fake_pool(
+        monkeypatch,
+        outcomes_by_sample_idx={
+            0: [
+                lambda plan: _make_augmented_worker_success(
+                    plan,
+                    outer_gate_passed=False,
+                    final_geometry_applied=False,
+                    initial_oob_failure_reason="centroid_shift_x",
+                    retry_oob_failure_reason="min_margin",
+                    outer_gate_failure_reason="quality:min_margin",
+                )
+            ],
+            1: [
+                lambda plan: _make_augmented_worker_success(
+                    plan,
+                    outer_gate_passed=True,
+                    final_geometry_applied=False,
+                    initial_oob_failure_reason="centroid_shift_x",
+                    retry_oob_failure_reason="min_margin",
+                )
+            ],
+            2: [
+                lambda plan: _make_augmented_worker_success(
+                    plan,
+                    outer_gate_passed=True,
+                    final_geometry_applied=True,
+                )
+            ],
+        },
+    )
+    _install_fake_balanced_planner(monkeypatch, {0: [0], 1: [1], 2: [2]})
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=3,
+        num_workers=2,
+        max_attempts=3,
+        quiet=True,
+    )
+
+    info = _read_json(summary.run_artifacts_dir / "info.json")
+    progress = _read_json(summary.run_artifacts_dir / "progress.json")
+
+    assert progress["final_geometry_counts"] == {
+        "base_image_returned": 1,
+        "geometry_discarded": 1,
+        "geometry_survived": 1,
+    }
+    assert progress["oob_failure_reason_counts"] == {
+        "centroid_shift_x": 2,
+        "min_margin": 2,
+    }
+    assert progress["outer_gate_failure_reason_counts"] == {"quality:min_margin": 1}
+    assert info["snapshot"]["final_geometry_counts"]["geometry_survived"] == 1
+    assert info["finalization"]["snapshot"]["final_geometry_counts"]["geometry_discarded"] == 1
 
 
 def test_executor_skips_invalid_sources_and_records_auto_quarantine(tmp_path, monkeypatch):

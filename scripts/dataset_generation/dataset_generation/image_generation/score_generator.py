@@ -10,6 +10,7 @@ from typing import Literal
 import numpy as np
 
 from .image_post import (
+    pad_or_crop_alpha_to_height,
     pad_or_crop_to_height,
     resize_to_width,
 )
@@ -226,7 +227,10 @@ def generate_with_diagnostics(
                 final_layers = RenderedPage(
                     image=final_image,
                     foreground=_finalize_image_height(attempt.render_layers.foreground, config),
-                    alpha=_finalize_image_height(attempt.render_layers.alpha, config),
+                    alpha=pad_or_crop_alpha_to_height(
+                        attempt.render_layers.alpha,
+                        config.image_height,
+                    ),
                 )
             if attempt_idx > 1:
                 logger.debug("Render retry succeeded (attempt=%d)", attempt_idx)

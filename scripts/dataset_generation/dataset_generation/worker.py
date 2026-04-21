@@ -7,6 +7,8 @@ import re
 from collections.abc import Callable
 from pathlib import Path
 
+import numpy as np
+
 from scripts.dataset_generation.dataset_generation.acceptance import decide_acceptance
 from scripts.dataset_generation.dataset_generation.augmentation import augment_accepted_render
 from scripts.dataset_generation.dataset_generation.image_generation.rendering.verovio_backend import (
@@ -29,6 +31,8 @@ from scripts.dataset_generation.dataset_generation.truncation import (
 )
 from scripts.dataset_generation.dataset_generation.types import (
     AcceptedSample,
+    AugmentedRenderResult,
+    AugmentationPreviewArtifacts,
     AugmentationTraceEvent,
     RenderResult,
     SamplePlan,
@@ -145,7 +149,7 @@ def evaluate_sample_plan(
             <= recipe.truncation.preferred_max_systems
             else None
         )
-        sample, aug_trace = _finalize_sample(
+        sample, aug_trace, aug_preview = _finalize_sample(
             plan=plan,
             render_result=full_render,
             transcription=plan.label_transcription,
@@ -169,6 +173,7 @@ def evaluate_sample_plan(
             preferred_5_6_status=preferred_status,
             verovio_diagnostics=tuple(verovio_events),
             augmentation_trace=aug_trace,
+            augmentation_preview=aug_preview,
         )
 
     if (
@@ -205,7 +210,7 @@ def evaluate_sample_plan(
         )
         if rescue_decision.action == "accept_without_truncation":
             preferred_5_6_rescue_succeeded = True
-            sample, aug_trace = _finalize_sample(
+            sample, aug_trace, aug_preview = _finalize_sample(
                 plan=plan,
                 render_result=rescue_render,
                 transcription=plan.label_transcription,
@@ -229,6 +234,7 @@ def evaluate_sample_plan(
                 preferred_5_6_status="preferred_5_6_rescued",
                 verovio_diagnostics=tuple(verovio_events),
                 augmentation_trace=aug_trace,
+                augmentation_preview=aug_preview,
             )
 
     if truncation_mode in {"preferred", "required"}:
@@ -260,7 +266,7 @@ def evaluate_sample_plan(
                 truncation_applied=True,
             )
             if candidate_decision.action == "accept_with_truncation":
-                sample, aug_trace = _finalize_sample(
+                sample, aug_trace, aug_preview = _finalize_sample(
                     plan=plan,
                     render_result=candidate_render,
                     transcription=candidate.transcription,
@@ -291,6 +297,7 @@ def evaluate_sample_plan(
                     ),
                     verovio_diagnostics=tuple(verovio_events),
                     augmentation_trace=aug_trace,
+                    augmentation_preview=aug_preview,
                 )
 
     failure_reason = full_decision.reason or full_render.rejection_reason or "rejected"
@@ -396,9 +403,23 @@ def _finalize_sample(
     truncation_reason: str | None,
     recipe: ProductionRecipe,
     augment_fn: Callable[..., object],
-) -> tuple[AcceptedSample, AugmentationTraceEvent | None]:
+) -> tuple[AcceptedSample, AugmentationTraceEvent | None, AugmentationPreviewArtifacts | None]:
     augmented_result = augment_fn(plan, render_result, recipe)
-    if isinstance(augmented_result, tuple):
+    augmentation_preview: AugmentationPreviewArtifacts | None = None
+    if isinstance(augmented_result, AugmentedRenderResult):
+        augmented_image = augmented_result.final_image
+        aug_trace = augmented_result.trace
+        if (
+            isinstance(augmented_result.final_image, np.ndarray)
+            and isinstance(augmented_result.base_image, np.ndarray)
+            and isinstance(augmented_result.pre_augraphy_image, np.ndarray)
+        ):
+            augmentation_preview = AugmentationPreviewArtifacts(
+                base_image_jpeg=encode_jpeg_image(augmented_result.base_image),
+                pre_augraphy_image_jpeg=encode_jpeg_image(augmented_result.pre_augraphy_image),
+                final_image_jpeg=encode_jpeg_image(augmented_result.final_image),
+            )
+    elif isinstance(augmented_result, tuple):
         augmented_image, aug_trace = augmented_result
     else:
         augmented_image = augmented_result
@@ -426,7 +447,7 @@ def _finalize_sample(
         top_whitespace_px=render_result.top_whitespace_px,
         content_height_px=render_result.content_height_px,
     )
-    return sample, aug_trace
+    return sample, aug_trace, augmentation_preview
 
 
 def outcome_to_dataset_row(

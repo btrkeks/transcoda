@@ -7,6 +7,12 @@ from scripts.dataset_generation.dataset_generation.image_augmentation.offline_au
 )
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.types import (
+    BoundsGateTrace,
+    GeometryTrace,
+    MarginTrace,
+    OuterGateTrace,
+    QualityGateTrace,
+    AugmentedRenderResult,
     AugmentationTraceEvent,
     RenderResult,
     SamplePlan,
@@ -40,10 +46,41 @@ def _make_plan_and_render(*, system_count=4, fill=0.62, bottom_ws=0.15, segment_
 
 def _make_offline_trace(**overrides):
     defaults = dict(
-        branch="realistic",
-        geom_transform_applied=True,
-        geom_conservative_retry=False,
-        geom_oob_outcome="pass",
+        branch="geometric",
+        initial_geometry=GeometryTrace(
+            sampled=True,
+            conservative=False,
+            angle_deg=0.8,
+            scale=1.01,
+            tx_px=1.0,
+            ty_px=2.0,
+            x_scale=0.96,
+            y_scale=1.0,
+            perspective_applied=False,
+        ),
+        retry_geometry=None,
+        selected_geometry=GeometryTrace(
+            sampled=True,
+            conservative=False,
+            angle_deg=0.8,
+            scale=1.01,
+            tx_px=1.0,
+            ty_px=2.0,
+            x_scale=0.96,
+            y_scale=1.0,
+            perspective_applied=False,
+        ),
+        final_geometry_applied=True,
+        initial_oob_gate=BoundsGateTrace(
+            passed=True,
+            failure_reason=None,
+            margins_px=MarginTrace(top_px=20, bottom_px=1200, left_px=20, right_px=530),
+            border_touch_count=0,
+            dx_frac=0.01,
+            dy_frac=0.01,
+            area_retention=0.98,
+        ),
+        retry_oob_gate=None,
         augraphy_outcome="applied",
         augraphy_normalize_accepted=True,
         augraphy_fallback_attempted=False,
@@ -67,11 +104,12 @@ def test_augment_accepted_render_falls_back_to_base_image_when_candidate_is_inva
         lambda *args, **kwargs: (invalid, invalid, _make_offline_trace()),
     )
 
-    augmented, trace = augment_accepted_render(plan, render_result, ProductionRecipe())
+    augmented = augment_accepted_render(plan, render_result, ProductionRecipe())
+    trace = augmented.trace
 
-    assert np.array_equal(augmented, base)
+    assert np.array_equal(augmented.final_image, base)
     assert isinstance(trace, AugmentationTraceEvent)
-    assert not trace.outer_gate_passed
+    assert not trace.outer_gate.passed
     assert trace.final_outcome == "clean_gate_rejected"
 
 
@@ -86,10 +124,11 @@ def test_augment_accepted_render_returns_augmented_image_when_gates_pass(monkeyp
         lambda *args, **kwargs: (augmented_img, augmented_img, _make_offline_trace()),
     )
 
-    result, trace = augment_accepted_render(plan, render_result, ProductionRecipe())
+    result = augment_accepted_render(plan, render_result, ProductionRecipe())
+    trace = result.trace
 
-    assert np.array_equal(result, augmented_img)
-    assert trace.outer_gate_passed
+    assert np.array_equal(result.final_image, augmented_img)
+    assert trace.outer_gate.passed
     assert trace.final_outcome == "fully_augmented"
 
 
@@ -104,7 +143,7 @@ def test_augment_accepted_render_records_band_correctly(monkeypatch):
         lambda *args, **kwargs: (base, base, _make_offline_trace()),
     )
 
-    _, trace = augment_accepted_render(plan, render_result, ProductionRecipe())
+    trace = augment_accepted_render(plan, render_result, ProductionRecipe()).trace
     assert trace.band == "roomy"
 
     # system_count=8 → "tight"
@@ -113,7 +152,7 @@ def test_augment_accepted_render_records_band_correctly(monkeypatch):
         "scripts.dataset_generation.dataset_generation.augmentation.offline_augment",
         lambda *args, **kwargs: (base_tight, base_tight, _make_offline_trace()),
     )
-    _, trace_tight = augment_accepted_render(plan_tight, render_tight, ProductionRecipe())
+    trace_tight = augment_accepted_render(plan_tight, render_tight, ProductionRecipe()).trace
     assert trace_tight.band == "tight"
 
 
@@ -125,14 +164,15 @@ def test_augment_accepted_render_trace_event_fields(monkeypatch):
         lambda *args, **kwargs: (base, base, _make_offline_trace(branch="foreground")),
     )
 
-    _, trace = augment_accepted_render(plan, render_result, ProductionRecipe())
+    trace = augment_accepted_render(plan, render_result, ProductionRecipe()).trace
 
     assert trace.event == "augmentation_trace"
     assert trace.sample_id == "sample_00000000"
     assert trace.sample_idx == 0
     assert trace.seed == 7
     assert trace.branch == "foreground"
-    assert trace.geom_transform_applied
+    assert trace.final_geometry_applied
+    assert trace.initial_geometry.angle_deg == 0.8
     assert trace.offline_geom_ms == 1.0
 
 
@@ -151,7 +191,7 @@ def test_augment_accepted_render_augraphy_on_base_outcome(monkeypatch):
         lambda *args, **kwargs: (base, base, trace_data),
     )
 
-    _, trace = augment_accepted_render(plan, render_result, ProductionRecipe())
+    trace = augment_accepted_render(plan, render_result, ProductionRecipe()).trace
 
-    assert trace.outer_gate_passed
+    assert trace.outer_gate.passed
     assert trace.final_outcome == "augraphy_on_base"
