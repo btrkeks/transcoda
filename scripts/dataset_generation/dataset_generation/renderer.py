@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Callable
 
 import numpy as np
 
@@ -28,7 +28,10 @@ from scripts.dataset_generation.dataset_generation.policy import (
     RenderMode,
 )
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation.types import RenderResult, SvgLayoutDiagnostics
+from scripts.dataset_generation.dataset_generation.types_render import (
+    RenderResult,
+    SvgLayoutDiagnostics,
+)
 from scripts.dataset_generation.dataset_generation.verovio_diagnostics import (
     capture_native_stderr,
     parse_verovio_diagnostics,

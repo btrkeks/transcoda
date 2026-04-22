@@ -1,45 +1,37 @@
 import numpy as np
-from pathlib import Path
 
 from scripts.dataset_generation.dataset_generation.augmentation import augment_accepted_render
 from scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment import (
     OfflineAugmentTrace,
 )
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation.types import (
-    BoundsGateTrace,
-    GeometryTrace,
-    MarginTrace,
-    OuterGateTrace,
-    QualityGateTrace,
-    AugmentedRenderResult,
-    AugmentationTraceEvent,
-    RenderResult,
-    SamplePlan,
-    SourceSegment,
-    SvgLayoutDiagnostics,
+from scripts.dataset_generation.dataset_generation.types_events import AugmentationTraceEvent
+from tests.dataset_generation.factories import (
+    make_bounds_gate_trace,
+    make_geometry_trace,
+    make_render_result,
+    make_sample_plan,
 )
 
 
 def _make_plan_and_render(*, system_count=4, fill=0.62, bottom_ws=0.15, segment_count=1):
     base = np.full((1485, 1050, 3), 255, dtype=np.uint8)
     base[20:80, 20:500] = 0
-    plan = SamplePlan(
-        sample_id="sample_00000000",
+    plan = make_sample_plan(
         seed=7,
-        segments=(SourceSegment(source_id="a", path=Path("a.krn"), order=0),),
         label_transcription="=1\n4c\n*-\n",
         source_measure_count=8,
         source_non_empty_line_count=16,
-        source_max_initial_spine_count=1,
         segment_count=segment_count,
     )
-    render_result = RenderResult(
+    render_result = make_render_result(
         image=base,
-        render_layers=None,
-        svg_diagnostics=SvgLayoutDiagnostics(system_count=system_count, page_count=1),
+        system_count=system_count,
         bottom_whitespace_ratio=bottom_ws,
         vertical_fill_ratio=fill,
+        bottom_whitespace_px=None,
+        top_whitespace_px=None,
+        content_height_px=None,
     )
     return plan, render_result, base
 
@@ -47,38 +39,17 @@ def _make_plan_and_render(*, system_count=4, fill=0.62, bottom_ws=0.15, segment_
 def _make_offline_trace(**overrides):
     defaults = dict(
         branch="geometric",
-        initial_geometry=GeometryTrace(
-            sampled=True,
-            conservative=False,
-            angle_deg=0.8,
-            scale=1.01,
-            tx_px=1.0,
-            ty_px=2.0,
-            x_scale=0.96,
-            y_scale=1.0,
-            perspective_applied=False,
+        initial_geometry=make_geometry_trace(
+            angle_deg=0.8, scale=1.01, tx_px=1.0, ty_px=2.0, x_scale=0.96, y_scale=1.0
         ),
         retry_geometry=None,
-        selected_geometry=GeometryTrace(
-            sampled=True,
-            conservative=False,
-            angle_deg=0.8,
-            scale=1.01,
-            tx_px=1.0,
-            ty_px=2.0,
-            x_scale=0.96,
-            y_scale=1.0,
-            perspective_applied=False,
+        selected_geometry=make_geometry_trace(
+            angle_deg=0.8, scale=1.01, tx_px=1.0, ty_px=2.0, x_scale=0.96, y_scale=1.0
         ),
         final_geometry_applied=True,
-        initial_oob_gate=BoundsGateTrace(
-            passed=True,
-            failure_reason=None,
-            margins_px=MarginTrace(top_px=20, bottom_px=1200, left_px=20, right_px=530),
-            border_touch_count=0,
-            dx_frac=0.01,
-            dy_frac=0.01,
-            area_retention=0.98,
+        initial_oob_gate=make_bounds_gate_trace(
+            dx_frac=0.01, dy_frac=0.01, area_retention=0.98,
+            margins_px=None,  # defaults to make_margin_trace()
         ),
         retry_oob_gate=None,
         augraphy_outcome="applied",
@@ -115,9 +86,8 @@ def test_augment_accepted_render_falls_back_to_base_image_when_candidate_is_inva
 
 def test_augment_accepted_render_returns_augmented_image_when_gates_pass(monkeypatch):
     plan, render_result, base = _make_plan_and_render()
-    # A valid augmented image: same shape, mostly white, content with margins
     augmented_img = base.copy()
-    augmented_img[30:70, 30:490] = 40  # slightly different content
+    augmented_img[30:70, 30:490] = 40
 
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.augmentation.offline_augment",
@@ -133,7 +103,6 @@ def test_augment_accepted_render_returns_augmented_image_when_gates_pass(monkeyp
 
 
 def test_augment_accepted_render_records_band_correctly(monkeypatch):
-    # system_count=2, fill=0.40, segment_count=1, bottom_ws=0.20 → "roomy"
     plan, render_result, base = _make_plan_and_render(
         system_count=2, fill=0.40, bottom_ws=0.20, segment_count=1
     )
@@ -146,7 +115,6 @@ def test_augment_accepted_render_records_band_correctly(monkeypatch):
     trace = augment_accepted_render(plan, render_result, ProductionRecipe()).trace
     assert trace.band == "roomy"
 
-    # system_count=8 → "tight"
     plan_tight, render_tight, base_tight = _make_plan_and_render(system_count=8)
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.augmentation.offline_augment",

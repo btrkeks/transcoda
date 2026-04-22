@@ -1,5 +1,3 @@
-import numpy as np
-
 from scripts.dataset_generation.dataset_generation.policy import (
     RejectionReason,
     finalize_failure_reason,
@@ -8,19 +6,7 @@ from scripts.dataset_generation.dataset_generation.policy import (
     should_attempt_layout_rescue,
 )
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation.types import RenderResult, SvgLayoutDiagnostics
-
-
-def _render_result(*, system_count: int, rejection_reason: str | None) -> RenderResult:
-    image = np.full((1485, 1050, 3), 255, dtype=np.uint8)
-    return RenderResult(
-        image=image if rejection_reason is None else None,
-        render_layers=None,
-        svg_diagnostics=SvgLayoutDiagnostics(system_count=system_count, page_count=1),
-        bottom_whitespace_ratio=0.10,
-        vertical_fill_ratio=0.72,
-        rejection_reason=rejection_reason,
-    )
+from tests.dataset_generation.factories import make_render_result
 
 
 def test_is_in_preferred_band_uses_recipe_bounds():
@@ -36,19 +22,19 @@ def test_should_attempt_layout_rescue_requires_layout_reason_and_rescue_band():
     recipe = ProductionRecipe()
 
     assert should_attempt_layout_rescue(
-        _render_result(system_count=6, rejection_reason=RejectionReason.MULTI_PAGE),
+        make_render_result(system_count=6, rejection_reason=RejectionReason.MULTI_PAGE),
         recipe,
     )
     assert should_attempt_layout_rescue(
-        _render_result(system_count=7, rejection_reason=RejectionReason.RIGHT_CLEARANCE),
+        make_render_result(system_count=7, rejection_reason=RejectionReason.RIGHT_CLEARANCE),
         recipe,
     )
     assert not should_attempt_layout_rescue(
-        _render_result(system_count=8, rejection_reason=RejectionReason.MULTI_PAGE),
+        make_render_result(system_count=8, rejection_reason=RejectionReason.MULTI_PAGE),
         recipe,
     )
     assert not should_attempt_layout_rescue(
-        _render_result(system_count=6, rejection_reason="render_error:boom"),
+        make_render_result(system_count=6, rejection_reason="render_error:boom"),
         recipe,
     )
 

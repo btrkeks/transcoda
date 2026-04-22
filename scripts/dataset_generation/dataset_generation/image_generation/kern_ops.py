@@ -15,10 +15,14 @@ from src.core.kern_utils import (
     is_bar_line,
     is_grace_note,
     is_note_token,
-    is_spinemerge_line as _core_is_spinemerge_line,
-    is_spinesplit_line as _core_is_spinesplit_line,
     is_terminator_line,
     split_into_same_spine_nr_chunks_and_measures,
+)
+from src.core.kern_utils import (
+    is_spinemerge_line as _core_is_spinemerge_line,
+)
+from src.core.kern_utils import (
+    is_spinesplit_line as _core_is_spinesplit_line,
 )
 
 # Backward compatibility alias for old name

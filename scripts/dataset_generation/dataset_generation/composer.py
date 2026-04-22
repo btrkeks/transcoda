@@ -4,20 +4,19 @@ from __future__ import annotations
 
 import random
 import re
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Sequence
-
-from src.core.kern_concatenation import restore_terminal_spine_count_before_final_barline
-from src.core.kern_utils import is_spinemerge_line, is_spinesplit_line, is_terminator_line
 
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.source_index import SourceIndex
-from scripts.dataset_generation.dataset_generation.types import (
+from scripts.dataset_generation.dataset_generation.types_domain import (
     SamplePlan,
     SourceEntry,
     SourceSegment,
 )
+from src.core.kern_concatenation import restore_terminal_spine_count_before_final_barline
+from src.core.kern_utils import is_spinemerge_line, is_spinesplit_line, is_terminator_line
 
 _CLEF_RE = re.compile(r"^\*clef[A-Ga-gvX]v?\d?$")
 _KEYSIG_RE = re.compile(r"^\*k\[.*\]$")

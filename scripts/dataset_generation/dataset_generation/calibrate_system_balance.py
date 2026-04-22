@@ -6,18 +6,18 @@ import argparse
 import json
 import sys
 import time
+from collections.abc import Callable
 from concurrent.futures import FIRST_COMPLETED, TimeoutError, wait
 from pathlib import Path
-from typing import Callable
 
 from pebble import ProcessExpired, ProcessPool
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+from scripts.dataset_generation.dataset_generation.failure_policy import resolve_failure_policy
 from scripts.dataset_generation.dataset_generation.image_generation.rendering.verovio_backend import (
     VerovioRenderer,
 )
-from scripts.dataset_generation.dataset_generation.failure_policy import resolve_failure_policy
 from scripts.dataset_generation.dataset_generation.io import write_json
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.source_index import build_source_index
@@ -27,7 +27,11 @@ from scripts.dataset_generation.dataset_generation.system_balance import (
     resolve_tokenizer_dir,
     spine_class_for_count,
 )
-from scripts.dataset_generation.dataset_generation.types import SamplePlan, WorkerFailure, WorkerSuccess
+from scripts.dataset_generation.dataset_generation.types_domain import SamplePlan
+from scripts.dataset_generation.dataset_generation.types_outcomes import (
+    WorkerFailure,
+    WorkerSuccess,
+)
 from scripts.dataset_generation.dataset_generation.worker import (
     evaluate_sample_plan,
     init_generation_worker,
@@ -304,7 +308,7 @@ def _source_root_labels(plan: SamplePlan, entry_by_path: dict[Path, object]) -> 
     seen: set[str] = set()
     for segment in plan.segments:
         entry = entry_by_path[segment.path.resolve()]
-        root_label = getattr(entry, "root_label")
+        root_label = entry.root_label
         if root_label in seen:
             continue
         seen.add(root_label)

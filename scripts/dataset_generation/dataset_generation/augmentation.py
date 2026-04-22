@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import time
-
 import numpy as np
 
 from scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment import (
@@ -12,16 +10,16 @@ from scripts.dataset_generation.dataset_generation.image_augmentation.offline_au
     offline_augment,
 )
 from scripts.dataset_generation.dataset_generation.recipe import (
-    OfflineAugmentationBandPolicy,
     ProductionRecipe,
 )
-from scripts.dataset_generation.dataset_generation.types import (
-    AugmentationBand,
-    AugmentedRenderResult,
+from scripts.dataset_generation.dataset_generation.types_domain import AugmentationBand, SamplePlan
+from scripts.dataset_generation.dataset_generation.types_events import (
     AugmentationTraceEvent,
     OuterGateTrace,
+)
+from scripts.dataset_generation.dataset_generation.types_render import (
+    AugmentedRenderResult,
     RenderResult,
-    SamplePlan,
 )
 
 

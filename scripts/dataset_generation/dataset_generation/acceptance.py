@@ -5,7 +5,10 @@ from __future__ import annotations
 from scripts.dataset_generation.dataset_generation.policy import DecisionReason
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.truncation import classify_truncation_mode
-from scripts.dataset_generation.dataset_generation.types import AcceptanceDecision, RenderResult
+from scripts.dataset_generation.dataset_generation.types_render import (
+    AcceptanceDecision,
+    RenderResult,
+)
 
 
 def decide_acceptance(

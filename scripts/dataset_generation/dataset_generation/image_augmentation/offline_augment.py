@@ -8,9 +8,13 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from ..image_generation.image_post import alpha_composite, load_paper_textures, synthesize_background
+from ..image_generation.image_post import (
+    alpha_composite,
+    load_paper_textures,
+    synthesize_background,
+)
 from ..image_generation.types import RenderedPage
-from ..types import (
+from ..types_events import (
     BoundsGateTrace,
     GeometryTrace,
     MarginTrace,

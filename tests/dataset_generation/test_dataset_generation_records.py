@@ -1,6 +1,6 @@
-from scripts.dataset_generation.dataset_generation.records import build_dataset_row
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation.types import AcceptedSample
+from scripts.dataset_generation.dataset_generation.records import build_dataset_row
+from scripts.dataset_generation.dataset_generation.types_render import AcceptedSample
 
 
 def test_build_dataset_row_matches_rewrite_schema():

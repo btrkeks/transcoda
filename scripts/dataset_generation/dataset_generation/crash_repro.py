@@ -11,7 +11,7 @@ from scripts.dataset_generation.dataset_generation.render_transcription import (
 )
 from scripts.dataset_generation.dataset_generation.run_context import RunContext
 from scripts.dataset_generation.dataset_generation.truncation import build_prefix_candidates
-from scripts.dataset_generation.dataset_generation.types import SamplePlan
+from scripts.dataset_generation.dataset_generation.types_domain import SamplePlan
 
 
 def write_crash_artifact(

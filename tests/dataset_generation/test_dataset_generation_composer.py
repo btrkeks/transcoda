@@ -11,7 +11,7 @@ from scripts.dataset_generation.dataset_generation.composer import (
 from scripts.dataset_generation.dataset_generation.recipe import CompositionPolicy, ProductionRecipe
 from scripts.dataset_generation.dataset_generation.renderer import count_systems_in_svg
 from scripts.dataset_generation.dataset_generation.source_index import build_source_index
-from scripts.dataset_generation.dataset_generation.types import SourceEntry
+from scripts.dataset_generation.dataset_generation.types_domain import SourceEntry
 from src.core.kern_concatenation import (
     diagnose_spine_topology,
     restore_terminal_spine_count_before_final_barline,

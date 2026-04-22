@@ -8,35 +8,45 @@ import time
 from collections import Counter, defaultdict
 from collections.abc import Callable
 from concurrent.futures import FIRST_COMPLETED, TimeoutError, wait
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 
 from datasets import Features, Image, Sequence, Value
 from pebble import ProcessExpired, ProcessPool
 
 from scripts.dataset_generation.dataset_generation.augmentation import augment_accepted_render
+from scripts.dataset_generation.dataset_generation.augmentation_summary import (
+    maybe_write_preview,
+    update_summary_counters,
+)
 from scripts.dataset_generation.dataset_generation.crash_repro import write_crash_artifact
 from scripts.dataset_generation.dataset_generation.failure_policy import (
     FailurePolicySettings,
     resolve_failure_policy,
+)
+from scripts.dataset_generation.dataset_generation.finalization import (
+    RunInfoBundle,
+    finalize_run_failure,
+    finalize_run_success,
 )
 from scripts.dataset_generation.dataset_generation.image_generation.rendering.verovio_backend import (
     VerovioRenderer,
 )
 from scripts.dataset_generation.dataset_generation.io import append_jsonl, write_json
 from scripts.dataset_generation.dataset_generation.outcome_events import (
-    build_failure_trace_event,
-    build_success_trace_event,
-    update_augmentation_summary_counters,
     write_outcome_events,
+)
+from scripts.dataset_generation.dataset_generation.progress_tracking import (
+    build_layout_summary,
+    build_runtime_counters,
+    maybe_flush_and_report,
+    snapshot_from_counters,
 )
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.renderer import render_sample
 from scripts.dataset_generation.dataset_generation.resume_store import (
     ResumableShardStore,
-    RuntimeSnapshot,
     compute_config_fingerprint,
-    write_run_info,
 )
 from scripts.dataset_generation.dataset_generation.run_context import RunContext, build_run_context
 from scripts.dataset_generation.dataset_generation.source_index import (
@@ -53,9 +63,8 @@ from scripts.dataset_generation.dataset_generation.system_balance import (
     resolve_tokenizer_dir,
     spine_class_for_count,
 )
-from scripts.dataset_generation.dataset_generation.types import (
-    ResumeSnapshot,
-    SamplePlan,
+from scripts.dataset_generation.dataset_generation.types_domain import SamplePlan
+from scripts.dataset_generation.dataset_generation.types_outcomes import (
     WorkerFailure,
     WorkerSuccess,
 )
@@ -203,7 +212,7 @@ def run_dataset_generation(
     )
     resume_snapshot = resume_store.prepare()
 
-    counters = _build_runtime_counters(resume_snapshot)
+    counters = build_runtime_counters(resume_snapshot)
     counters["quarantined_sources"].update(_load_quarantine_sources(quarantine_in))
     counters["quarantined_sources"].update(auto_quarantined_paths)
     quarantine_out_path = _resolve_quarantine_out_path(
@@ -213,6 +222,24 @@ def run_dataset_generation(
     _write_quarantined_sources(
         quarantined_sources=counters["quarantined_sources"],  # type: ignore[arg-type]
         destination=quarantine_out_path,
+    )
+
+    run_info_bundle = RunInfoBundle(
+        active_recipe=active_recipe,
+        normalized_input_dirs=normalized_input_dirs,
+        output_dir=str(run_context.output_path),
+        resolved_num_workers=resolved_num_workers,
+        target_samples=target_samples,
+        attempt_budget=attempt_budget,
+        base_seed=base_seed,
+        resume_mode=resume_mode,
+        failure_policy=resolved_failure_policy.as_dict(),
+        capture_verovio_diagnostics=capture_verovio_diagnostics,
+        quarantine_in=quarantine_in,
+        quarantine_out_path=quarantine_out_path,
+        system_balance=_serialize_system_balance_runtime(balance_runtime),
+        auto_quarantined_source_count=auto_quarantined_source_count,
+        invalid_source_examples=auto_quarantined_source_examples,
     )
 
     next_to_commit = counters["next_sample_idx"]
@@ -307,7 +334,7 @@ def run_dataset_generation(
                 )
                 next_to_commit = next_to_commit_ref[0]
                 last_progress_at_ref = [last_progress_at]
-                _maybe_flush_and_report(
+                maybe_flush_and_report(
                     resume_store=resume_store,
                     run_context=run_context,
                     counters=counters,
@@ -318,10 +345,11 @@ def run_dataset_generation(
                     progress_interval_seconds=progress_interval_seconds,
                     quiet=quiet,
                     quarantine_out_path=quarantine_out_path,
+                    write_quarantined_sources=_write_quarantined_sources,
                 )
                 last_progress_at = last_progress_at_ref[0]
             if pending_rows:
-                resume_store.commit(snapshot=_snapshot_from_counters(counters), sample_rows=pending_rows)
+                resume_store.commit(snapshot=snapshot_from_counters(counters), sample_rows=pending_rows)
                 pending_rows = []
         else:
             max_in_flight = max(resolved_num_workers * 4, resolved_num_workers)
@@ -371,7 +399,7 @@ def run_dataset_generation(
                     active_workers = len(futures_by_handle) - len(done)
                     if not done:
                         last_progress_at_ref = [last_progress_at]
-                        _maybe_flush_and_report(
+                        maybe_flush_and_report(
                             resume_store=resume_store,
                             run_context=run_context,
                             counters=counters,
@@ -382,6 +410,7 @@ def run_dataset_generation(
                             progress_interval_seconds=progress_interval_seconds,
                             quiet=quiet,
                             quarantine_out_path=quarantine_out_path,
+                            write_quarantined_sources=_write_quarantined_sources,
                         )
                         last_progress_at = last_progress_at_ref[0]
                         continue
@@ -547,7 +576,7 @@ def run_dataset_generation(
                     next_to_commit = next_to_commit_ref[0]
 
                     last_progress_at_ref = [last_progress_at]
-                    _maybe_flush_and_report(
+                    maybe_flush_and_report(
                         resume_store=resume_store,
                         run_context=run_context,
                         counters=counters,
@@ -558,6 +587,7 @@ def run_dataset_generation(
                         progress_interval_seconds=progress_interval_seconds,
                         quiet=quiet,
                         quarantine_out_path=quarantine_out_path,
+                        write_quarantined_sources=_write_quarantined_sources,
                     )
                     last_progress_at = last_progress_at_ref[0]
 
@@ -565,50 +595,20 @@ def run_dataset_generation(
                         break
 
             if pending_rows:
-                resume_store.commit(snapshot=_snapshot_from_counters(counters), sample_rows=pending_rows)
+                resume_store.commit(snapshot=snapshot_from_counters(counters), sample_rows=pending_rows)
                 pending_rows = []
 
-        resume_store.commit(snapshot=_snapshot_from_counters(counters), sample_rows=[])
         generation_seconds = time.perf_counter() - generation_start
-        finalization = resume_store.finalize()
-        runtime_seconds = {
-            "generation": generation_seconds,
-            "total": generation_seconds,
-        }
-        _write_quarantined_sources(
-            quarantined_sources=counters["quarantined_sources"],  # type: ignore[arg-type]
-            destination=quarantine_out_path,
-        )
-        write_run_info(
+        finalize_run_success(
             run_context=run_context,
-            recipe=active_recipe,
-            input_dirs=tuple(str(path) for path in normalized_input_dirs),
-            output_dir=str(run_context.output_path),
-            num_workers=resolved_num_workers,
-            target_samples=target_samples,
-            max_attempts=attempt_budget,
-            base_seed=base_seed,
-            resume_mode=resume_mode,
-            failure_policy=resolved_failure_policy.as_dict(),
-            capture_verovio_diagnostics=capture_verovio_diagnostics,
-            quarantine_in=str(Path(quarantine_in).expanduser().resolve()) if quarantine_in else None,
-            quarantine_out=str(quarantine_out_path),
-            system_balance=_serialize_system_balance_runtime(balance_runtime),
-            runtime_seconds=runtime_seconds,
-            layout_summary=_build_layout_summary(counters),
-            snapshot=finalization["snapshot"],
-            finalization=finalization,
-            auto_quarantined_source_count=auto_quarantined_source_count,
-            invalid_source_examples=auto_quarantined_source_examples,
-        )
-        write_json(
-            run_context.latest_run_path,
-            {
-                "run_id": run_context.run_id,
-                "run_artifacts_dir": str(run_context.run_artifacts_dir),
-                "info_path": str(run_context.info_path),
-                "updated_at": time.time(),
-            },
+            resume_store=resume_store,
+            counters=counters,
+            pending_rows=pending_rows,
+            generation_seconds=generation_seconds,
+            layout_summary=build_layout_summary(counters),
+            run_info=run_info_bundle,
+            snapshot_from_counters=snapshot_from_counters,
+            write_quarantined_sources=_write_quarantined_sources,
         )
         return ExecutionSummary(
             input_dirs=tuple(Path(path) for path in normalized_input_dirs),
@@ -620,32 +620,15 @@ def run_dataset_generation(
             run_artifacts_dir=run_context.run_artifacts_dir,
         )
     except BaseException:
-        if pending_rows:
-            resume_store.commit(snapshot=_snapshot_from_counters(counters), sample_rows=pending_rows)
-        _write_quarantined_sources(
-            quarantined_sources=counters["quarantined_sources"],  # type: ignore[arg-type]
-            destination=quarantine_out_path,
-        )
-        resume_store.mark_terminal_status(status="failed")
-        write_run_info(
+        finalize_run_failure(
             run_context=run_context,
-            recipe=active_recipe,
-            input_dirs=tuple(str(path) for path in normalized_input_dirs),
-            output_dir=str(run_context.output_path),
-            num_workers=resolved_num_workers,
-            target_samples=target_samples,
-            max_attempts=attempt_budget,
-            base_seed=base_seed,
-            resume_mode=resume_mode,
-            failure_policy=resolved_failure_policy.as_dict(),
-            capture_verovio_diagnostics=capture_verovio_diagnostics,
-            quarantine_in=str(Path(quarantine_in).expanduser().resolve()) if quarantine_in else None,
-            quarantine_out=str(quarantine_out_path),
-            system_balance=_serialize_system_balance_runtime(balance_runtime),
-            layout_summary=_build_layout_summary(counters),
-            snapshot=_snapshot_from_counters(counters),
-            auto_quarantined_source_count=auto_quarantined_source_count,
-            invalid_source_examples=auto_quarantined_source_examples,
+            resume_store=resume_store,
+            counters=counters,
+            pending_rows=pending_rows,
+            layout_summary=build_layout_summary(counters),
+            run_info=run_info_bundle,
+            snapshot_from_counters=snapshot_from_counters,
+            write_quarantined_sources=_write_quarantined_sources,
         )
         raise
 
@@ -967,108 +950,6 @@ def hashlib_sha256(raw_bytes: bytes) -> str:
     return hashlib.sha256(raw_bytes).hexdigest()
 
 
-def _build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object]:
-    if snapshot is None:
-        return {
-            "next_sample_idx": 0,
-            "accepted_samples": 0,
-            "rejected_samples": 0,
-            "failure_reason_counts": Counter(),
-            "truncation_counts": Counter({"attempted": 0, "rescued": 0, "failed": 0}),
-            "full_render_system_histogram": Counter(),
-            "accepted_system_histogram": defaultdict(Counter),
-            "truncated_output_system_histogram": Counter(),
-            "preferred_5_6_counts": Counter(
-                {
-                    "preferred_5_6_accepted_full": 0,
-                    "preferred_5_6_rescued": 0,
-                    "preferred_5_6_truncated": 0,
-                    "preferred_5_6_failed": 0,
-                }
-            ),
-            "bottom_whitespace_px_histogram": Counter(),
-            "top_whitespace_px_histogram": Counter(),
-            "content_height_px_histogram": Counter(),
-            "terminal_timeout_crash_artifacts": 0,
-            "terminal_process_expired_crash_artifacts": 0,
-            "requested_target_bucket_histogram": Counter(),
-            "candidate_hit_counts": Counter(),
-            "retry_counts": Counter(),
-            "quarantined_sources": set(),
-            "augmentation_outcome_counts": Counter(),
-            "augmentation_band_counts": Counter(),
-            "augmentation_branch_counts": Counter(),
-            "final_geometry_counts": Counter(),
-            "oob_failure_reason_counts": Counter(),
-            "outer_gate_failure_reason_counts": Counter(),
-            "augmentation_preview_geometry_discarded": 0,
-            "augmentation_preview_outer_gate_rejected": 0,
-        }
-    return {
-        "next_sample_idx": snapshot.next_sample_idx,
-        "accepted_samples": snapshot.accepted_samples,
-        "rejected_samples": snapshot.rejected_samples,
-        "failure_reason_counts": Counter(snapshot.failure_reason_counts),
-        "truncation_counts": Counter(snapshot.truncation_counts),
-        "full_render_system_histogram": Counter(
-            {int(key): int(value) for key, value in snapshot.full_render_system_histogram.items()}
-        ),
-        "accepted_system_histogram": defaultdict(
-            Counter,
-            {
-                str(spine_cls): Counter(
-                    {int(bucket): int(count) for bucket, count in bucket_counts.items()}
-                )
-                for spine_cls, bucket_counts in snapshot.accepted_system_histogram.items()
-            },
-        ),
-        "truncated_output_system_histogram": Counter(
-            {
-                int(key): int(value)
-                for key, value in snapshot.truncated_output_system_histogram.items()
-            }
-        ),
-        "preferred_5_6_counts": Counter(snapshot.preferred_5_6_counts),
-        "bottom_whitespace_px_histogram": Counter(
-            {
-                int(key): int(value)
-                for key, value in snapshot.bottom_whitespace_px_histogram.items()
-            }
-        ),
-        "top_whitespace_px_histogram": Counter(
-            {
-                int(key): int(value)
-                for key, value in snapshot.top_whitespace_px_histogram.items()
-            }
-        ),
-        "content_height_px_histogram": Counter(
-            {
-                int(key): int(value)
-                for key, value in snapshot.content_height_px_histogram.items()
-            }
-        ),
-        "terminal_timeout_crash_artifacts": int(snapshot.terminal_timeout_crash_artifacts),
-        "terminal_process_expired_crash_artifacts": int(
-            snapshot.terminal_process_expired_crash_artifacts
-        ),
-        "requested_target_bucket_histogram": Counter(
-            {
-                int(key): int(value)
-                for key, value in snapshot.requested_target_bucket_histogram.items()
-            }
-        ),
-        "candidate_hit_counts": Counter(snapshot.candidate_hit_counts),
-        "retry_counts": Counter(snapshot.retry_counts),
-        "quarantined_sources": {Path(path).expanduser().resolve() for path in snapshot.quarantined_sources},
-        "augmentation_outcome_counts": Counter(snapshot.augmentation_outcome_counts),
-        "augmentation_band_counts": Counter(snapshot.augmentation_band_counts),
-        "augmentation_branch_counts": Counter(snapshot.augmentation_branch_counts),
-        "final_geometry_counts": Counter(snapshot.final_geometry_counts),
-        "oob_failure_reason_counts": Counter(snapshot.oob_failure_reason_counts),
-        "outer_gate_failure_reason_counts": Counter(snapshot.outer_gate_failure_reason_counts),
-        "augmentation_preview_geometry_discarded": 0,
-        "augmentation_preview_outer_gate_rejected": 0,
-    }
 
 
 def _commit_contiguous_results(
@@ -1095,7 +976,7 @@ def _commit_contiguous_results(
             task=task,
             committed_to_dataset=committed_to_dataset,
         )
-        _maybe_write_augmentation_preview(run_context=run_context, outcome=outcome, counters=counters)
+        maybe_write_preview(run_context=run_context, outcome=outcome, counters=counters)
         truncation_counts: Counter = counters["truncation_counts"]  # type: ignore[assignment]
         failure_counts: Counter = counters["failure_reason_counts"]  # type: ignore[assignment]
         full_render_histogram: Counter = counters["full_render_system_histogram"]  # type: ignore[assignment]
@@ -1132,17 +1013,7 @@ def _commit_contiguous_results(
                     content_height_px_histogram[int(outcome.sample.content_height_px)] += 1
                 if outcome.sample.truncation_applied:
                     truncated_output_histogram[int(outcome.sample.system_count)] += 1
-                if outcome.augmentation_trace is not None:
-                    aug_outcome_counts: Counter = counters["augmentation_outcome_counts"]  # type: ignore[assignment]
-                    aug_band_counts: Counter = counters["augmentation_band_counts"]  # type: ignore[assignment]
-                    aug_branch_counts: Counter = counters["augmentation_branch_counts"]  # type: ignore[assignment]
-                    aug_outcome_counts[outcome.augmentation_trace.final_outcome] += 1
-                    aug_band_counts[outcome.augmentation_trace.band] += 1
-                    aug_branch_counts[outcome.augmentation_trace.branch] += 1
-                    update_augmentation_summary_counters(
-                        counters=counters,
-                        trace=outcome.augmentation_trace,
-                    )
+                update_summary_counters(counters=counters, outcome=outcome)
             else:
                 failure_counts["discarded_after_target"] += 1
         else:
@@ -1153,262 +1024,6 @@ def _commit_contiguous_results(
     counters["next_sample_idx"] = next_to_commit
     next_to_commit_ref[0] = next_to_commit
     return pending_rows
-
-def _maybe_write_augmentation_preview(
-    *,
-    run_context: RunContext,
-    outcome: WorkerSuccess | WorkerFailure,
-    counters: dict[str, object],
-) -> None:
-    if not isinstance(outcome, WorkerSuccess):
-        return
-    if outcome.augmentation_trace is None or outcome.augmentation_preview is None:
-        return
-
-    geometry_discarded_selected = False
-    outer_gate_rejected_selected = False
-    if (
-        outcome.augmentation_trace.retry_geometry is not None
-        and not outcome.augmentation_trace.final_geometry_applied
-        and int(counters["augmentation_preview_geometry_discarded"]) < _AUGMENTATION_PREVIEW_CAP
-    ):
-        counters["augmentation_preview_geometry_discarded"] = (
-            int(counters["augmentation_preview_geometry_discarded"]) + 1
-        )
-        geometry_discarded_selected = True
-    if (
-        not outcome.augmentation_trace.outer_gate.passed
-        and int(counters["augmentation_preview_outer_gate_rejected"]) < _AUGMENTATION_PREVIEW_CAP
-    ):
-        counters["augmentation_preview_outer_gate_rejected"] = (
-            int(counters["augmentation_preview_outer_gate_rejected"]) + 1
-        )
-        outer_gate_rejected_selected = True
-    if not geometry_discarded_selected and not outer_gate_rejected_selected:
-        return
-
-    preview_dir = run_context.augmentation_previews_dir / outcome.sample.sample_id
-    preview_dir.mkdir(parents=True, exist_ok=True)
-    preview_dir.joinpath("base.jpg").write_bytes(outcome.augmentation_preview.base_image_jpeg)
-    preview_dir.joinpath("pre_augraphy.jpg").write_bytes(
-        outcome.augmentation_preview.pre_augraphy_image_jpeg
-    )
-    preview_dir.joinpath("final.jpg").write_bytes(outcome.augmentation_preview.final_image_jpeg)
-    write_json(preview_dir / "trace.json", asdict(outcome.augmentation_trace))
-
-
-def _maybe_flush_and_report(
-    *,
-    resume_store: ResumableShardStore,
-    run_context,
-    counters: dict[str, object],
-    pending_rows: list[dict[str, object]],
-    active_workers: int,
-    target_samples: int,
-    last_progress_at_ref: list[float],
-    progress_interval_seconds: float,
-    quiet: bool,
-    quarantine_out_path: Path,
-) -> None:
-    now = time.time()
-    if pending_rows:
-        rows_to_commit = list(pending_rows)
-        pending_rows.clear()
-        resume_store.commit(snapshot=_snapshot_from_counters(counters), sample_rows=rows_to_commit)
-    if (
-        now - last_progress_at_ref[0] >= progress_interval_seconds
-        or int(counters["accepted_samples"]) >= target_samples
-    ):
-        progress_payload = {
-            "attempted_samples": int(counters["next_sample_idx"]),
-            "accepted_samples": int(counters["accepted_samples"]),
-            "rejected_samples": int(counters["rejected_samples"]),
-            "active_workers": active_workers,
-            "failure_reason_counts": dict(counters["failure_reason_counts"]),
-            "truncation_counts": dict(counters["truncation_counts"]),
-            "full_render_system_histogram": {
-                str(key): int(value)
-                for key, value in dict(counters["full_render_system_histogram"]).items()
-            },
-            "accepted_system_histogram": {
-                str(spine_cls): {
-                    str(bucket): int(count)
-                    for bucket, count in dict(bucket_counts).items()
-                }
-                for spine_cls, bucket_counts in dict(counters["accepted_system_histogram"]).items()
-            },
-            "truncated_output_system_histogram": {
-                str(key): int(value)
-                for key, value in dict(counters["truncated_output_system_histogram"]).items()
-            },
-            "preferred_5_6_counts": dict(counters["preferred_5_6_counts"]),
-            "requested_target_bucket_histogram": {
-                str(key): int(value)
-                for key, value in dict(counters["requested_target_bucket_histogram"]).items()
-            },
-            "candidate_hit_counts": dict(counters["candidate_hit_counts"]),
-            "retry_counts": dict(counters["retry_counts"]),
-            "quarantined_source_count": len(counters["quarantined_sources"]),
-            "terminal_timeout_crash_artifacts": int(counters["terminal_timeout_crash_artifacts"]),
-            "terminal_process_expired_crash_artifacts": int(
-                counters["terminal_process_expired_crash_artifacts"]
-            ),
-            "augmentation_outcome_counts": dict(counters["augmentation_outcome_counts"]),
-            "augmentation_band_counts": dict(counters["augmentation_band_counts"]),
-            "augmentation_branch_counts": dict(counters["augmentation_branch_counts"]),
-            "final_geometry_counts": dict(counters["final_geometry_counts"]),
-            "oob_failure_reason_counts": dict(counters["oob_failure_reason_counts"]),
-            "outer_gate_failure_reason_counts": dict(counters["outer_gate_failure_reason_counts"]),
-        }
-        progress_payload.update(_build_layout_summary(counters))
-        write_json(run_context.progress_path, progress_payload)
-        _write_quarantined_sources(
-            quarantined_sources=counters["quarantined_sources"],  # type: ignore[arg-type]
-            destination=quarantine_out_path,
-        )
-        last_progress_at_ref[0] = now
-        if not quiet:
-            print(
-                "Progress: "
-                f"{progress_payload['accepted_samples']}/{target_samples} accepted, "
-                f"{progress_payload['attempted_samples']} attempted"
-            )
-
-
-def _snapshot_from_counters(counters: dict[str, object]) -> RuntimeSnapshot:
-    return RuntimeSnapshot(
-        next_sample_idx=int(counters["next_sample_idx"]),
-        accepted_samples=int(counters["accepted_samples"]),
-        rejected_samples=int(counters["rejected_samples"]),
-        failure_reason_counts=dict(counters["failure_reason_counts"]),
-        truncation_counts=dict(counters["truncation_counts"]),
-        full_render_system_histogram={
-            str(key): int(value)
-            for key, value in dict(counters["full_render_system_histogram"]).items()
-        },
-        accepted_system_histogram={
-            str(spine_cls): {
-                str(bucket): int(count)
-                for bucket, count in dict(bucket_counts).items()
-            }
-            for spine_cls, bucket_counts in dict(counters["accepted_system_histogram"]).items()
-        },
-        truncated_output_system_histogram={
-            str(key): int(value)
-            for key, value in dict(counters["truncated_output_system_histogram"]).items()
-        },
-        preferred_5_6_counts=dict(counters["preferred_5_6_counts"]),
-        bottom_whitespace_px_histogram={
-            str(key): int(value)
-            for key, value in dict(counters["bottom_whitespace_px_histogram"]).items()
-        },
-        top_whitespace_px_histogram={
-            str(key): int(value)
-            for key, value in dict(counters["top_whitespace_px_histogram"]).items()
-        },
-        content_height_px_histogram={
-            str(key): int(value)
-            for key, value in dict(counters["content_height_px_histogram"]).items()
-        },
-        terminal_timeout_crash_artifacts=int(counters["terminal_timeout_crash_artifacts"]),
-        terminal_process_expired_crash_artifacts=int(
-            counters["terminal_process_expired_crash_artifacts"]
-        ),
-        requested_target_bucket_histogram={
-            str(key): int(value)
-            for key, value in dict(counters["requested_target_bucket_histogram"]).items()
-        },
-        candidate_hit_counts=dict(counters["candidate_hit_counts"]),
-        retry_counts=dict(counters["retry_counts"]),
-        quarantined_sources=tuple(
-            sorted(str(path) for path in counters["quarantined_sources"])  # type: ignore[arg-type]
-        ),
-        augmentation_outcome_counts=dict(counters["augmentation_outcome_counts"]),
-        augmentation_band_counts=dict(counters["augmentation_band_counts"]),
-        augmentation_branch_counts=dict(counters["augmentation_branch_counts"]),
-        final_geometry_counts=dict(counters["final_geometry_counts"]),
-        oob_failure_reason_counts=dict(counters["oob_failure_reason_counts"]),
-        outer_gate_failure_reason_counts=dict(counters["outer_gate_failure_reason_counts"]),
-    )
-
-
-def _build_layout_summary(counters: dict[str, object]) -> dict[str, object]:
-    bottom_histogram: Counter = counters["bottom_whitespace_px_histogram"]  # type: ignore[assignment]
-    top_histogram: Counter = counters["top_whitespace_px_histogram"]  # type: ignore[assignment]
-    content_histogram: Counter = counters["content_height_px_histogram"]  # type: ignore[assignment]
-    page_height = 1485.0
-    return {
-        "layout_summary_version": 1,
-        "layout_summary_population": "accepted_samples",
-        "accepted_samples_total": int(counters["accepted_samples"]),
-        "bottom_whitespace_px_stats": _summarize_histogram(bottom_histogram),
-        "top_whitespace_px_stats": _summarize_histogram(top_histogram),
-        "content_height_px_stats": _summarize_histogram(content_histogram),
-        "bottom_whitespace_ratio_stats": _summarize_scaled_histogram(
-            bottom_histogram,
-            scale=page_height,
-        ),
-        "vertical_fill_ratio_stats": _summarize_scaled_histogram(
-            content_histogram,
-            scale=page_height,
-        ),
-    }
-
-
-def _summarize_histogram(histogram: Counter) -> dict[str, float | int]:
-    if not histogram:
-        return {
-            "count": 0,
-            "mean": 0.0,
-            "min": 0.0,
-            "max": 0.0,
-            "p50": 0.0,
-            "p95": 0.0,
-            "p99": 0.0,
-        }
-    total = int(sum(int(count) for count in histogram.values()))
-    weighted_sum = float(sum(int(value) * int(count) for value, count in histogram.items()))
-    sorted_items = sorted((int(value), int(count)) for value, count in histogram.items())
-    return {
-        "count": total,
-        "mean": weighted_sum / total,
-        "min": float(sorted_items[0][0]),
-        "max": float(sorted_items[-1][0]),
-        "p50": _percentile_from_histogram(sorted_items, total, 50.0),
-        "p95": _percentile_from_histogram(sorted_items, total, 95.0),
-        "p99": _percentile_from_histogram(sorted_items, total, 99.0),
-    }
-
-
-def _summarize_scaled_histogram(histogram: Counter, *, scale: float) -> dict[str, float | int]:
-    raw = _summarize_histogram(histogram)
-    if raw["count"] == 0:
-        return raw
-    return {
-        "count": raw["count"],
-        "mean": float(raw["mean"]) / scale,
-        "min": float(raw["min"]) / scale,
-        "max": float(raw["max"]) / scale,
-        "p50": float(raw["p50"]) / scale,
-        "p95": float(raw["p95"]) / scale,
-        "p99": float(raw["p99"]) / scale,
-    }
-
-
-def _percentile_from_histogram(
-    sorted_items: list[tuple[int, int]],
-    total_count: int,
-    percentile: float,
-) -> float:
-    if total_count <= 0:
-        return 0.0
-    rank = max(1, int(round((percentile / 100.0) * total_count)))
-    cumulative = 0
-    for value, count in sorted_items:
-        cumulative += count
-        if cumulative >= rank:
-            return float(value)
-    return float(sorted_items[-1][0])
 
 
 def _build_timeout_event(

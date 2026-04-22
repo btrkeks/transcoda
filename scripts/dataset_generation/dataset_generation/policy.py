@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import StrEnum
 
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation.types import RenderResult
+from scripts.dataset_generation.dataset_generation.types_render import RenderResult
 
 
 class RenderMode(StrEnum):

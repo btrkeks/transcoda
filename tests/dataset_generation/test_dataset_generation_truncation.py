@@ -1,6 +1,6 @@
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.truncation import classify_truncation_mode
-from scripts.dataset_generation.dataset_generation.types import SvgLayoutDiagnostics
+from scripts.dataset_generation.dataset_generation.types_render import SvgLayoutDiagnostics
 
 
 def test_truncation_mode_is_forbidden_for_four_or_fewer_systems():

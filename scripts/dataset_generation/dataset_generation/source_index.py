@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from scripts.dataset_generation.dataset_generation.source_stats import compute_kern_source_stats
-from scripts.dataset_generation.dataset_generation.types import SourceEntry
+from scripts.dataset_generation.dataset_generation.types_domain import SourceEntry
 from src.core.kern_concatenation import (
     SpineTopologyDiagnostic,
     diagnose_spine_topology,

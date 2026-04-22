@@ -2,19 +2,18 @@
 
 from __future__ import annotations
 
-from collections import Counter
-from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Protocol
 
 from scripts.dataset_generation.dataset_generation.io import append_jsonl
 from scripts.dataset_generation.dataset_generation.run_context import RunContext
-from scripts.dataset_generation.dataset_generation.types import (
-    AugmentationTraceEvent,
+from scripts.dataset_generation.dataset_generation.types_domain import SamplePlan
+from scripts.dataset_generation.dataset_generation.types_events import (
     FailureTraceEvent,
-    SamplePlan,
     SuccessTraceEvent,
+)
+from scripts.dataset_generation.dataset_generation.types_outcomes import (
     WorkerFailure,
     WorkerSuccess,
 )
@@ -131,30 +130,6 @@ def build_success_trace_event(
         truncation_reason=outcome.sample.truncation_reason,
         truncation_ratio=outcome.sample.truncation_ratio,
     )
-
-
-def update_augmentation_summary_counters(
-    *,
-    counters: dict[str, object],
-    trace: AugmentationTraceEvent,
-) -> None:
-    final_geometry_counts: Counter = counters["final_geometry_counts"]  # type: ignore[assignment]
-    oob_failure_reason_counts: Counter = counters["oob_failure_reason_counts"]  # type: ignore[assignment]
-    outer_gate_failure_reason_counts: Counter = counters["outer_gate_failure_reason_counts"]  # type: ignore[assignment]
-
-    if not trace.outer_gate.passed:
-        final_geometry_counts["base_image_returned"] += 1
-    elif trace.final_geometry_applied:
-        final_geometry_counts["geometry_survived"] += 1
-    else:
-        final_geometry_counts["geometry_discarded"] += 1
-
-    if trace.initial_oob_gate.failure_reason is not None:
-        oob_failure_reason_counts[trace.initial_oob_gate.failure_reason] += 1
-    if trace.retry_oob_gate is not None and trace.retry_oob_gate.failure_reason is not None:
-        oob_failure_reason_counts[trace.retry_oob_gate.failure_reason] += 1
-    if trace.outer_gate.failure_reason is not None:
-        outer_gate_failure_reason_counts[trace.outer_gate.failure_reason] += 1
 
 
 def _task_trace_context(*, task: TaskTraceLike | None, sample_id: str) -> TaskTraceContext:

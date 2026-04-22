@@ -13,7 +13,6 @@ from scripts.dataset_generation.filtering.filters import (
 )
 from scripts.dataset_generation.filtering.stats import FileCheckResult
 
-
 # Valid kern content that passes all filters
 VALID_KERN = """\
 **kern

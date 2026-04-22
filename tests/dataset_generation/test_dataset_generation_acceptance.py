@@ -5,53 +5,43 @@ from scripts.dataset_generation.dataset_generation.acceptance import (
     evaluate_render_quality,
 )
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation.types import RenderResult, SvgLayoutDiagnostics
-
-
-def _render_result(
-    *,
-    image: np.ndarray | None,
-    page_count: int = 1,
-    rejection_reason: str | None = None,
-) -> RenderResult:
-    return RenderResult(
-        image=image,
-        render_layers=None,
-        svg_diagnostics=SvgLayoutDiagnostics(system_count=4, page_count=page_count),
-        bottom_whitespace_ratio=0.10,
-        vertical_fill_ratio=0.72,
-        rejection_reason=rejection_reason,
-    )
+from tests.dataset_generation.factories import make_render_result
 
 
 def test_evaluate_render_quality_accepts_sparse_images():
     image = np.full((1485, 1050, 3), 255, dtype=np.uint8)
     image[10:15, 10:15] = 0
 
-    assert evaluate_render_quality(_render_result(image=image), ProductionRecipe()) is None
+    assert evaluate_render_quality(make_render_result(image=image), ProductionRecipe()) is None
 
 
 def test_evaluate_render_quality_preserves_renderer_rejection_reason():
-    result = _render_result(image=None, rejection_reason="left_clearance")
+    result = make_render_result(image=None, rejection_reason="left_clearance")
 
     assert evaluate_render_quality(result, ProductionRecipe()) == "left_clearance"
 
 
 def test_evaluate_render_quality_rejects_missing_image():
-    assert evaluate_render_quality(_render_result(image=None), ProductionRecipe()) == "missing_image"
+    assert (
+        evaluate_render_quality(make_render_result(image=None), ProductionRecipe())
+        == "missing_image"
+    )
 
 
 def test_evaluate_render_quality_rejects_multi_page_output():
     image = np.full((1485, 1050, 3), 255, dtype=np.uint8)
 
-    assert evaluate_render_quality(_render_result(image=image, page_count=2), ProductionRecipe()) == (
-        "multi_page"
+    assert (
+        evaluate_render_quality(
+            make_render_result(image=image, page_count=2), ProductionRecipe()
+        )
+        == "multi_page"
     )
 
 
 def test_decide_acceptance_accepts_truncated_single_page_preferred_candidate():
     decision = decide_acceptance(
-        _render_result(image=np.full((1485, 1050, 3), 255, dtype=np.uint8)),
+        make_render_result(image=np.full((1485, 1050, 3), 255, dtype=np.uint8)),
         ProductionRecipe(),
         truncation_applied=True,
     )
@@ -61,14 +51,10 @@ def test_decide_acceptance_accepts_truncated_single_page_preferred_candidate():
 
 
 def test_decide_acceptance_rejects_truncated_required_candidate():
-    image = np.full((1485, 1050, 3), 255, dtype=np.uint8)
     decision = decide_acceptance(
-        RenderResult(
-            image=image,
-            render_layers=None,
-            svg_diagnostics=SvgLayoutDiagnostics(system_count=8, page_count=1),
-            bottom_whitespace_ratio=0.10,
-            vertical_fill_ratio=0.72,
+        make_render_result(
+            image=np.full((1485, 1050, 3), 255, dtype=np.uint8),
+            system_count=8,
         ),
         ProductionRecipe(),
         truncation_applied=True,

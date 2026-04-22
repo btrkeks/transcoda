@@ -20,10 +20,9 @@ from scripts.dataset_generation.dataset_generation.system_balance import (
     load_system_balance_spec,
     spine_class_for_count,
 )
-from scripts.dataset_generation.dataset_generation.types import (
+from scripts.dataset_generation.dataset_generation.types_domain import SamplePlan, SourceSegment
+from scripts.dataset_generation.dataset_generation.types_render import (
     RenderResult,
-    SamplePlan,
-    SourceSegment,
     SvgLayoutDiagnostics,
 )
 

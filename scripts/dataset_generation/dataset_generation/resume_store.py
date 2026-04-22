@@ -18,7 +18,7 @@ from datasets.arrow_writer import ArrowWriter
 from scripts.dataset_generation.dataset_generation.io import write_json
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.run_context import RunContext
-from scripts.dataset_generation.dataset_generation.types import ResumeSnapshot
+from scripts.dataset_generation.dataset_generation.types_snapshots import ResumeSnapshot
 
 
 def compute_config_fingerprint(

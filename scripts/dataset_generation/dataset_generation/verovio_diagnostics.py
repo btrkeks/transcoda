@@ -9,7 +9,7 @@ import tempfile
 from collections.abc import Iterator
 from contextlib import contextmanager
 
-from scripts.dataset_generation.dataset_generation.types import VerovioDiagnostic
+from scripts.dataset_generation.dataset_generation.types_events import VerovioDiagnostic
 
 _ERROR_PREFIX = "Error:"
 _INCONSISTENT_RHYTHM_RE = re.compile(

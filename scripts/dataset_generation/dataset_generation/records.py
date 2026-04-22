@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation.types import AcceptedSample
+from scripts.dataset_generation.dataset_generation.types_render import AcceptedSample
 
 
 def build_dataset_row(

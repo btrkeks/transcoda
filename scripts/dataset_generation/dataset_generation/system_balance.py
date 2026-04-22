@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Mapping
 
 import numpy as np
 from tokenizers import Tokenizer
@@ -14,7 +14,7 @@ from tokenizers import Tokenizer
 from scripts.dataset_generation.dataset_generation.composer import plan_sample
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.source_index import SourceIndex
-from scripts.dataset_generation.dataset_generation.types import SamplePlan
+from scripts.dataset_generation.dataset_generation.types_domain import SamplePlan
 
 DEFAULT_TOKENIZER_DIR = Path("vocab/bpe3k-splitspaces")
 TARGET_SYSTEM_BUCKETS = (1, 2, 3, 4, 5, 6, 7)
