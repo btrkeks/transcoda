@@ -215,6 +215,10 @@ def run_dataset_generation(
     counters = build_runtime_counters(resume_snapshot)
     counters["quarantined_sources"].update(_load_quarantine_sources(quarantine_in))
     counters["quarantined_sources"].update(auto_quarantined_paths)
+    counters["quarantined_entry_ids"] = _resolve_quarantined_entry_ids(
+        source_index=source_index,
+        quarantined_source_paths=counters["quarantined_sources"],  # type: ignore[arg-type]
+    )
     quarantine_out_path = _resolve_quarantine_out_path(
         quarantine_out=quarantine_out,
         run_context=run_context,
@@ -282,7 +286,7 @@ def run_dataset_generation(
     try:
         if not _has_schedulable_entries(
             source_index=source_index,
-            quarantined_sources=counters["quarantined_sources"],  # type: ignore[arg-type]
+            quarantined_entry_ids=counters["quarantined_entry_ids"],  # type: ignore[arg-type]
         ):
             raise RuntimeError(
                 "No schedulable sources remain after applying quarantine "
@@ -297,7 +301,7 @@ def run_dataset_generation(
                     recipe=active_recipe,
                     sample_idx=next_to_schedule,
                     base_seed=base_seed,
-                    quarantined_sources=counters["quarantined_sources"],  # type: ignore[arg-type]
+                    quarantined_entry_ids=counters["quarantined_entry_ids"],  # type: ignore[arg-type]
                     system_balance_runtime=balance_runtime,
                     accepted_system_histogram=counters["accepted_system_histogram"],  # type: ignore[arg-type]
                 )
@@ -377,7 +381,7 @@ def run_dataset_generation(
                             recipe=active_recipe,
                             sample_idx=next_to_schedule,
                             base_seed=base_seed,
-                            quarantined_sources=counters["quarantined_sources"],  # type: ignore[arg-type]
+                            quarantined_entry_ids=counters["quarantined_entry_ids"],  # type: ignore[arg-type]
                             system_balance_runtime=balance_runtime,
                             accepted_system_histogram=counters["accepted_system_histogram"],  # type: ignore[arg-type]
                         )
@@ -465,6 +469,7 @@ def run_dataset_generation(
                                 )
                             else:
                                 dropped_pending_tasks = _quarantine_pending_tasks(
+                                    source_index=source_index,
                                     trigger_task=task,
                                     counters=counters,
                                     pending_terminal=pending_terminal,
@@ -529,6 +534,7 @@ def run_dataset_generation(
                                 )
                             else:
                                 dropped_pending_tasks = _quarantine_pending_tasks(
+                                    source_index=source_index,
                                     trigger_task=task,
                                     counters=counters,
                                     pending_terminal=pending_terminal,
@@ -572,6 +578,7 @@ def run_dataset_generation(
                             )
                             pending_terminal_tasks[task.sample_idx] = task
                             dropped_pending_tasks = _quarantine_pending_tasks(
+                                source_index=source_index,
                                 trigger_task=task,
                                 counters=counters,
                                 pending_terminal=pending_terminal,
@@ -720,8 +727,20 @@ def _serialize_invalid_source_examples(
     ]
 
 
-def _has_schedulable_entries(*, source_index, quarantined_sources: set[Path]) -> bool:
-    return any(entry.path not in quarantined_sources for entry in source_index.entries)
+def _resolve_quarantined_entry_ids(
+    *,
+    source_index,
+    quarantined_source_paths: set[Path],
+) -> set[int]:
+    return {
+        entry_idx
+        for path in quarantined_source_paths
+        if (entry_idx := source_index.entry_idx_by_path.get(path.resolve())) is not None
+    }
+
+
+def _has_schedulable_entries(*, source_index, quarantined_entry_ids: set[int]) -> bool:
+    return any(entry.entry_idx not in quarantined_entry_ids for entry in source_index.entries)
 
 
 def _plan_with_quarantine(
@@ -730,7 +749,7 @@ def _plan_with_quarantine(
     recipe: ProductionRecipe,
     sample_idx: int,
     base_seed: int,
-    quarantined_sources: set[Path],
+    quarantined_entry_ids: set[int],
     system_balance_runtime: SystemBalanceRuntime,
     accepted_system_histogram: Counter,
 ) -> PlannedTask:
@@ -745,7 +764,7 @@ def _plan_with_quarantine(
             recipe=recipe,
             sample_idx=sample_idx,
             base_seed=base_seed,
-            excluded_paths=quarantined_sources,
+            excluded_entry_ids=quarantined_entry_ids,
             spec=system_balance_runtime.spec,  # type: ignore[arg-type]
             accepted_system_histogram=accepted_system_histogram,
             candidate_plan_count=system_balance_runtime.candidate_plan_count,
@@ -758,10 +777,10 @@ def _plan_with_quarantine(
             candidate_in_target_range=selected.in_target_range,
         )
     except ValueError as exc:
-        available_entries = [
-            entry for entry in source_index.entries if entry.path not in quarantined_sources
-        ]
-        if not available_entries:
+        if not _has_schedulable_entries(
+            source_index=source_index,
+            quarantined_entry_ids=quarantined_entry_ids,
+        ):
             raise RuntimeError("No schedulable sources remain after applying quarantine") from exc
         raise RuntimeError(
             f"Failed to build a valid balanced plan after exhausting candidate plans: {exc}"
@@ -858,6 +877,7 @@ def _maybe_retry_task(
 
 def _quarantine_pending_tasks(
     *,
+    source_index,
     trigger_task: ScheduledTask,
     counters: dict[str, object],
     pending_terminal: dict[int, WorkerSuccess | WorkerFailure],
@@ -866,8 +886,15 @@ def _quarantine_pending_tasks(
     tasks_by_sample_idx: dict[int, ScheduledTask],
 ) -> int:
     quarantined_sources: set[Path] = counters["quarantined_sources"]  # type: ignore[assignment]
+    quarantined_entry_ids: set[int] = counters["quarantined_entry_ids"]  # type: ignore[assignment]
     new_sources = {segment.path.resolve() for segment in trigger_task.plan.segments}
     quarantined_sources.update(new_sources)
+    quarantined_entry_ids.update(
+        _resolve_quarantined_entry_ids(
+            source_index=source_index,
+            quarantined_source_paths=new_sources,
+        )
+    )
 
     dropped_pending_tasks = 0
     for sample_idx, task in list(tasks_by_sample_idx.items()):

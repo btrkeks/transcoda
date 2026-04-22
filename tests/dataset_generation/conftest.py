@@ -161,13 +161,20 @@ def install_fake_pool(monkeypatch, *, outcomes_by_sample_idx, serial_wait: bool 
 
 
 def make_fake_plan_sample(entry_groups_by_sample_idx):
-    def fake_plan_sample(source_index, recipe, *, sample_idx, base_seed=0, excluded_paths=None):
+    def fake_plan_sample(
+        source_index,
+        recipe,
+        *,
+        sample_idx,
+        base_seed=0,
+        excluded_entry_ids=None,
+    ):
         del recipe, base_seed
         if sample_idx not in entry_groups_by_sample_idx:
             raise ValueError("missing plan group")
         entries = [source_index.entries[idx] for idx in entry_groups_by_sample_idx[sample_idx]]
-        if excluded_paths is not None:
-            entries = [entry for entry in entries if entry.path not in excluded_paths]
+        if excluded_entry_ids is not None:
+            entries = [entry for entry in entries if entry.entry_idx not in excluded_entry_ids]
         if not entries:
             raise ValueError("Cannot compose from an empty source index")
         segments = tuple(
@@ -197,7 +204,7 @@ def install_fake_balanced_planner(monkeypatch, entry_groups_by_sample_idx) -> No
         recipe,
         sample_idx,
         base_seed,
-        excluded_paths,
+        excluded_entry_ids,
         spec,
         accepted_system_histogram,
         candidate_plan_count=None,
@@ -208,7 +215,7 @@ def install_fake_balanced_planner(monkeypatch, entry_groups_by_sample_idx) -> No
             recipe,
             sample_idx=sample_idx,
             base_seed=base_seed,
-            excluded_paths=excluded_paths,
+            excluded_entry_ids=excluded_entry_ids,
         )
         return CandidatePlanScore(
             candidate_idx=0,

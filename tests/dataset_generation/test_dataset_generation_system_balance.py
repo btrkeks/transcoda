@@ -40,7 +40,7 @@ def _make_structured_candidate(
     return StructuredSamplePlan(
         sample_id="sample_00000000",
         seed=candidate_idx,
-        entries=(),
+        entry_ids=(),
         segments=(segment,),
         source_measure_count=1,
         source_non_empty_line_count=line_count,
@@ -50,10 +50,12 @@ def _make_structured_candidate(
 
 
 def _materialize_structured_candidate(
+    source_index,
     structured: StructuredSamplePlan,
     *,
     label_prefix: str = "candidate",
 ) -> SamplePlan:
+    del source_index
     return SamplePlan(
         sample_id=structured.sample_id,
         seed=structured.seed,
@@ -251,9 +253,9 @@ def test_choose_balanced_plan_prefers_candidate_closest_to_target_bucket(
     calls = {"value": 0}
 
     def fake_plan_sample_structure(
-        source_index, recipe, *, sample_idx, base_seed, excluded_paths=None
+        source_index, recipe, *, sample_idx, base_seed, excluded_entry_ids=None
     ):
-        del source_index, recipe, sample_idx, base_seed, excluded_paths
+        del source_index, recipe, sample_idx, base_seed, excluded_entry_ids
         idx = calls["value"]
         calls["value"] += 1
         return _make_structured_candidate(
@@ -276,7 +278,7 @@ def test_choose_balanced_plan_prefers_candidate_closest_to_target_bucket(
         recipe=ProductionRecipe(),
         sample_idx=0,
         base_seed=0,
-        excluded_paths=None,
+        excluded_entry_ids=None,
         spec=spec,
         accepted_system_histogram={"1": {1: 1, 2: 1, 3: 1, 4: 1, 5: 0, 6: 1}},
         candidate_plan_count=3,
@@ -331,9 +333,9 @@ def test_choose_balanced_plan_can_request_seven_system_bucket(
     calls = {"value": 0}
 
     def fake_plan_sample_structure(
-        source_index, recipe, *, sample_idx, base_seed, excluded_paths=None
+        source_index, recipe, *, sample_idx, base_seed, excluded_entry_ids=None
     ):
-        del source_index, recipe, sample_idx, base_seed, excluded_paths
+        del source_index, recipe, sample_idx, base_seed, excluded_entry_ids
         idx = calls["value"]
         calls["value"] += 1
         return _make_structured_candidate(
@@ -356,7 +358,7 @@ def test_choose_balanced_plan_can_request_seven_system_bucket(
         recipe=ProductionRecipe(),
         sample_idx=0,
         base_seed=0,
-        excluded_paths=None,
+        excluded_entry_ids=None,
         spec=spec,
         accepted_system_histogram={"1": {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 0}},
         candidate_plan_count=2,
@@ -406,9 +408,9 @@ def test_choose_balanced_plan_uses_lower_fit_risk_as_tiebreaker(
     calls = {"value": 0}
 
     def fake_plan_sample_structure(
-        source_index, recipe, *, sample_idx, base_seed, excluded_paths=None
+        source_index, recipe, *, sample_idx, base_seed, excluded_entry_ids=None
     ):
-        del source_index, recipe, sample_idx, base_seed, excluded_paths
+        del source_index, recipe, sample_idx, base_seed, excluded_entry_ids
         idx = calls["value"]
         calls["value"] += 1
         return _make_structured_candidate(
@@ -432,7 +434,7 @@ def test_choose_balanced_plan_uses_lower_fit_risk_as_tiebreaker(
         recipe=ProductionRecipe(),
         sample_idx=0,
         base_seed=0,
-        excluded_paths=None,
+        excluded_entry_ids=None,
         spec=spec,
         accepted_system_histogram={"2": {1: 1, 2: 1, 3: 1, 4: 0, 5: 1, 6: 1}},
         candidate_plan_count=2,
@@ -498,7 +500,7 @@ def test_choose_balanced_plan_falls_back_to_all_when_class_specific_data_missing
         recipe=ProductionRecipe(),
         sample_idx=0,
         base_seed=0,
-        excluded_paths=None,
+        excluded_entry_ids=None,
         spec=spec,
         accepted_system_histogram={},
         candidate_plan_count=1,
@@ -543,9 +545,9 @@ def test_choose_balanced_plan_skips_invalid_candidates(tmp_path: Path, monkeypat
     calls = {"value": 0}
 
     def fake_plan_sample_structure(
-        source_index, recipe, *, sample_idx, base_seed, excluded_paths=None
+        source_index, recipe, *, sample_idx, base_seed, excluded_entry_ids=None
     ):
-        del source_index, recipe, sample_idx, base_seed, excluded_paths
+        del source_index, recipe, sample_idx, base_seed, excluded_entry_ids
         idx = calls["value"]
         calls["value"] += 1
         if idx == 0:
@@ -562,7 +564,7 @@ def test_choose_balanced_plan_skips_invalid_candidates(tmp_path: Path, monkeypat
     )
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.system_balance.materialize_sample_plan",
-        lambda structured: SamplePlan(
+        lambda source_index, structured: SamplePlan(
             sample_id=structured.sample_id,
             seed=structured.seed,
             segments=structured.segments,
@@ -579,7 +581,7 @@ def test_choose_balanced_plan_skips_invalid_candidates(tmp_path: Path, monkeypat
         recipe=ProductionRecipe(),
         sample_idx=0,
         base_seed=0,
-        excluded_paths=None,
+        excluded_entry_ids=None,
         spec=spec,
         accepted_system_histogram={},
         candidate_plan_count=3,
@@ -624,7 +626,7 @@ def test_choose_balanced_plan_raises_after_all_candidates_fail(tmp_path: Path, m
             recipe=ProductionRecipe(),
             sample_idx=0,
             base_seed=0,
-            excluded_paths=None,
+            excluded_entry_ids=None,
             spec=spec,
             accepted_system_histogram={},
             candidate_plan_count=2,
@@ -674,9 +676,9 @@ def test_choose_balanced_plan_materializes_only_selected_candidate(
     candidate_line_counts = [2, 6, 3]
 
     def fake_plan_sample_structure(
-        source_index, recipe, *, sample_idx, base_seed, excluded_paths=None
+        source_index, recipe, *, sample_idx, base_seed, excluded_entry_ids=None
     ):
-        del source_index, recipe, sample_idx, base_seed, excluded_paths
+        del source_index, recipe, sample_idx, base_seed, excluded_entry_ids
         idx = len(structure_calls)
         structure_calls.append(idx)
         return _make_structured_candidate(
@@ -685,9 +687,9 @@ def test_choose_balanced_plan_materializes_only_selected_candidate(
             line_count=candidate_line_counts[idx],
         )
 
-    def fake_materialize_sample_plan(structured: StructuredSamplePlan) -> SamplePlan:
+    def fake_materialize_sample_plan(source_index, structured: StructuredSamplePlan) -> SamplePlan:
         materialize_calls.append(structured.seed)
-        return _materialize_structured_candidate(structured)
+        return _materialize_structured_candidate(source_index, structured)
 
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.system_balance.plan_sample_structure",
@@ -703,7 +705,7 @@ def test_choose_balanced_plan_materializes_only_selected_candidate(
         recipe=ProductionRecipe(),
         sample_idx=0,
         base_seed=0,
-        excluded_paths=None,
+        excluded_entry_ids=None,
         spec=spec,
         accepted_system_histogram={"1": {1: 1, 2: 1, 3: 1, 4: 1, 5: 0, 6: 1}},
         candidate_plan_count=3,
@@ -761,18 +763,18 @@ def test_choose_balanced_plan_falls_back_when_best_materialization_fails(
     structure_idx = {"value": 0}
 
     def fake_plan_sample_structure(
-        source_index, recipe, *, sample_idx, base_seed, excluded_paths=None
+        source_index, recipe, *, sample_idx, base_seed, excluded_entry_ids=None
     ):
-        del source_index, recipe, sample_idx, base_seed, excluded_paths
+        del source_index, recipe, sample_idx, base_seed, excluded_entry_ids
         idx = structure_idx["value"]
         structure_idx["value"] += 1
         return structured_candidates[idx]
 
-    def fake_materialize_sample_plan(structured: StructuredSamplePlan) -> SamplePlan:
+    def fake_materialize_sample_plan(source_index, structured: StructuredSamplePlan) -> SamplePlan:
         materialize_calls.append(structured.seed)
         if structured.seed == 0:
             raise ValueError("compose failed for candidate_0")
-        return _materialize_structured_candidate(structured)
+        return _materialize_structured_candidate(source_index, structured)
 
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.system_balance.plan_sample_structure",
@@ -788,7 +790,7 @@ def test_choose_balanced_plan_falls_back_when_best_materialization_fails(
         recipe=ProductionRecipe(),
         sample_idx=0,
         base_seed=0,
-        excluded_paths=None,
+        excluded_entry_ids=None,
         spec=spec,
         accepted_system_histogram={"1": {1: 1, 2: 1, 3: 1, 4: 1, 5: 0, 6: 1}},
         candidate_plan_count=2,
@@ -826,9 +828,9 @@ def test_choose_balanced_plan_raises_after_all_materializations_fail(
     structure_idx = {"value": 0}
 
     def fake_plan_sample_structure(
-        source_index, recipe, *, sample_idx, base_seed, excluded_paths=None
+        source_index, recipe, *, sample_idx, base_seed, excluded_entry_ids=None
     ):
-        del source_index, recipe, sample_idx, base_seed, excluded_paths
+        del source_index, recipe, sample_idx, base_seed, excluded_entry_ids
         idx = structure_idx["value"]
         structure_idx["value"] += 1
         return _make_structured_candidate(
@@ -837,7 +839,8 @@ def test_choose_balanced_plan_raises_after_all_materializations_fail(
             line_count=idx + 1,
         )
 
-    def fake_materialize_sample_plan(structured: StructuredSamplePlan) -> SamplePlan:
+    def fake_materialize_sample_plan(source_index, structured: StructuredSamplePlan) -> SamplePlan:
+        del source_index
         raise ValueError(f"compose failed for candidate_{structured.seed}")
 
     monkeypatch.setattr(
@@ -858,7 +861,7 @@ def test_choose_balanced_plan_raises_after_all_materializations_fail(
             recipe=ProductionRecipe(),
             sample_idx=0,
             base_seed=0,
-            excluded_paths=None,
+            excluded_entry_ids=None,
             spec=spec,
             accepted_system_histogram={},
             candidate_plan_count=2,

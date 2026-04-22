@@ -6,7 +6,6 @@ import random
 import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from pathlib import Path
 
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.source_index import SourceIndex
@@ -38,7 +37,7 @@ class BoundaryState:
 class StructuredSamplePlan:
     sample_id: str
     seed: int
-    entries: tuple[SourceEntry, ...]
+    entry_ids: tuple[int, ...]
     segments: tuple[SourceSegment, ...]
     source_measure_count: int
     source_non_empty_line_count: int
@@ -53,7 +52,7 @@ def compose_label_transcription(entries: Sequence[SourceEntry]) -> str:
     prepared_segments: list[str] = []
     current_state: BoundaryState | None = None
     for idx, entry in enumerate(entries):
-        text = Path(entry.path).read_text(encoding="utf-8")
+        text = entry.path.read_text(encoding="utf-8")
         if idx < len(entries) - 1:
             text = restore_terminal_spine_count_before_final_barline(text)
         raw_lines = _split_text_lines(text)
@@ -81,16 +80,16 @@ def plan_sample(
     *,
     sample_idx: int,
     base_seed: int = 0,
-    excluded_paths: set[Path] | None = None,
+    excluded_entry_ids: set[int] | frozenset[int] | None = None,
 ) -> SamplePlan:
     structured = plan_sample_structure(
         source_index,
         recipe,
         sample_idx=sample_idx,
         base_seed=base_seed,
-        excluded_paths=excluded_paths,
+        excluded_entry_ids=excluded_entry_ids,
     )
-    return materialize_sample_plan(structured)
+    return materialize_sample_plan(source_index, structured)
 
 
 def plan_sample_structure(
@@ -99,19 +98,31 @@ def plan_sample_structure(
     *,
     sample_idx: int,
     base_seed: int = 0,
-    excluded_paths: set[Path] | None = None,
+    excluded_entry_ids: set[int] | frozenset[int] | None = None,
 ) -> StructuredSamplePlan:
     seed = derive_sample_seed(base_seed=base_seed, sample_idx=sample_idx)
     rng = random.Random(seed)
-    entries = tuple(_choose_entries(source_index.entries, recipe, rng, excluded_paths=excluded_paths))
-    segments = tuple(
-        SourceSegment(source_id=entry.source_id, path=entry.path, order=idx)
-        for idx, entry in enumerate(entries)
+    entry_ids = tuple(
+        _choose_entries(
+            source_index,
+            recipe,
+            rng,
+            excluded_entry_ids=excluded_entry_ids,
+        )
     )
+    segments = tuple(
+        SourceSegment(
+            source_id=source_index.entries[entry_idx].source_id,
+            path=source_index.entries[entry_idx].path,
+            order=order,
+        )
+        for order, entry_idx in enumerate(entry_ids)
+    )
+    entries = tuple(source_index.entries[entry_idx] for entry_idx in entry_ids)
     return StructuredSamplePlan(
         sample_id=f"sample_{sample_idx:08d}",
         seed=seed,
-        entries=entries,
+        entry_ids=entry_ids,
         segments=segments,
         source_measure_count=sum(entry.measure_count for entry in entries),
         source_non_empty_line_count=sum(entry.non_empty_line_count for entry in entries),
@@ -120,8 +131,12 @@ def plan_sample_structure(
     )
 
 
-def materialize_sample_plan(structured: StructuredSamplePlan) -> SamplePlan:
-    label_transcription = compose_label_transcription(structured.entries)
+def materialize_sample_plan(
+    source_index: SourceIndex,
+    structured: StructuredSamplePlan,
+) -> SamplePlan:
+    entries = tuple(source_index.entries[entry_idx] for entry_idx in structured.entry_ids)
+    label_transcription = compose_label_transcription(entries)
     return SamplePlan(
         sample_id=structured.sample_id,
         seed=structured.seed,
@@ -139,70 +154,81 @@ def derive_sample_seed(*, base_seed: int, sample_idx: int) -> int:
 
 
 def _choose_entries(
-    available_entries: Sequence[SourceEntry],
+    source_index: SourceIndex,
     recipe: ProductionRecipe,
     rng: random.Random,
     *,
-    excluded_paths: set[Path] | None = None,
-) -> Sequence[SourceEntry]:
-    filtered_entries = tuple(
-        entry for entry in available_entries if excluded_paths is None or entry.path not in excluded_paths
+    excluded_entry_ids: set[int] | frozenset[int] | None = None,
+) -> Sequence[int]:
+    excluded_ids = (
+        frozenset(int(entry_idx) for entry_idx in excluded_entry_ids)
+        if excluded_entry_ids is not None
+        else frozenset()
     )
-    if not filtered_entries:
+    allowed_entry_ids = tuple(
+        entry.entry_idx for entry in source_index.entries if entry.entry_idx not in excluded_ids
+    )
+    if not allowed_entry_ids:
         raise ValueError("Cannot compose from an empty source index")
 
     target_segments = _weighted_choice(recipe.composition.segment_count_weights, rng)
-    target_segments = max(1, min(target_segments, len(filtered_entries)))
+    target_segments = max(1, min(target_segments, len(allowed_entry_ids)))
     target_total_measures = rng.randint(
         recipe.composition.min_total_measures,
         recipe.composition.max_total_measures,
     )
 
-    anchor = filtered_entries[rng.randrange(len(filtered_entries))]
-    chosen: list[SourceEntry] = [anchor]
-    remaining = [entry for entry in filtered_entries if entry.path != anchor.path]
+    anchor_entry_idx = allowed_entry_ids[rng.randrange(len(allowed_entry_ids))]
+    anchor = source_index.entries[anchor_entry_idx]
+    chosen_entry_ids: list[int] = [anchor_entry_idx]
+    remaining_entry_ids = set(allowed_entry_ids)
+    remaining_entry_ids.remove(anchor_entry_idx)
     current_total = anchor.measure_count
     current_boundary_spine_count = anchor.restored_terminal_spine_count
 
-    while len(chosen) < target_segments and remaining:
-        candidate = _pick_next_entry(
-            remaining=remaining,
+    while len(chosen_entry_ids) < target_segments and remaining_entry_ids:
+        candidate_entry_idx = _pick_next_entry(
+            source_index=source_index,
+            remaining_entry_ids=remaining_entry_ids,
             current_total=current_total,
             current_boundary_spine_count=current_boundary_spine_count,
             target_total_measures=target_total_measures,
             max_total_measures=recipe.composition.max_total_measures,
             rng=rng,
         )
-        if candidate is None:
+        if candidate_entry_idx is None:
             break
-        chosen.append(candidate)
-        remaining = [entry for entry in remaining if entry.path != candidate.path]
+        candidate = source_index.entries[candidate_entry_idx]
+        chosen_entry_ids.append(candidate_entry_idx)
+        remaining_entry_ids.remove(candidate_entry_idx)
         current_total += candidate.measure_count
         current_boundary_spine_count = candidate.restored_terminal_spine_count
 
-    if current_total < recipe.composition.min_total_measures and len(chosen) < target_segments:
+    if current_total < recipe.composition.min_total_measures and len(chosen_entry_ids) < target_segments:
         for _ in range(recipe.composition.max_selection_attempts):
-            candidate = _pick_next_entry(
-                remaining=remaining,
+            candidate_entry_idx = _pick_next_entry(
+                source_index=source_index,
+                remaining_entry_ids=remaining_entry_ids,
                 current_total=current_total,
                 current_boundary_spine_count=current_boundary_spine_count,
                 target_total_measures=recipe.composition.min_total_measures,
                 max_total_measures=recipe.composition.max_total_measures,
                 rng=rng,
             )
-            if candidate is None:
+            if candidate_entry_idx is None:
                 break
-            chosen.append(candidate)
-            remaining = [entry for entry in remaining if entry.path != candidate.path]
+            candidate = source_index.entries[candidate_entry_idx]
+            chosen_entry_ids.append(candidate_entry_idx)
+            remaining_entry_ids.remove(candidate_entry_idx)
             current_total += candidate.measure_count
             current_boundary_spine_count = candidate.restored_terminal_spine_count
             if (
                 current_total >= recipe.composition.min_total_measures
-                or len(chosen) >= target_segments
+                or len(chosen_entry_ids) >= target_segments
             ):
                 break
 
-    return tuple(chosen)
+    return tuple(chosen_entry_ids)
 
 
 def _weighted_choice(
@@ -223,32 +249,38 @@ def _weighted_choice(
 
 def _pick_next_entry(
     *,
-    remaining: Sequence[SourceEntry],
+    source_index: SourceIndex,
+    remaining_entry_ids: set[int],
     current_total: int,
     current_boundary_spine_count: int,
     target_total_measures: int,
     max_total_measures: int,
     rng: random.Random,
-) -> SourceEntry | None:
-    if not remaining:
+) -> int | None:
+    if not remaining_entry_ids:
         return None
 
-    scored: list[tuple[float, SourceEntry]] = []
-    for entry in remaining:
-        if entry.initial_spine_count != current_boundary_spine_count:
+    compatible_entry_ids = source_index.entry_indices_by_initial_spine_count.get(
+        current_boundary_spine_count,
+        (),
+    )
+    scored: list[tuple[float, int]] = []
+    for entry_idx in compatible_entry_ids:
+        if entry_idx not in remaining_entry_ids:
             continue
+        entry = source_index.entries[entry_idx]
         projected_total = current_total + entry.measure_count
         if projected_total > max_total_measures and current_total >= target_total_measures:
             continue
         distance = abs(target_total_measures - projected_total)
         jitter = rng.random() * 0.25
-        scored.append((distance + jitter, entry))
+        scored.append((distance + jitter, entry_idx))
 
     if not scored:
         return None
 
     scored.sort(key=lambda item: item[0])
-    shortlist = [entry for _, entry in scored[: min(4, len(scored))]]
+    shortlist = [entry_idx for _, entry_idx in scored[: min(4, len(scored))]]
     return shortlist[rng.randrange(len(shortlist))]
 
 

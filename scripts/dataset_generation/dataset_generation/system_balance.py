@@ -226,7 +226,7 @@ def choose_balanced_plan(
     recipe: ProductionRecipe,
     sample_idx: int,
     base_seed: int,
-    excluded_paths: set[Path] | None,
+    excluded_entry_ids: set[int] | frozenset[int] | None,
     spec: SystemBalanceSpec,
     accepted_system_histogram: Mapping[str, Mapping[int | str, int]],
     candidate_plan_count: int | None = None,
@@ -252,7 +252,7 @@ def choose_balanced_plan(
                 recipe,
                 sample_idx=sample_idx,
                 base_seed=candidate_base_seed,
-                excluded_paths=excluded_paths,
+                excluded_entry_ids=excluded_entry_ids,
             )
         except ValueError as exc:
             last_error = exc
@@ -298,7 +298,7 @@ def choose_balanced_plan(
     ranked_candidates = sorted(candidate_scores, key=_structured_candidate_sort_key)
     for score in ranked_candidates:
         try:
-            plan = materialize_sample_plan(score.structured_plan)
+            plan = materialize_sample_plan(source_index, score.structured_plan)
         except ValueError as exc:
             last_error = exc
             continue

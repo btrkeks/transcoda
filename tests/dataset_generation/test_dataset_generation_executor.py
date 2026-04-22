@@ -430,7 +430,7 @@ def test_plan_with_quarantine_preserves_planning_exhausted_error(tmp_path, monke
             recipe=ProductionRecipe(),
             sample_idx=0,
             base_seed=0,
-            quarantined_sources=set(),
+            quarantined_entry_ids=set(),
             system_balance_runtime=executor_module.SystemBalanceRuntime(
                 mode="spine_aware_line_proxy",
                 spec=object(),
@@ -444,7 +444,7 @@ def test_plan_with_quarantine_keeps_no_schedulable_message_for_true_empty_case(
 ):
     input_dir = _make_simple_input_dir(tmp_path, ("one",))
     source_index = executor_module.build_source_index(input_dir)
-    quarantined = {entry.path for entry in source_index.entries}
+    quarantined = {entry.entry_idx for entry in source_index.entries}
 
     monkeypatch.setattr(
         executor_module,
@@ -460,7 +460,7 @@ def test_plan_with_quarantine_keeps_no_schedulable_message_for_true_empty_case(
             recipe=ProductionRecipe(),
             sample_idx=0,
             base_seed=0,
-            quarantined_sources=quarantined,
+            quarantined_entry_ids=quarantined,
             system_balance_runtime=executor_module.SystemBalanceRuntime(
                 mode="spine_aware_line_proxy",
                 spec=object(),

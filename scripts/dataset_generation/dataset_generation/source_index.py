@@ -34,6 +34,8 @@ class InvalidSourceFileError(ValueError):
 class SourceIndex:
     root_dirs: tuple[Path, ...]
     entries: tuple[SourceEntry, ...]
+    entry_idx_by_path: dict[Path, int]
+    entry_indices_by_initial_spine_count: dict[int, tuple[int, ...]]
     invalid_sources: tuple[InvalidSourceDiagnostic, ...] = ()
 
 
@@ -44,7 +46,9 @@ def build_source_index(*input_dirs: str | Path) -> SourceIndex:
     root_dirs = tuple(Path(input_dir).expanduser().resolve() for input_dir in input_dirs)
     root_labels = _build_root_labels(root_dirs)
     entries: list[SourceEntry] = []
+    entry_idx_by_path: dict[Path, int] = {}
     invalid_sources: list[InvalidSourceDiagnostic] = []
+    next_entry_idx = 0
     for root_dir, root_label in zip(root_dirs, root_labels, strict=True):
         if not root_dir.exists():
             raise FileNotFoundError(f"Input directory does not exist: {root_dir}")
@@ -67,6 +71,7 @@ def build_source_index(*input_dirs: str | Path) -> SourceIndex:
                 ) = _compute_boundary_spine_counts(path)
                 entries.append(
                     SourceEntry(
+                        entry_idx=next_entry_idx,
                         path=path,
                         source_id=source_id,
                         root_dir=root_dir,
@@ -79,6 +84,8 @@ def build_source_index(*input_dirs: str | Path) -> SourceIndex:
                         restored_terminal_spine_count=restored_terminal_spine_count,
                     )
                 )
+                entry_idx_by_path[path.resolve()] = next_entry_idx
+                next_entry_idx += 1
             except InvalidSourceFileError as exc:
                 invalid_sources.append(
                     InvalidSourceDiagnostic(
@@ -89,11 +96,26 @@ def build_source_index(*input_dirs: str | Path) -> SourceIndex:
                         message=str(exc),
                     )
                 )
+    entry_indices_by_initial_spine_count: dict[int, tuple[int, ...]] = {
+        spine_count: tuple(entry.entry_idx for entry in grouped_entries)
+        for spine_count, grouped_entries in _group_entries_by_initial_spine_count(entries).items()
+    }
     return SourceIndex(
         root_dirs=root_dirs,
         entries=tuple(entries),
+        entry_idx_by_path=entry_idx_by_path,
+        entry_indices_by_initial_spine_count=entry_indices_by_initial_spine_count,
         invalid_sources=tuple(invalid_sources),
     )
+
+
+def _group_entries_by_initial_spine_count(
+    entries: list[SourceEntry],
+) -> dict[int, list[SourceEntry]]:
+    grouped: dict[int, list[SourceEntry]] = {}
+    for entry in entries:
+        grouped.setdefault(entry.initial_spine_count, []).append(entry)
+    return grouped
 
 
 def _has_explicit_header(path: Path) -> bool:

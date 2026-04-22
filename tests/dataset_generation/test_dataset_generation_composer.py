@@ -12,7 +12,7 @@ from scripts.dataset_generation.dataset_generation.composer import (
 )
 from scripts.dataset_generation.dataset_generation.recipe import CompositionPolicy, ProductionRecipe
 from scripts.dataset_generation.dataset_generation.renderer import count_systems_in_svg
-from scripts.dataset_generation.dataset_generation.source_index import build_source_index
+from scripts.dataset_generation.dataset_generation.source_index import SourceIndex, build_source_index
 from scripts.dataset_generation.dataset_generation.types_domain import SourceEntry
 from src.core.kern_concatenation import (
     diagnose_spine_topology,
@@ -38,7 +38,7 @@ class _FixedRng:
         return a
 
 
-def _make_source_entry(path: Path, source_id: str, text: str) -> SourceEntry:
+def _make_source_entry(path: Path, source_id: str, text: str, *, entry_idx: int = 0) -> SourceEntry:
     topology = summarize_spine_topology(text)
     restored_topology = summarize_spine_topology(
         restore_terminal_spine_count_before_final_barline(text)
@@ -47,6 +47,7 @@ def _make_source_entry(path: Path, source_id: str, text: str) -> SourceEntry:
     assert topology.terminal_spine_count is not None
     assert restored_topology.terminal_spine_count is not None
     return SourceEntry(
+        entry_idx=entry_idx,
         path=path,
         source_id=source_id,
         root_dir=path.parent,
@@ -65,8 +66,25 @@ def _compose_entries(tmp_path: Path, *texts: str) -> str:
     for idx, text in enumerate(texts):
         path = tmp_path / f"snippet_{idx}.krn"
         path.write_text(text, encoding="utf-8")
-        entries.append(_make_source_entry(path, f"snippet_{idx}", text))
+        entries.append(_make_source_entry(path, f"snippet_{idx}", text, entry_idx=idx))
     return compose_label_transcription(entries)
+
+
+def _make_source_index_for_entries(entries: list[SourceEntry]) -> SourceIndex:
+    return SourceIndex(
+        root_dirs=tuple(dict.fromkeys(entry.root_dir for entry in entries)),
+        entries=tuple(entries),
+        entry_idx_by_path={entry.path.resolve(): entry.entry_idx for entry in entries},
+        entry_indices_by_initial_spine_count={
+            spine_count: tuple(
+                entry.entry_idx
+                for entry in entries
+                if entry.initial_spine_count == spine_count
+            )
+            for spine_count in sorted({entry.initial_spine_count for entry in entries})
+        },
+        invalid_sources=(),
+    )
 
 
 def test_compose_label_transcription_omits_duplicate_boundary_headers(tmp_path: Path):
@@ -273,7 +291,7 @@ def test_plan_sample_matches_materialized_structured_plan(tmp_path: Path):
     recipe = ProductionRecipe()
 
     structured = plan_sample_structure(source_index, recipe, sample_idx=7, base_seed=123)
-    materialized = materialize_sample_plan(structured)
+    materialized = materialize_sample_plan(source_index, structured)
     direct = plan_sample(source_index, recipe, sample_idx=7, base_seed=123)
 
     assert materialized == direct
@@ -322,9 +340,9 @@ def test_plan_sample_tracks_max_initial_spine_count_across_segments(tmp_path: Pa
 
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.composer._choose_entries",
-        lambda available_entries, recipe, rng, excluded_paths=None: (
-            next(entry for entry in available_entries if entry.path == first_double_path),
-            next(entry for entry in available_entries if entry.path == second_double_path),
+        lambda source_index, recipe, rng, excluded_entry_ids=None: (
+            source_index.entry_idx_by_path[first_double_path.resolve()],
+            source_index.entry_idx_by_path[second_double_path.resolve()],
         ),
     )
 
@@ -344,12 +362,15 @@ def test_choose_entries_uses_restored_terminal_spine_count_for_compatibility(tmp
     anchor_path.write_text(anchor_text, encoding="utf-8")
     compatible_path.write_text(compatible_text, encoding="utf-8")
     incompatible_path.write_text(incompatible_text, encoding="utf-8")
-    anchor = _make_source_entry(anchor_path, "anchor", anchor_text)
-    compatible = _make_source_entry(compatible_path, "compatible", compatible_text)
-    incompatible = _make_source_entry(incompatible_path, "incompatible", incompatible_text)
+    entries = [
+        _make_source_entry(anchor_path, "anchor", anchor_text, entry_idx=0),
+        _make_source_entry(compatible_path, "compatible", compatible_text, entry_idx=1),
+        _make_source_entry(incompatible_path, "incompatible", incompatible_text, entry_idx=2),
+    ]
+    source_index = _make_source_index_for_entries(entries)
 
     chosen = _choose_entries(
-        [anchor, compatible, incompatible],
+        source_index,
         ProductionRecipe(
             composition=CompositionPolicy(
                 segment_count_weights=((2, 1.0),),
@@ -361,7 +382,10 @@ def test_choose_entries_uses_restored_terminal_spine_count_for_compatibility(tmp
         _FixedRng([0, 0], [0.0, 0.0]),
     )
 
-    assert tuple(entry.source_id for entry in chosen) == ("anchor", "compatible")
+    assert tuple(source_index.entries[entry_idx].source_id for entry_idx in chosen) == (
+        "anchor",
+        "compatible",
+    )
 
 
 def test_choose_entries_stops_when_no_boundary_compatible_followup_exists(
@@ -373,11 +397,14 @@ def test_choose_entries_stops_when_no_boundary_compatible_followup_exists(
     incompatible_path = tmp_path / "incompatible.krn"
     anchor_path.write_text(anchor_text, encoding="utf-8")
     incompatible_path.write_text(incompatible_text, encoding="utf-8")
-    anchor = _make_source_entry(anchor_path, "anchor", anchor_text)
-    incompatible = _make_source_entry(incompatible_path, "incompatible", incompatible_text)
+    entries = [
+        _make_source_entry(anchor_path, "anchor", anchor_text, entry_idx=0),
+        _make_source_entry(incompatible_path, "incompatible", incompatible_text, entry_idx=1),
+    ]
+    source_index = _make_source_index_for_entries(entries)
 
     chosen = _choose_entries(
-        [anchor, incompatible],
+        source_index,
         ProductionRecipe(
             composition=CompositionPolicy(
                 segment_count_weights=((2, 1.0),),
@@ -390,7 +417,7 @@ def test_choose_entries_stops_when_no_boundary_compatible_followup_exists(
     )
 
     assert len(chosen) == 1
-    assert tuple(entry.source_id for entry in chosen) == ("anchor",)
+    assert tuple(source_index.entries[entry_idx].source_id for entry_idx in chosen) == ("anchor",)
 
 
 def test_build_source_index_combines_multiple_roots(tmp_path: Path):
@@ -405,6 +432,10 @@ def test_build_source_index_combines_multiple_roots(tmp_path: Path):
 
     assert len(source_index.entries) == 2
     assert source_index.invalid_sources == ()
+    assert tuple(entry.entry_idx for entry in source_index.entries) == (0, 1)
+    assert source_index.entry_idx_by_path[(first_root / "one.krn").resolve()] == 0
+    assert source_index.entry_idx_by_path[(second_root / "two.krn").resolve()] == 1
+    assert source_index.entry_indices_by_initial_spine_count == {1: (0, 1)}
     assert {entry.source_id for entry in source_index.entries} == {"a/one", "b/two"}
     assert {entry.initial_spine_count for entry in source_index.entries} == {1}
     assert {entry.terminal_spine_count for entry in source_index.entries} == {1}

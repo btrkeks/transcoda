@@ -35,6 +35,7 @@ class AttemptStageName(StrEnum):
 
 @dataclass(frozen=True)
 class SourceEntry:
+    entry_idx: int
     path: Path
     source_id: str
     root_dir: Path
