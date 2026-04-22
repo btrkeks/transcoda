@@ -35,6 +35,7 @@ class RunContext:
     failure_events_path: Path
     success_events_path: Path
     augmentation_events_path: Path
+    worker_stage_events_path: Path
     augmentation_previews_dir: Path
     crash_samples_dir: Path
 
@@ -80,6 +81,7 @@ def build_run_context(
         failure_events_path=run_artifacts_dir / "failure_events.jsonl",
         success_events_path=run_artifacts_dir / "success_events.jsonl",
         augmentation_events_path=run_artifacts_dir / "augmentation_events.jsonl",
+        worker_stage_events_path=run_artifacts_dir / "worker_stage_events.jsonl",
         augmentation_previews_dir=run_artifacts_dir / "augmentation_previews",
         crash_samples_dir=run_artifacts_dir / "crash_samples",
     )

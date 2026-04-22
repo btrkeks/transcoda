@@ -36,12 +36,15 @@ def write_json(path: str | Path, payload: object) -> None:
 
 def append_jsonl(path: str | Path, rows: list[object]) -> None:
     import json
+    import os
 
     if not rows:
         return
     destination = Path(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    with destination.open("a", encoding="utf-8") as handle:
-        for row in rows:
-            handle.write(json.dumps(row, sort_keys=True))
-            handle.write("\n")
+    payload = "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows).encode("utf-8")
+    fd = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o666)
+    try:
+        os.write(fd, payload)
+    finally:
+        os.close(fd)

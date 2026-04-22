@@ -1,3 +1,4 @@
+import json
 from dataclasses import replace
 from pathlib import Path
 
@@ -227,6 +228,33 @@ def test_full_render_verovio_diagnostics_are_stage_attributed():
     assert event.render_attempt_idx == 1
     assert event.diagnostic_kind == "inconsistent_rhythm_analysis"
     assert event.near_line == 12
+
+
+def test_full_render_emits_worker_stage_events(tmp_path: Path):
+    plan = _make_plan()
+    recipe = _make_recipe()
+    stage_events_path = tmp_path / "worker_stage_events.jsonl"
+
+    outcome = evaluate_sample_plan(
+        plan,
+        recipe=recipe,
+        renderer=object(),
+        render_fn=lambda render_text, recipe, *, seed, renderer: _good_render(system_count=4),
+        augment_fn=lambda plan, render_result, recipe: render_result.image,
+        stage_events_path=stage_events_path,
+    )
+
+    assert isinstance(outcome, WorkerSuccess)
+    stage_events = [
+        json.loads(line)
+        for line in stage_events_path.read_text(encoding="utf-8").splitlines()
+    ]
+    assert [event["phase"] for event in stage_events] == ["started", "completed"]
+    assert [event["stage"] for event in stage_events] == ["full", "full"]
+    assert stage_events[0]["sample_id"] == plan.sample_id
+    assert stage_events[1]["decision_action"] == "accept_without_truncation"
+    assert stage_events[1]["system_count"] == 4
+    assert stage_events[1]["duration_ms"] >= 0.0
 
 
 def test_failed_5_6_render_attempts_rescue_before_truncation(monkeypatch):

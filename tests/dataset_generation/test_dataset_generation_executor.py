@@ -1152,6 +1152,18 @@ def test_executor_terminal_timeout_writes_crash_artifact(tmp_path, monkeypatch):
         serial_wait=True,
     )
     _install_fake_balanced_planner(monkeypatch, {0: [0, 1], 1: [2]})
+    monkeypatch.setattr(
+        executor_module,
+        "_read_latest_worker_stage_event",
+        lambda *, path, sample_id: {
+            "event": "worker_stage",
+            "sample_id": sample_id,
+            "stage": "full_layout_rescue",
+            "phase": "started",
+            "seed": 123,
+            "pid": 999,
+        },
+    )
 
     summary = run_dataset_generation(
         input_dirs=(input_dir,),
@@ -1185,6 +1197,9 @@ def test_executor_terminal_timeout_writes_crash_artifact(tmp_path, monkeypatch):
     assert full_render_path.read_text(encoding="utf-8").rstrip().endswith("*-")
     assert any(entry["stage"] == "truncation_candidate" for entry in crash_artifact["repro_entries"])
     assert timeout_event["crash_repro_stage_count"] == len(crash_artifact["repro_entries"])
+    assert timeout_event["last_worker_stage_event"]["stage"] == "full_layout_rescue"
+    assert timeout_event["last_worker_stage_event"]["phase"] == "started"
+    assert crash_artifact["last_worker_stage_event"]["stage"] == "full_layout_rescue"
     assert info["snapshot"]["terminal_timeout_crash_artifacts"] == 1
 
 

@@ -309,6 +309,7 @@ def run_dataset_generation(
                     render_fn=sync_render_callable,
                     augment_fn=sync_augment_callable,
                     capture_verovio_diagnostics=capture_verovio_diagnostics,
+                    stage_events_path=run_context.worker_stage_events_path,
                 )
                 pending_terminal[next_to_schedule] = outcome
                 pending_terminal_tasks[next_to_schedule] = ScheduledTask(
@@ -357,7 +358,11 @@ def run_dataset_generation(
                 max_workers=resolved_num_workers,
                 max_tasks=_MAX_TASKS_PER_WORKER,
                 initializer=init_generation_worker,
-                initargs=(active_recipe, capture_verovio_diagnostics),
+                initargs=(
+                    active_recipe,
+                    capture_verovio_diagnostics,
+                    str(run_context.worker_stage_events_path),
+                ),
                 context=mp.get_context("spawn"),
             ) as pool:
                 while True:
@@ -429,6 +434,10 @@ def run_dataset_generation(
                         try:
                             outcome = future.result()
                         except TimeoutError:
+                            last_worker_stage_event = _read_latest_worker_stage_event(
+                                path=run_context.worker_stage_events_path,
+                                sample_id=task.plan.sample_id,
+                            )
                             maybe_rescheduled = _maybe_retry_task(
                                 failure_kind="timeout",
                                 task=task,
@@ -448,6 +457,7 @@ def run_dataset_generation(
                                             task=task,
                                             queue_wait_ms=queue_wait_ms,
                                             will_retry=True,
+                                            last_worker_stage_event=last_worker_stage_event,
                                         )
                                     ],
                                 )
@@ -470,6 +480,7 @@ def run_dataset_generation(
                                     queue_wait_ms=queue_wait_ms,
                                     dropped_pending_tasks=dropped_pending_tasks,
                                     counters=counters,
+                                    last_worker_stage_event=last_worker_stage_event,
                                 )
                                 append_jsonl(
                                     run_context.timeout_events_path,
@@ -481,10 +492,15 @@ def run_dataset_generation(
                                             dropped_pending_tasks=dropped_pending_tasks,
                                             crash_artifact_json_path=str(crash_artifact_path),
                                             crash_repro_stage_count=crash_repro_stage_count,
+                                            last_worker_stage_event=last_worker_stage_event,
                                         )
                                     ],
                                 )
                         except ProcessExpired as exc:
+                            last_worker_stage_event = _read_latest_worker_stage_event(
+                                path=run_context.worker_stage_events_path,
+                                sample_id=task.plan.sample_id,
+                            )
                             maybe_rescheduled = _maybe_retry_task(
                                 failure_kind="process_expired",
                                 task=task,
@@ -505,6 +521,7 @@ def run_dataset_generation(
                                             queue_wait_ms=queue_wait_ms,
                                             exc=exc,
                                             will_retry=True,
+                                            last_worker_stage_event=last_worker_stage_event,
                                         )
                                     ],
                                 )
@@ -528,6 +545,7 @@ def run_dataset_generation(
                                     dropped_pending_tasks=dropped_pending_tasks,
                                     counters=counters,
                                     exc=exc,
+                                    last_worker_stage_event=last_worker_stage_event,
                                 )
                                 append_jsonl(
                                     run_context.process_expired_events_path,
@@ -540,6 +558,7 @@ def run_dataset_generation(
                                             dropped_pending_tasks=dropped_pending_tasks,
                                             crash_artifact_json_path=str(crash_artifact_path),
                                             crash_repro_stage_count=crash_repro_stage_count,
+                                            last_worker_stage_event=last_worker_stage_event,
                                         )
                                     ],
                                 )
@@ -1034,6 +1053,7 @@ def _build_timeout_event(
     dropped_pending_tasks: int = 0,
     crash_artifact_json_path: str | None = None,
     crash_repro_stage_count: int = 0,
+    last_worker_stage_event: dict[str, object] | None = None,
 ) -> dict[str, object]:
     return {
         "event": "timeout",
@@ -1047,6 +1067,7 @@ def _build_timeout_event(
         "dropped_pending_tasks": dropped_pending_tasks,
         "crash_artifact_json_path": crash_artifact_json_path,
         "crash_repro_stage_count": int(crash_repro_stage_count),
+        "last_worker_stage_event": last_worker_stage_event,
     }
 
 
@@ -1059,6 +1080,7 @@ def _build_process_expired_event(
     dropped_pending_tasks: int = 0,
     crash_artifact_json_path: str | None = None,
     crash_repro_stage_count: int = 0,
+    last_worker_stage_event: dict[str, object] | None = None,
 ) -> dict[str, object]:
     return {
         "event": "process_expired",
@@ -1077,6 +1099,7 @@ def _build_process_expired_event(
         "exitcode": getattr(exc, "exitcode", None),
         "crash_artifact_json_path": crash_artifact_json_path,
         "crash_repro_stage_count": int(crash_repro_stage_count),
+        "last_worker_stage_event": last_worker_stage_event,
     }
 
 
@@ -1092,6 +1115,7 @@ def _write_terminal_crash_artifact(
     dropped_pending_tasks: int,
     counters: dict[str, object],
     exc: ProcessExpired | None = None,
+    last_worker_stage_event: dict[str, object] | None = None,
 ) -> tuple[Path, int]:
     if event_type == "timeout":
         counters["terminal_timeout_crash_artifacts"] = int(
@@ -1116,6 +1140,7 @@ def _write_terminal_crash_artifact(
         planned_line_count=task.planned_line_count,
         candidate_in_target_range=task.candidate_in_target_range,
         exception_payload=exception_payload,
+        last_worker_stage_event=last_worker_stage_event,
     )
 
 
@@ -1129,3 +1154,23 @@ def _build_exception_payload(exc: ProcessExpired | None) -> dict[str, object] | 
         "pid": getattr(exc, "pid", None),
         "exitcode": getattr(exc, "exitcode", None),
     }
+
+
+def _read_latest_worker_stage_event(
+    *,
+    path: Path,
+    sample_id: str,
+) -> dict[str, object] | None:
+    if not path.exists():
+        return None
+    latest: dict[str, object] | None = None
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        if not raw_line.strip():
+            continue
+        payload = json.loads(raw_line)
+        if payload.get("event") != "worker_stage":
+            continue
+        if payload.get("sample_id") != sample_id:
+            continue
+        latest = payload
+    return latest

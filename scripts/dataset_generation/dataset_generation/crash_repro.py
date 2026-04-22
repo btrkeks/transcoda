@@ -29,6 +29,7 @@ def write_crash_artifact(
     planned_line_count: int | None,
     candidate_in_target_range: bool | None,
     exception_payload: dict[str, object] | None,
+    last_worker_stage_event: dict[str, object] | None,
 ) -> tuple[Path, int]:
     crash_dir = run_context.crash_samples_dir / plan.sample_id
     crash_dir.mkdir(parents=True, exist_ok=True)
@@ -79,6 +80,7 @@ def write_crash_artifact(
         "planned_line_count": planned_line_count,
         "candidate_in_target_range": candidate_in_target_range,
         "stage_unknown_due_to_timeout": event_type == "timeout",
+        "last_worker_stage_event": last_worker_stage_event,
         "exception": exception_payload,
         "repro_entries": repro_entries,
     }

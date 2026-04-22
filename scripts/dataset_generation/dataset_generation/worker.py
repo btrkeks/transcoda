@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import os
 import re
+import time
 from collections.abc import Callable
+from pathlib import Path
 
 import numpy as np
 
@@ -18,7 +21,7 @@ from scripts.dataset_generation.dataset_generation.augmentation import augment_a
 from scripts.dataset_generation.dataset_generation.image_generation.rendering.verovio_backend import (
     VerovioRenderer,
 )
-from scripts.dataset_generation.dataset_generation.io import encode_jpeg_image
+from scripts.dataset_generation.dataset_generation.io import append_jsonl, encode_jpeg_image
 from scripts.dataset_generation.dataset_generation.policy import (
     finalize_failure_reason,
     is_in_preferred_band,
@@ -63,6 +66,7 @@ from scripts.dataset_generation.dataset_generation.types_render import (
 _WORKER_RECIPE: ProductionRecipe | None = None
 _WORKER_RENDERER: VerovioRenderer | None = None
 _WORKER_CAPTURE_VEROVIO_DIAGNOSTICS = True
+_WORKER_STAGE_EVENTS_PATH: Path | None = None
 _RATIONAL_DURATION_PATTERN = re.compile(r"\d%-?\d")
 
 
@@ -88,11 +92,15 @@ def ensure_kern_header(content: str) -> str:
 def init_generation_worker(
     recipe: ProductionRecipe,
     capture_verovio_diagnostics: bool = True,
+    stage_events_path: str | Path | None = None,
 ) -> None:
-    global _WORKER_RECIPE, _WORKER_RENDERER, _WORKER_CAPTURE_VEROVIO_DIAGNOSTICS
+    global _WORKER_RECIPE, _WORKER_RENDERER, _WORKER_CAPTURE_VEROVIO_DIAGNOSTICS, _WORKER_STAGE_EVENTS_PATH
     _WORKER_RECIPE = recipe
     _WORKER_RENDERER = VerovioRenderer()
     _WORKER_CAPTURE_VEROVIO_DIAGNOSTICS = capture_verovio_diagnostics
+    _WORKER_STAGE_EVENTS_PATH = (
+        Path(stage_events_path).expanduser().resolve() if stage_events_path is not None else None
+    )
 
 
 def process_sample_plan(plan: SamplePlan) -> WorkerOutcome:
@@ -136,8 +144,10 @@ def evaluate_sample_plan(
     rescue_render_fn: Callable[..., RenderResult] | None = None,
     augment_fn: Callable[..., object] = augment_accepted_render,
     capture_verovio_diagnostics: bool = True,
+    stage_events_path: str | Path | None = None,
 ) -> WorkerOutcome:
     attempt_ledger = AttemptLedger()
+    resolved_stage_events_path = _resolve_stage_events_path(stage_events_path)
     render_transcription = build_render_transcription(plan.label_transcription, recipe, seed=plan.seed)
     full_attempt = _execute_attempt(
         sample_plan=plan,
@@ -152,6 +162,7 @@ def evaluate_sample_plan(
         renderer=renderer,
         render_callable=render_fn,
         capture_verovio_diagnostics=capture_verovio_diagnostics,
+        stage_events_path=resolved_stage_events_path,
     )
     full_render = full_attempt.render_result
     full_decision = full_attempt.decision
@@ -218,6 +229,7 @@ def evaluate_sample_plan(
             rescue_render_fn=rescue_render_fn,
             truncation_applied=False,
             capture_verovio_diagnostics=capture_verovio_diagnostics,
+            stage_events_path=resolved_stage_events_path,
         )
         rescue_render = rescue_attempt.render_result
         rescue_decision = rescue_attempt.decision
@@ -265,6 +277,7 @@ def evaluate_sample_plan(
                 render_fn=render_fn,
                 rescue_render_fn=rescue_render_fn,
                 capture_verovio_diagnostics=capture_verovio_diagnostics,
+                stage_events_path=resolved_stage_events_path,
             ),
         )
         truncation_attempted = bool(search_result.probes)
@@ -375,7 +388,16 @@ def _execute_attempt(
     renderer: VerovioRenderer,
     render_callable: Callable[..., RenderResult],
     capture_verovio_diagnostics: bool,
+    stage_events_path: Path | None,
 ) -> ExecutedRenderAttempt:
+    stage_started_at = time.time()
+    _write_worker_stage_event(
+        sample_plan=sample_plan,
+        attempt_plan=attempt_plan,
+        phase="started",
+        stage_events_path=stage_events_path,
+        started_at=stage_started_at,
+    )
     attempt = execute_render_attempt(
         sample_plan=sample_plan,
         attempt_plan=attempt_plan,
@@ -383,6 +405,14 @@ def _execute_attempt(
         renderer=renderer,
         render_callable=render_callable,
         capture_verovio_diagnostics=capture_verovio_diagnostics,
+    )
+    _write_worker_stage_event(
+        sample_plan=sample_plan,
+        attempt_plan=attempt_plan,
+        phase="completed",
+        stage_events_path=stage_events_path,
+        started_at=stage_started_at,
+        attempt=attempt,
     )
     attempt_ledger.record(attempt)
     return attempt
@@ -398,6 +428,7 @@ def _probe_truncation_candidate(
     render_fn: Callable[..., RenderResult],
     rescue_render_fn: Callable[..., RenderResult] | None,
     capture_verovio_diagnostics: bool,
+    stage_events_path: Path | None,
 ) -> TruncationProbeResult:
     candidate_seed = (sample_plan.seed + candidate.chunk_count * 17) & 0xFFFFFFFF
     candidate_render_transcription = build_render_transcription(
@@ -424,6 +455,7 @@ def _probe_truncation_candidate(
             attempt_plan=attempt_plan,
             recipe=recipe,
             rejection_reason=validation_reason,
+            stage_events_path=stage_events_path,
         )
         return _build_probe_result(candidate, structural_attempt)
 
@@ -435,6 +467,7 @@ def _probe_truncation_candidate(
         renderer=renderer,
         render_callable=render_fn,
         capture_verovio_diagnostics=capture_verovio_diagnostics,
+        stage_events_path=stage_events_path,
     )
     if candidate_attempt.decision.action == "accept_with_truncation":
         return _build_probe_result(candidate, candidate_attempt)
@@ -456,6 +489,7 @@ def _probe_truncation_candidate(
             total_chunks=candidate.total_chunks,
             ratio=candidate.ratio,
             capture_verovio_diagnostics=capture_verovio_diagnostics,
+            stage_events_path=stage_events_path,
         )
         if rescued_candidate_attempt.decision.action == "accept_with_truncation":
             return _build_probe_result(candidate, rescued_candidate_attempt)
@@ -471,7 +505,16 @@ def _record_structural_rejection_attempt(
     attempt_plan: RenderAttemptPlan,
     recipe: ProductionRecipe,
     rejection_reason: str,
+    stage_events_path: Path | None,
 ) -> ExecutedRenderAttempt:
+    stage_started_at = time.time()
+    _write_worker_stage_event(
+        sample_plan=sample_plan,
+        attempt_plan=attempt_plan,
+        phase="started",
+        stage_events_path=stage_events_path,
+        started_at=stage_started_at,
+    )
     attempt = finalize_render_attempt(
         sample_plan=sample_plan,
         attempt_plan=attempt_plan,
@@ -484,6 +527,14 @@ def _record_structural_rejection_attempt(
             vertical_fill_ratio=None,
             rejection_reason=rejection_reason,
         ),
+    )
+    _write_worker_stage_event(
+        sample_plan=sample_plan,
+        attempt_plan=attempt_plan,
+        phase="completed",
+        stage_events_path=stage_events_path,
+        started_at=stage_started_at,
+        attempt=attempt,
     )
     attempt_ledger.record(attempt)
     return attempt
@@ -520,6 +571,7 @@ def _execute_layout_rescue_attempt(
     total_chunks: int | None = None,
     ratio: float | None = None,
     capture_verovio_diagnostics: bool,
+    stage_events_path: Path | None,
 ) -> ExecutedRenderAttempt:
     rescue_callable = rescue_render_fn
     if rescue_callable is None and render_fn is render_sample:
@@ -540,6 +592,7 @@ def _execute_layout_rescue_attempt(
         renderer=renderer,
         render_callable=rescue_callable or render_fn,
         capture_verovio_diagnostics=capture_verovio_diagnostics,
+        stage_events_path=stage_events_path,
     )
 
 
@@ -606,3 +659,53 @@ def outcome_to_dataset_row(
     recipe: ProductionRecipe,
 ) -> dict[str, object]:
     return build_dataset_row(outcome.sample, recipe=recipe)
+
+
+def _resolve_stage_events_path(stage_events_path: str | Path | None) -> Path | None:
+    if stage_events_path is not None:
+        return Path(stage_events_path).expanduser().resolve()
+    return _WORKER_STAGE_EVENTS_PATH
+
+
+def _write_worker_stage_event(
+    *,
+    sample_plan: SamplePlan,
+    attempt_plan: RenderAttemptPlan,
+    phase: str,
+    stage_events_path: Path | None,
+    started_at: float,
+    attempt: ExecutedRenderAttempt | None = None,
+) -> None:
+    if stage_events_path is None:
+        return
+    sample_idx = int(sample_plan.sample_id.split("_")[-1])
+    event: dict[str, object] = {
+        "event": "worker_stage",
+        "timestamp": time.time(),
+        "sample_id": sample_plan.sample_id,
+        "sample_idx": sample_idx,
+        "source_paths": [str(Path(segment.path).resolve()) for segment in sample_plan.segments],
+        "stage": str(attempt_plan.stage),
+        "phase": phase,
+        "seed": attempt_plan.seed,
+        "pid": os.getpid(),
+        "truncation_applied": attempt_plan.truncation_applied,
+        "truncation_chunk_count": attempt_plan.chunk_count,
+        "truncation_total_chunks": attempt_plan.total_chunks,
+        "truncation_ratio": attempt_plan.ratio,
+    }
+    if attempt is not None:
+        event.update(
+            {
+                "duration_ms": max(0.0, (time.time() - started_at) * 1000.0),
+                "accepted": attempt.decision.action != "reject",
+                "decision_action": attempt.decision.action,
+                "decision_reason": attempt.decision.reason,
+                "system_count": attempt.render_result.svg_diagnostics.system_count,
+                "page_count": attempt.render_result.svg_diagnostics.page_count,
+                "content_height_px": attempt.render_result.content_height_px,
+                "vertical_fill_ratio": attempt.render_result.vertical_fill_ratio,
+                "render_rejection_reason": attempt.render_result.rejection_reason,
+            }
+        )
+    append_jsonl(stage_events_path, [event])
