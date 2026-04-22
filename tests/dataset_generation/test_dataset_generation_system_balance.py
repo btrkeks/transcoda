@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 from tokenizers import Tokenizer, models, pre_tokenizers
 
+from scripts.dataset_generation.dataset_generation.composer import StructuredSamplePlan
 from scripts.dataset_generation.dataset_generation.calibrate_system_balance import (
     run_calibration,
 )
@@ -25,6 +26,44 @@ from scripts.dataset_generation.dataset_generation.types_render import (
     RenderResult,
     SvgLayoutDiagnostics,
 )
+
+
+def _make_structured_candidate(
+    *,
+    input_dir: Path,
+    candidate_idx: int,
+    line_count: int,
+    source_max_initial_spine_count: int = 1,
+) -> StructuredSamplePlan:
+    piece_path = input_dir / "piece.krn"
+    segment = SourceSegment(source_id="input/piece", path=piece_path, order=0)
+    return StructuredSamplePlan(
+        sample_id="sample_00000000",
+        seed=candidate_idx,
+        entries=(),
+        segments=(segment,),
+        source_measure_count=1,
+        source_non_empty_line_count=line_count,
+        source_max_initial_spine_count=source_max_initial_spine_count,
+        segment_count=1,
+    )
+
+
+def _materialize_structured_candidate(
+    structured: StructuredSamplePlan,
+    *,
+    label_prefix: str = "candidate",
+) -> SamplePlan:
+    return SamplePlan(
+        sample_id=structured.sample_id,
+        seed=structured.seed,
+        segments=structured.segments,
+        label_transcription=f"{label_prefix}_{structured.seed}\n",
+        source_measure_count=structured.source_measure_count,
+        source_non_empty_line_count=structured.source_non_empty_line_count,
+        source_max_initial_spine_count=structured.source_max_initial_spine_count,
+        segment_count=structured.segment_count,
+    )
 
 
 def _make_tokenizer_dir(tmp_path: Path) -> Path:
@@ -211,24 +250,25 @@ def test_choose_balanced_plan_prefers_candidate_closest_to_target_bucket(
     candidate_line_counts = [2, 6, 3]
     calls = {"value": 0}
 
-    def fake_plan_sample(source_index, recipe, *, sample_idx, base_seed, excluded_paths=None):
+    def fake_plan_sample_structure(
+        source_index, recipe, *, sample_idx, base_seed, excluded_paths=None
+    ):
         del source_index, recipe, sample_idx, base_seed, excluded_paths
         idx = calls["value"]
         calls["value"] += 1
-        return SamplePlan(
-            sample_id="sample_00000000",
-            seed=idx,
-            segments=(SourceSegment(source_id="input/piece", path=input_dir / "piece.krn", order=0),),
-            label_transcription=f"candidate_{idx}\n",
-            source_measure_count=1,
-            source_non_empty_line_count=candidate_line_counts[idx],
-            source_max_initial_spine_count=1,
-            segment_count=1,
+        return _make_structured_candidate(
+            input_dir=input_dir,
+            candidate_idx=idx,
+            line_count=candidate_line_counts[idx],
         )
 
     monkeypatch.setattr(
-        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample",
-        fake_plan_sample,
+        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample_structure",
+        fake_plan_sample_structure,
+    )
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.system_balance.materialize_sample_plan",
+        _materialize_structured_candidate,
     )
 
     selected = choose_balanced_plan(
@@ -290,24 +330,25 @@ def test_choose_balanced_plan_can_request_seven_system_bucket(
     candidate_line_counts = [12, 71]
     calls = {"value": 0}
 
-    def fake_plan_sample(source_index, recipe, *, sample_idx, base_seed, excluded_paths=None):
+    def fake_plan_sample_structure(
+        source_index, recipe, *, sample_idx, base_seed, excluded_paths=None
+    ):
         del source_index, recipe, sample_idx, base_seed, excluded_paths
         idx = calls["value"]
         calls["value"] += 1
-        return SamplePlan(
-            sample_id="sample_00000000",
-            seed=idx,
-            segments=(SourceSegment(source_id="input/piece", path=input_dir / "piece.krn", order=0),),
-            label_transcription=f"candidate_{idx}\n",
-            source_measure_count=1,
-            source_non_empty_line_count=candidate_line_counts[idx],
-            source_max_initial_spine_count=1,
-            segment_count=1,
+        return _make_structured_candidate(
+            input_dir=input_dir,
+            candidate_idx=idx,
+            line_count=candidate_line_counts[idx],
         )
 
     monkeypatch.setattr(
-        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample",
-        fake_plan_sample,
+        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample_structure",
+        fake_plan_sample_structure,
+    )
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.system_balance.materialize_sample_plan",
+        _materialize_structured_candidate,
     )
 
     selected = choose_balanced_plan(
@@ -364,24 +405,26 @@ def test_choose_balanced_plan_uses_lower_fit_risk_as_tiebreaker(
     candidate_line_counts = [7, 9]
     calls = {"value": 0}
 
-    def fake_plan_sample(source_index, recipe, *, sample_idx, base_seed, excluded_paths=None):
+    def fake_plan_sample_structure(
+        source_index, recipe, *, sample_idx, base_seed, excluded_paths=None
+    ):
         del source_index, recipe, sample_idx, base_seed, excluded_paths
         idx = calls["value"]
         calls["value"] += 1
-        return SamplePlan(
-            sample_id="sample_00000000",
-            seed=idx,
-            segments=(SourceSegment(source_id="input/piece", path=input_dir / "piece.krn", order=0),),
-            label_transcription=f"candidate_{idx}\n",
-            source_measure_count=1,
-            source_non_empty_line_count=candidate_line_counts[idx],
+        return _make_structured_candidate(
+            input_dir=input_dir,
+            candidate_idx=idx,
+            line_count=candidate_line_counts[idx],
             source_max_initial_spine_count=2,
-            segment_count=1,
         )
 
     monkeypatch.setattr(
-        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample",
-        fake_plan_sample,
+        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample_structure",
+        fake_plan_sample_structure,
+    )
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.system_balance.materialize_sample_plan",
+        _materialize_structured_candidate,
     )
 
     selected = choose_balanced_plan(
@@ -437,17 +480,17 @@ def test_choose_balanced_plan_falls_back_to_all_when_class_specific_data_missing
     source_index = build_source_index(input_dir)
 
     monkeypatch.setattr(
-        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample",
-        lambda *args, **kwargs: SamplePlan(
-            sample_id="sample_00000000",
-            seed=0,
-            segments=(SourceSegment(source_id="input/piece", path=input_dir / "piece.krn", order=0),),
-            label_transcription="candidate\n",
-            source_measure_count=1,
-            source_non_empty_line_count=5,
+        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample_structure",
+        lambda *args, **kwargs: _make_structured_candidate(
+            input_dir=input_dir,
+            candidate_idx=0,
+            line_count=5,
             source_max_initial_spine_count=3,
-            segment_count=1,
         ),
+    )
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.system_balance.materialize_sample_plan",
+        _materialize_structured_candidate,
     )
 
     selected = choose_balanced_plan(
@@ -499,26 +542,36 @@ def test_choose_balanced_plan_skips_invalid_candidates(tmp_path: Path, monkeypat
     source_index = build_source_index(input_dir)
     calls = {"value": 0}
 
-    def fake_plan_sample(source_index, recipe, *, sample_idx, base_seed, excluded_paths=None):
+    def fake_plan_sample_structure(
+        source_index, recipe, *, sample_idx, base_seed, excluded_paths=None
+    ):
         del source_index, recipe, sample_idx, base_seed, excluded_paths
         idx = calls["value"]
         calls["value"] += 1
         if idx == 0:
             raise ValueError("boundary mismatch")
-        return SamplePlan(
-            sample_id="sample_00000000",
-            seed=idx,
-            segments=(SourceSegment(source_id="input/piece", path=input_dir / "piece.krn", order=0),),
-            label_transcription="alpha beta gamma\n",
-            source_measure_count=1,
-            source_non_empty_line_count=3,
-            source_max_initial_spine_count=1,
-            segment_count=1,
+        return _make_structured_candidate(
+            input_dir=input_dir,
+            candidate_idx=idx,
+            line_count=3,
         )
 
     monkeypatch.setattr(
-        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample",
-        fake_plan_sample,
+        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample_structure",
+        fake_plan_sample_structure,
+    )
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.system_balance.materialize_sample_plan",
+        lambda structured: SamplePlan(
+            sample_id=structured.sample_id,
+            seed=structured.seed,
+            segments=structured.segments,
+            label_transcription="alpha beta gamma\n",
+            source_measure_count=structured.source_measure_count,
+            source_non_empty_line_count=structured.source_non_empty_line_count,
+            source_max_initial_spine_count=structured.source_max_initial_spine_count,
+            segment_count=structured.segment_count,
+        ),
     )
 
     selected = choose_balanced_plan(
@@ -561,11 +614,245 @@ def test_choose_balanced_plan_raises_after_all_candidates_fail(tmp_path: Path, m
     source_index = build_source_index(input_dir)
 
     monkeypatch.setattr(
-        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample",
+        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample_structure",
         lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("boundary mismatch")),
     )
 
     with pytest.raises(ValueError, match="All candidate plans were invalid or exhausted"):
+        choose_balanced_plan(
+            source_index=source_index,
+            recipe=ProductionRecipe(),
+            sample_idx=0,
+            base_seed=0,
+            excluded_paths=None,
+            spec=spec,
+            accepted_system_histogram={},
+            candidate_plan_count=2,
+        )
+
+
+def test_choose_balanced_plan_materializes_only_selected_candidate(
+    tmp_path: Path, monkeypatch
+):
+    tokenizer_dir = _make_tokenizer_dir(tmp_path)
+    spec = load_system_balance_spec(
+        _write_balance_spec(
+            tmp_path,
+            tokenizer_dir,
+            {
+                "recommended_line_count_ranges": {
+                    "all": {
+                        "1": {"min": 2, "max": 3, "center": 2.5},
+                        "2": {"min": 4, "max": 5, "center": 4.5},
+                        "3": {"min": 6, "max": 7, "center": 6.5},
+                        "4": {"min": 8, "max": 9, "center": 8.5},
+                        "5": {"min": 6, "max": 6, "center": 6.0},
+                        "6": {"min": 12, "max": 13, "center": 12.5},
+                    }
+                },
+                "vertical_fit_model": {
+                    "all": {
+                        str(bucket): {
+                            "safe_max_line_count": bucket + 10,
+                            "median_content_height_px": 1000.0 + bucket,
+                            "safe_sample_count": 3,
+                        }
+                        for bucket in range(1, 7)
+                    }
+                },
+            },
+        )
+    )
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    (input_dir / "piece.krn").write_text("*clefG2\n=1\n4c\n*-\n", encoding="utf-8")
+    from scripts.dataset_generation.dataset_generation.source_index import build_source_index
+
+    source_index = build_source_index(input_dir)
+    structure_calls: list[int] = []
+    materialize_calls: list[int] = []
+    candidate_line_counts = [2, 6, 3]
+
+    def fake_plan_sample_structure(
+        source_index, recipe, *, sample_idx, base_seed, excluded_paths=None
+    ):
+        del source_index, recipe, sample_idx, base_seed, excluded_paths
+        idx = len(structure_calls)
+        structure_calls.append(idx)
+        return _make_structured_candidate(
+            input_dir=input_dir,
+            candidate_idx=idx,
+            line_count=candidate_line_counts[idx],
+        )
+
+    def fake_materialize_sample_plan(structured: StructuredSamplePlan) -> SamplePlan:
+        materialize_calls.append(structured.seed)
+        return _materialize_structured_candidate(structured)
+
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample_structure",
+        fake_plan_sample_structure,
+    )
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.system_balance.materialize_sample_plan",
+        fake_materialize_sample_plan,
+    )
+
+    selected = choose_balanced_plan(
+        source_index=source_index,
+        recipe=ProductionRecipe(),
+        sample_idx=0,
+        base_seed=0,
+        excluded_paths=None,
+        spec=spec,
+        accepted_system_histogram={"1": {1: 1, 2: 1, 3: 1, 4: 1, 5: 0, 6: 1}},
+        candidate_plan_count=3,
+    )
+
+    assert structure_calls == [0, 1, 2]
+    assert materialize_calls == [1]
+    assert selected.plan.label_transcription == "candidate_1\n"
+
+
+def test_choose_balanced_plan_falls_back_when_best_materialization_fails(
+    tmp_path: Path, monkeypatch
+):
+    tokenizer_dir = _make_tokenizer_dir(tmp_path)
+    spec = load_system_balance_spec(
+        _write_balance_spec(
+            tmp_path,
+            tokenizer_dir,
+            {
+                "recommended_line_count_ranges": {
+                    "all": {
+                        "1": {"min": 2, "max": 3, "center": 2.5},
+                        "2": {"min": 4, "max": 5, "center": 4.5},
+                        "3": {"min": 6, "max": 7, "center": 6.5},
+                        "4": {"min": 8, "max": 9, "center": 8.5},
+                        "5": {"min": 6, "max": 6, "center": 6.0},
+                        "6": {"min": 12, "max": 13, "center": 12.5},
+                    }
+                },
+                "vertical_fit_model": {
+                    "all": {
+                        str(bucket): {
+                            "safe_max_line_count": bucket + 10,
+                            "median_content_height_px": 1000.0 + bucket,
+                            "safe_sample_count": 3,
+                        }
+                        for bucket in range(1, 7)
+                    }
+                },
+            },
+        )
+    )
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    (input_dir / "piece.krn").write_text("*clefG2\n=1\n4c\n*-\n", encoding="utf-8")
+    from scripts.dataset_generation.dataset_generation.source_index import build_source_index
+
+    source_index = build_source_index(input_dir)
+    materialize_calls: list[int] = []
+
+    structured_candidates = [
+        _make_structured_candidate(input_dir=input_dir, candidate_idx=0, line_count=6),
+        _make_structured_candidate(input_dir=input_dir, candidate_idx=1, line_count=7),
+    ]
+    structure_idx = {"value": 0}
+
+    def fake_plan_sample_structure(
+        source_index, recipe, *, sample_idx, base_seed, excluded_paths=None
+    ):
+        del source_index, recipe, sample_idx, base_seed, excluded_paths
+        idx = structure_idx["value"]
+        structure_idx["value"] += 1
+        return structured_candidates[idx]
+
+    def fake_materialize_sample_plan(structured: StructuredSamplePlan) -> SamplePlan:
+        materialize_calls.append(structured.seed)
+        if structured.seed == 0:
+            raise ValueError("compose failed for candidate_0")
+        return _materialize_structured_candidate(structured)
+
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample_structure",
+        fake_plan_sample_structure,
+    )
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.system_balance.materialize_sample_plan",
+        fake_materialize_sample_plan,
+    )
+
+    selected = choose_balanced_plan(
+        source_index=source_index,
+        recipe=ProductionRecipe(),
+        sample_idx=0,
+        base_seed=0,
+        excluded_paths=None,
+        spec=spec,
+        accepted_system_histogram={"1": {1: 1, 2: 1, 3: 1, 4: 1, 5: 0, 6: 1}},
+        candidate_plan_count=2,
+    )
+
+    assert materialize_calls == [0, 1]
+    assert selected.plan.label_transcription == "candidate_1\n"
+
+
+def test_choose_balanced_plan_raises_after_all_materializations_fail(
+    tmp_path: Path, monkeypatch
+):
+    tokenizer_dir = _make_tokenizer_dir(tmp_path)
+    spec = load_system_balance_spec(
+        _write_balance_spec(
+            tmp_path,
+            tokenizer_dir,
+            {
+                "recommended_line_count_ranges": {
+                    "all": {
+                        str(bucket): {"min": bucket, "max": bucket + 1, "center": float(bucket) + 0.5}
+                        for bucket in range(1, 7)
+                    }
+                },
+                "vertical_fit_model": {},
+            },
+        )
+    )
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    (input_dir / "piece.krn").write_text("*clefG2\n=1\n4c\n*-\n", encoding="utf-8")
+    from scripts.dataset_generation.dataset_generation.source_index import build_source_index
+
+    source_index = build_source_index(input_dir)
+    structure_idx = {"value": 0}
+
+    def fake_plan_sample_structure(
+        source_index, recipe, *, sample_idx, base_seed, excluded_paths=None
+    ):
+        del source_index, recipe, sample_idx, base_seed, excluded_paths
+        idx = structure_idx["value"]
+        structure_idx["value"] += 1
+        return _make_structured_candidate(
+            input_dir=input_dir,
+            candidate_idx=idx,
+            line_count=idx + 1,
+        )
+
+    def fake_materialize_sample_plan(structured: StructuredSamplePlan) -> SamplePlan:
+        raise ValueError(f"compose failed for candidate_{structured.seed}")
+
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.system_balance.plan_sample_structure",
+        fake_plan_sample_structure,
+    )
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.system_balance.materialize_sample_plan",
+        fake_materialize_sample_plan,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="All candidate plans were invalid or exhausted: compose failed for candidate_1",
+    ):
         choose_balanced_plan(
             source_index=source_index,
             recipe=ProductionRecipe(),

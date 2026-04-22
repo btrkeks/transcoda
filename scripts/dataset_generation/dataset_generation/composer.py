@@ -34,6 +34,18 @@ class BoundaryState:
         return len(self.clef)
 
 
+@dataclass(frozen=True)
+class StructuredSamplePlan:
+    sample_id: str
+    seed: int
+    entries: tuple[SourceEntry, ...]
+    segments: tuple[SourceSegment, ...]
+    source_measure_count: int
+    source_non_empty_line_count: int
+    source_max_initial_spine_count: int
+    segment_count: int
+
+
 def compose_label_transcription(entries: Sequence[SourceEntry]) -> str:
     if not entries:
         raise ValueError("compose_label_transcription requires at least one source entry")
@@ -71,23 +83,54 @@ def plan_sample(
     base_seed: int = 0,
     excluded_paths: set[Path] | None = None,
 ) -> SamplePlan:
+    structured = plan_sample_structure(
+        source_index,
+        recipe,
+        sample_idx=sample_idx,
+        base_seed=base_seed,
+        excluded_paths=excluded_paths,
+    )
+    return materialize_sample_plan(structured)
+
+
+def plan_sample_structure(
+    source_index: SourceIndex,
+    recipe: ProductionRecipe,
+    *,
+    sample_idx: int,
+    base_seed: int = 0,
+    excluded_paths: set[Path] | None = None,
+) -> StructuredSamplePlan:
     seed = derive_sample_seed(base_seed=base_seed, sample_idx=sample_idx)
     rng = random.Random(seed)
     entries = tuple(_choose_entries(source_index.entries, recipe, rng, excluded_paths=excluded_paths))
-    label_transcription = compose_label_transcription(entries)
     segments = tuple(
         SourceSegment(source_id=entry.source_id, path=entry.path, order=idx)
         for idx, entry in enumerate(entries)
     )
-    return SamplePlan(
+    return StructuredSamplePlan(
         sample_id=f"sample_{sample_idx:08d}",
         seed=seed,
+        entries=entries,
         segments=segments,
-        label_transcription=label_transcription,
         source_measure_count=sum(entry.measure_count for entry in entries),
         source_non_empty_line_count=sum(entry.non_empty_line_count for entry in entries),
         source_max_initial_spine_count=max(entry.initial_spine_count for entry in entries),
         segment_count=len(entries),
+    )
+
+
+def materialize_sample_plan(structured: StructuredSamplePlan) -> SamplePlan:
+    label_transcription = compose_label_transcription(structured.entries)
+    return SamplePlan(
+        sample_id=structured.sample_id,
+        seed=structured.seed,
+        segments=structured.segments,
+        label_transcription=label_transcription,
+        source_measure_count=structured.source_measure_count,
+        source_non_empty_line_count=structured.source_non_empty_line_count,
+        source_max_initial_spine_count=structured.source_max_initial_spine_count,
+        segment_count=structured.segment_count,
     )
 
 

@@ -6,7 +6,9 @@ import scripts.dataset_generation.dataset_generation.composer as composer_module
 from scripts.dataset_generation.dataset_generation.composer import (
     _choose_entries,
     compose_label_transcription,
+    materialize_sample_plan,
     plan_sample,
+    plan_sample_structure,
 )
 from scripts.dataset_generation.dataset_generation.recipe import CompositionPolicy, ProductionRecipe
 from scripts.dataset_generation.dataset_generation.renderer import count_systems_in_svg
@@ -258,6 +260,23 @@ def test_plan_sample_is_deterministic_for_seed(tmp_path: Path):
     second = plan_sample(source_index, recipe, sample_idx=7, base_seed=123)
 
     assert first == second
+
+
+def test_plan_sample_matches_materialized_structured_plan(tmp_path: Path):
+    for idx in range(3):
+        (tmp_path / f"{idx:03d}.krn").write_text(
+            "*clefG2\n*M4/4\n=1\n4c\n=2\n4d\n*-\n",
+            encoding="utf-8",
+        )
+
+    source_index = build_source_index(tmp_path)
+    recipe = ProductionRecipe()
+
+    structured = plan_sample_structure(source_index, recipe, sample_idx=7, base_seed=123)
+    materialized = materialize_sample_plan(structured)
+    direct = plan_sample(source_index, recipe, sample_idx=7, base_seed=123)
+
+    assert materialized == direct
 
 
 def test_plan_sample_respects_single_segment_policy_even_below_min_measures(tmp_path: Path):

@@ -11,7 +11,11 @@ from pathlib import Path
 import numpy as np
 from tokenizers import Tokenizer
 
-from scripts.dataset_generation.dataset_generation.composer import plan_sample
+from scripts.dataset_generation.dataset_generation.composer import (
+    StructuredSamplePlan,
+    materialize_sample_plan,
+    plan_sample_structure,
+)
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.source_index import SourceIndex
 from scripts.dataset_generation.dataset_generation.types_domain import SamplePlan
@@ -64,6 +68,20 @@ class SystemBalanceSpec:
 class CandidatePlanScore:
     candidate_idx: int
     plan: SamplePlan
+    line_count: int
+    source_max_initial_spine_count: int
+    spine_class: str
+    target_bucket: int
+    target_center_line_count: float
+    in_target_range: bool
+    distance_to_bucket: float
+    vertical_fit_penalty: float
+
+
+@dataclass(frozen=True)
+class _StructuredCandidatePlanScore:
+    candidate_idx: int
+    structured_plan: StructuredSamplePlan
     line_count: int
     source_max_initial_spine_count: int
     spine_class: str
@@ -220,7 +238,7 @@ def choose_balanced_plan(
         raise ValueError("System balance spec does not define any target buckets")
 
     total_candidates = max(1, int(candidate_plan_count or spec.candidate_plan_count or 1))
-    best_score: CandidatePlanScore | None = None
+    candidate_scores: list[_StructuredCandidatePlanScore] = []
     last_error: ValueError | None = None
     for candidate_idx in range(total_candidates):
         candidate_base_seed = derive_candidate_base_seed(
@@ -229,7 +247,7 @@ def choose_balanced_plan(
             candidate_idx=candidate_idx,
         )
         try:
-            plan = plan_sample(
+            structured_plan = plan_sample_structure(
                 source_index,
                 recipe,
                 sample_idx=sample_idx,
@@ -239,8 +257,8 @@ def choose_balanced_plan(
         except ValueError as exc:
             last_error = exc
             continue
-        line_count = int(plan.source_non_empty_line_count)
-        source_max_initial_spine_count = int(plan.source_max_initial_spine_count)
+        line_count = int(structured_plan.source_non_empty_line_count)
+        source_max_initial_spine_count = int(structured_plan.source_max_initial_spine_count)
         spine_class = spine_class_for_count(source_max_initial_spine_count)
         class_histogram = accepted_system_histogram.get(spine_class, {})
         target_bucket = choose_target_bucket(class_histogram, available_buckets=available_buckets)
@@ -251,32 +269,58 @@ def choose_balanced_plan(
             target_bucket=target_bucket,
         )
         distance = distance_to_bucket(line_count, bucket)
-        score = CandidatePlanScore(
-            candidate_idx=candidate_idx,
-            plan=plan,
-            line_count=line_count,
-            source_max_initial_spine_count=source_max_initial_spine_count,
-            spine_class=spine_class,
-            target_bucket=target_bucket,
-            target_center_line_count=bucket.center_line_count,
-            in_target_range=bucket.contains(line_count),
-            distance_to_bucket=distance,
-            vertical_fit_penalty=compute_vertical_fit_penalty(
+        candidate_scores.append(
+            _StructuredCandidatePlanScore(
+                candidate_idx=candidate_idx,
+                structured_plan=structured_plan,
                 line_count=line_count,
-                vertical_fit_bucket=vertical_fit_bucket,
+                source_max_initial_spine_count=source_max_initial_spine_count,
+                spine_class=spine_class,
+                target_bucket=target_bucket,
+                target_center_line_count=bucket.center_line_count,
+                in_target_range=bucket.contains(line_count),
+                distance_to_bucket=distance,
+                vertical_fit_penalty=compute_vertical_fit_penalty(
+                    line_count=line_count,
+                    vertical_fit_bucket=vertical_fit_bucket,
+                ),
             ),
         )
-        if best_score is None or _candidate_sort_key(score) < _candidate_sort_key(best_score):
-            best_score = score
 
-    if best_score is None:
+    if not candidate_scores:
         reason = (
             str(last_error)
             if last_error is not None
             else "no candidate plans could be generated"
         )
         raise ValueError(f"All candidate plans were invalid or exhausted: {reason}")
-    return best_score
+
+    ranked_candidates = sorted(candidate_scores, key=_structured_candidate_sort_key)
+    for score in ranked_candidates:
+        try:
+            plan = materialize_sample_plan(score.structured_plan)
+        except ValueError as exc:
+            last_error = exc
+            continue
+        return CandidatePlanScore(
+            candidate_idx=score.candidate_idx,
+            plan=plan,
+            line_count=score.line_count,
+            source_max_initial_spine_count=score.source_max_initial_spine_count,
+            spine_class=score.spine_class,
+            target_bucket=score.target_bucket,
+            target_center_line_count=score.target_center_line_count,
+            in_target_range=score.in_target_range,
+            distance_to_bucket=score.distance_to_bucket,
+            vertical_fit_penalty=score.vertical_fit_penalty,
+        )
+
+    reason = (
+        str(last_error)
+        if last_error is not None
+        else "no candidate plans could be generated"
+    )
+    raise ValueError(f"All candidate plans were invalid or exhausted: {reason}")
 
 
 def derive_candidate_base_seed(*, base_seed: int, sample_idx: int, candidate_idx: int) -> int:
@@ -552,6 +596,18 @@ def time_now() -> float:
 
 
 def _candidate_sort_key(score: CandidatePlanScore) -> tuple[float, float, float, int]:
+    center_distance = abs(score.line_count - score.target_center_line_count)
+    return (
+        score.distance_to_bucket,
+        score.vertical_fit_penalty,
+        center_distance,
+        score.candidate_idx,
+    )
+
+
+def _structured_candidate_sort_key(
+    score: _StructuredCandidatePlanScore,
+) -> tuple[float, float, float, int]:
     center_distance = abs(score.line_count - score.target_center_line_count)
     return (
         score.distance_to_bucket,
