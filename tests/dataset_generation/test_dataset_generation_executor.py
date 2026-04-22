@@ -1605,6 +1605,43 @@ def test_executor_writes_pixel_metrics_and_layout_summary_stats(tmp_path):
     assert info["layout_summary"]["content_height_px_stats"]["max"] == pytest.approx(1069.0)
 
 
+def test_executor_writes_basic_eta_fields_to_progress(tmp_path):
+    input_dir = _make_simple_input_dir(tmp_path, ("piece",))
+    output_dir = tmp_path / "output"
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=1,
+        max_attempts=1,
+        renderer=object(),
+        render_fn=lambda render_text, recipe, *, seed, renderer: RenderResult(
+            image=np.pad(
+                np.zeros((120, 600, 3), dtype=np.uint8),
+                ((33, 1332), (10, 440), (0, 0)),
+                constant_values=255,
+            ),
+            render_layers=None,
+            svg_diagnostics=SvgLayoutDiagnostics(system_count=4, page_count=1),
+            bottom_whitespace_ratio=149 / 1485,
+            vertical_fill_ratio=1069 / 1485,
+            bottom_whitespace_px=149,
+            top_whitespace_px=33,
+            content_height_px=1069,
+        ),
+        augment_fn=lambda plan, render_result, recipe: np.full((1485, 1050, 3), 127, dtype=np.uint8),
+        quiet=True,
+    )
+
+    progress = _read_json(summary.run_artifacts_dir / "progress.json")
+
+    assert progress["elapsed_seconds"] >= 0.0
+    assert progress["accepted_samples_per_second"] > 0.0
+    assert progress["remaining_samples"] == 0
+    assert progress["eta_seconds"] == pytest.approx(0.0)
+    assert isinstance(progress["estimated_completion_at"], float)
+
+
 def test_executor_resume_preserves_retry_counters_after_interrupted_finalize(
     tmp_path,
     monkeypatch,

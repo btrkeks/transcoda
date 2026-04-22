@@ -216,11 +216,13 @@ def maybe_flush_and_report(
     target_samples: int,
     last_progress_at_ref: list[float],
     progress_interval_seconds: float,
+    generation_start_perf_counter: float,
     quiet: bool,
     quarantine_out_path: Path,
     write_quarantined_sources: Callable,
 ) -> None:
     now = time.time()
+    elapsed_seconds = max(0.0, time.perf_counter() - generation_start_perf_counter)
     if pending_rows:
         rows_to_commit = list(pending_rows)
         pending_rows.clear()
@@ -273,6 +275,14 @@ def maybe_flush_and_report(
             "outer_gate_failure_reason_counts": dict(counters["outer_gate_failure_reason_counts"]),
         }
         progress_payload.update(build_layout_summary(counters))
+        progress_payload.update(
+            _build_timing_summary(
+                counters=counters,
+                target_samples=target_samples,
+                elapsed_seconds=elapsed_seconds,
+                now=now,
+            )
+        )
         write_json(run_context.progress_path, progress_payload)
         write_quarantined_sources(
             quarantined_sources=counters["quarantined_sources"],  # type: ignore[arg-type]
@@ -283,8 +293,51 @@ def maybe_flush_and_report(
             print(
                 "Progress: "
                 f"{progress_payload['accepted_samples']}/{target_samples} accepted, "
-                f"{progress_payload['attempted_samples']} attempted"
+                f"{progress_payload['attempted_samples']} attempted, "
+                f"elapsed {_format_duration(progress_payload['elapsed_seconds'])}, "
+                f"ETA {_format_optional_duration(progress_payload['eta_seconds'])}"
             )
+
+
+def _build_timing_summary(
+    *,
+    counters: dict[str, object],
+    target_samples: int,
+    elapsed_seconds: float,
+    now: float,
+) -> dict[str, float | int | None]:
+    accepted_samples = int(counters["accepted_samples"])
+    remaining_samples = max(0, int(target_samples) - accepted_samples)
+    accepted_samples_per_second = (
+        float(accepted_samples) / elapsed_seconds if accepted_samples > 0 and elapsed_seconds > 0 else 0.0
+    )
+    eta_seconds: float | None = None
+    estimated_completion_at: float | None = None
+    if accepted_samples_per_second > 0.0:
+        eta_seconds = float(remaining_samples) / accepted_samples_per_second
+        estimated_completion_at = now + eta_seconds
+    return {
+        "elapsed_seconds": elapsed_seconds,
+        "accepted_samples_per_second": accepted_samples_per_second,
+        "remaining_samples": remaining_samples,
+        "eta_seconds": eta_seconds,
+        "estimated_completion_at": estimated_completion_at,
+    }
+
+
+def _format_duration(seconds: float) -> str:
+    total_seconds = max(0, int(round(float(seconds))))
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, secs = divmod(remainder, 60)
+    if hours > 0:
+        return f"{hours:d}:{minutes:02d}:{secs:02d}"
+    return f"{minutes:02d}:{secs:02d}"
+
+
+def _format_optional_duration(seconds: float | None) -> str:
+    if seconds is None:
+        return "unknown"
+    return _format_duration(seconds)
 
 
 def _summarize_histogram(histogram: Counter) -> dict[str, float | int]:
