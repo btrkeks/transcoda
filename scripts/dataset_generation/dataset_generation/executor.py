@@ -52,6 +52,7 @@ from scripts.dataset_generation.dataset_generation.types import (
     FailureTraceEvent,
     ResumeSnapshot,
     SamplePlan,
+    SuccessTraceEvent,
     WorkerFailure,
     WorkerSuccess,
 )
@@ -1082,8 +1083,17 @@ def _commit_contiguous_results(
     while next_to_commit in pending_terminal:
         outcome = pending_terminal.pop(next_to_commit)
         task = pending_terminal_tasks.pop(next_to_commit, None)
+        committed_to_dataset = isinstance(outcome, WorkerSuccess) and int(
+            counters["accepted_samples"]
+        ) < target_samples
         _write_verovio_events(run_context=run_context, outcome=outcome)
         _write_failure_events(run_context=run_context, outcome=outcome, task=task)
+        _write_success_events(
+            run_context=run_context,
+            outcome=outcome,
+            task=task,
+            committed_to_dataset=committed_to_dataset,
+        )
         _write_augmentation_events(run_context=run_context, outcome=outcome)
         _maybe_write_augmentation_preview(run_context=run_context, outcome=outcome, counters=counters)
         truncation_counts: Counter = counters["truncation_counts"]  # type: ignore[assignment]
@@ -1107,7 +1117,7 @@ def _commit_contiguous_results(
             preferred_5_6_counts[str(outcome.preferred_5_6_status)] += 1
 
         if isinstance(outcome, WorkerSuccess):
-            if int(counters["accepted_samples"]) < target_samples:
+            if committed_to_dataset:
                 pending_rows.append(outcome_to_dataset_row(outcome, recipe=recipe))
                 counters["accepted_samples"] = int(counters["accepted_samples"]) + 1
                 accepted_spine_class = spine_class_for_count(
@@ -1172,6 +1182,29 @@ def _write_failure_events(
     )
 
 
+def _write_success_events(
+    *,
+    run_context: RunContext,
+    outcome: WorkerSuccess | WorkerFailure,
+    task: ScheduledTask | None,
+    committed_to_dataset: bool,
+) -> None:
+    if not isinstance(outcome, WorkerSuccess):
+        return
+    append_jsonl(
+        run_context.success_events_path,
+        [
+            asdict(
+                _build_success_trace_event(
+                    outcome=outcome,
+                    task=task,
+                    committed_to_dataset=committed_to_dataset,
+                )
+            )
+        ],
+    )
+
+
 def _build_failure_trace_event(
     *,
     outcome: WorkerFailure,
@@ -1203,6 +1236,51 @@ def _build_failure_trace_event(
         preferred_5_6_rescue_succeeded=outcome.preferred_5_6_rescue_succeeded,
         preferred_5_6_status=outcome.preferred_5_6_status,
         attempts=outcome.failure_attempts,
+    )
+
+
+def _build_success_trace_event(
+    *,
+    outcome: WorkerSuccess,
+    task: ScheduledTask | None,
+    committed_to_dataset: bool,
+) -> SuccessTraceEvent:
+    source_paths: tuple[str, ...] = ()
+    target_bucket = None
+    planned_line_count = None
+    candidate_in_target_range = None
+    sample_idx = int(outcome.sample.sample_id.split("_")[-1])
+    if task is not None:
+        sample_idx = task.sample_idx
+        source_paths = tuple(str(segment.path.resolve()) for segment in task.plan.segments)
+        target_bucket = task.target_bucket
+        planned_line_count = task.planned_line_count
+        candidate_in_target_range = task.candidate_in_target_range
+    return SuccessTraceEvent(
+        event="success_trace",
+        sample_id=outcome.sample.sample_id,
+        sample_idx=sample_idx,
+        source_paths=source_paths,
+        target_bucket=target_bucket,
+        planned_line_count=planned_line_count,
+        candidate_in_target_range=candidate_in_target_range,
+        committed_to_dataset=committed_to_dataset,
+        full_render_system_count=outcome.full_render_system_count,
+        full_render_content_height_px=outcome.full_render_content_height_px,
+        full_render_vertical_fill_ratio=outcome.full_render_vertical_fill_ratio,
+        full_render_rejection_reason=outcome.full_render_rejection_reason,
+        accepted_render_system_count=outcome.accepted_render_system_count,
+        truncation_attempted=outcome.truncation_attempted,
+        truncation_rescued=outcome.truncation_rescued,
+        preferred_5_6_rescue_attempted=outcome.preferred_5_6_rescue_attempted,
+        preferred_5_6_rescue_succeeded=outcome.preferred_5_6_rescue_succeeded,
+        preferred_5_6_status=outcome.preferred_5_6_status,
+        initial_kern_spine_count=outcome.sample.initial_kern_spine_count,
+        segment_count=outcome.sample.segment_count,
+        source_non_empty_line_count=outcome.sample.source_non_empty_line_count,
+        truncation_applied=outcome.sample.truncation_applied,
+        truncation_reason=outcome.sample.truncation_reason,
+        truncation_ratio=outcome.sample.truncation_ratio,
     )
 
 

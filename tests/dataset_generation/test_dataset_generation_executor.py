@@ -94,7 +94,53 @@ def _make_worker_success(plan: SamplePlan) -> WorkerSuccess:
         top_whitespace_px=33,
         content_height_px=1069,
     )
-    return WorkerSuccess(sample=sample, truncation_attempted=False, truncation_rescued=False)
+    return WorkerSuccess(
+        sample=sample,
+        truncation_attempted=False,
+        truncation_rescued=False,
+        full_render_system_count=4,
+        full_render_content_height_px=1069,
+        full_render_vertical_fill_ratio=0.72,
+        full_render_rejection_reason=None,
+        accepted_render_system_count=4,
+    )
+
+
+def _make_worker_success_with_truncation(plan: SamplePlan) -> WorkerSuccess:
+    image = np.full((1485, 1050, 3), 255, dtype=np.uint8)
+    image[10:70, 10:600] = 0
+    sample = AcceptedSample(
+        sample_id=plan.sample_id,
+        label_transcription=plan.label_transcription,
+        image_bytes=encode_jpeg_image(image),
+        initial_kern_spine_count=plan.label_transcription.splitlines()[0].count("\t") + 1,
+        segment_count=plan.segment_count,
+        source_ids=tuple(segment.source_id for segment in plan.segments),
+        source_measure_count=plan.source_measure_count,
+        source_non_empty_line_count=plan.source_non_empty_line_count,
+        system_count=5,
+        truncation_applied=True,
+        truncation_reason="system_count_policy",
+        truncation_ratio=0.5,
+        bottom_whitespace_ratio=0.22,
+        vertical_fill_ratio=0.68,
+        bottom_whitespace_px=326,
+        top_whitespace_px=28,
+        content_height_px=1010,
+    )
+    return WorkerSuccess(
+        sample=sample,
+        truncation_attempted=True,
+        truncation_rescued=True,
+        full_render_system_count=7,
+        full_render_content_height_px=1185,
+        full_render_vertical_fill_ratio=0.81,
+        full_render_rejection_reason="multi_page",
+        accepted_render_system_count=5,
+        preferred_5_6_rescue_attempted=True,
+        preferred_5_6_rescue_succeeded=False,
+        preferred_5_6_status="preferred_5_6_truncated",
+    )
 
 
 def _make_bounds_gate_trace(*, passed: bool, failure_reason: str | None) -> BoundsGateTrace:
@@ -497,6 +543,14 @@ def _install_fake_balanced_planner(monkeypatch, entry_groups_by_sample_idx):
         )
 
     monkeypatch.setattr(executor_module, "choose_balanced_plan", fake_choose_balanced_plan)
+    monkeypatch.setattr(
+        executor_module,
+        "_resolve_system_balance_runtime",
+        lambda *, recipe, quiet: executor_module.SystemBalanceRuntime(
+            mode="spine_aware_line_proxy",
+            spec=object(),
+        ),
+    )
 
 
 def test_plan_with_quarantine_preserves_planning_exhausted_error(tmp_path, monkeypatch):
@@ -773,6 +827,79 @@ def test_executor_failure_events_preserve_truncation_attempt_ledger(tmp_path, mo
     assert events[0]["attempts"][2]["ratio"] == 0.5
     assert events[0]["attempts"][2]["decision_reason"] == "post_truncation_preferred"
     assert events[0]["attempts"][3]["decision_reason"] == "post_truncation_required"
+
+
+def test_executor_writes_success_events_jsonl_for_committed_successes(tmp_path, monkeypatch):
+    input_dir = _make_simple_input_dir(tmp_path, ("a",))
+    output_dir = tmp_path / "output"
+    _install_fake_pool(
+        monkeypatch,
+        outcomes_by_sample_idx={0: [_make_worker_success]},
+    )
+    _install_fake_balanced_planner(monkeypatch, {0: [0]})
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=1,
+        num_workers=2,
+        max_attempts=1,
+        quiet=True,
+    )
+
+    ds = load_from_disk(str(output_dir))
+    info = _read_json(summary.run_artifacts_dir / "info.json")
+    events_path = summary.run_artifacts_dir / "success_events.jsonl"
+    events = _read_jsonl(events_path)
+
+    assert summary.accepted_samples == 1
+    assert info["success_events_path"] == str(events_path)
+    assert len(events) == 1
+    assert events[0]["event"] == "success_trace"
+    assert events[0]["sample_id"] == "sample_00000000"
+    assert events[0]["source_paths"] == [str((input_dir / "a.krn").resolve())]
+    assert events[0]["target_bucket"] == 1
+    assert events[0]["planned_line_count"] == 4
+    assert events[0]["candidate_in_target_range"] is True
+    assert events[0]["committed_to_dataset"] is True
+    assert events[0]["full_render_system_count"] == 4
+    assert events[0]["accepted_render_system_count"] == 4
+    assert events[0]["truncation_applied"] is False
+    assert "full_render_system_count" not in ds.features
+    assert "target_bucket" not in ds.features
+
+
+def test_executor_success_events_preserve_truncation_metadata(tmp_path, monkeypatch):
+    input_dir = _make_simple_input_dir(tmp_path, ("a",))
+    output_dir = tmp_path / "output"
+    _install_fake_pool(
+        monkeypatch,
+        outcomes_by_sample_idx={0: [_make_worker_success_with_truncation]},
+    )
+    _install_fake_balanced_planner(monkeypatch, {0: [0]})
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=1,
+        num_workers=2,
+        max_attempts=1,
+        quiet=True,
+    )
+
+    events = _read_jsonl(summary.run_artifacts_dir / "success_events.jsonl")
+
+    assert len(events) == 1
+    assert events[0]["target_bucket"] == 1
+    assert events[0]["full_render_system_count"] == 7
+    assert events[0]["accepted_render_system_count"] == 5
+    assert events[0]["full_render_rejection_reason"] == "multi_page"
+    assert events[0]["preferred_5_6_status"] == "preferred_5_6_truncated"
+    assert events[0]["truncation_attempted"] is True
+    assert events[0]["truncation_rescued"] is True
+    assert events[0]["truncation_applied"] is True
+    assert events[0]["truncation_reason"] == "system_count_policy"
+    assert events[0]["truncation_ratio"] == 0.5
 
 
 def test_executor_writes_redesigned_augmentation_events_and_previews(tmp_path, monkeypatch):
@@ -1407,12 +1534,18 @@ def test_executor_does_not_write_failure_events_for_discarded_after_target_succe
 
     info = _read_json(summary.run_artifacts_dir / "info.json")
     failure_events_path = summary.run_artifacts_dir / "failure_events.jsonl"
+    success_events_path = summary.run_artifacts_dir / "success_events.jsonl"
 
     assert summary.accepted_samples == 1
     assert summary.rejected_samples == 0
     assert info["snapshot"]["failure_reason_counts"]["discarded_after_target"] == 1
     assert info["failure_events_path"] == str(failure_events_path)
+    assert info["success_events_path"] == str(success_events_path)
     assert _read_jsonl(failure_events_path) == []
+    success_events = _read_jsonl(success_events_path)
+    assert len(success_events) == 2
+    assert success_events[0]["committed_to_dataset"] is True
+    assert success_events[1]["committed_to_dataset"] is False
 
 
 def test_executor_tracks_requested_target_buckets_and_candidate_hits(tmp_path, monkeypatch):

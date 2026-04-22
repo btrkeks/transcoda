@@ -33,6 +33,7 @@ class RunContext:
     process_expired_events_path: Path
     verovio_events_path: Path
     failure_events_path: Path
+    success_events_path: Path
     augmentation_events_path: Path
     augmentation_previews_dir: Path
     crash_samples_dir: Path
@@ -77,6 +78,7 @@ def build_run_context(
         process_expired_events_path=run_artifacts_dir / "process_expired_events.jsonl",
         verovio_events_path=run_artifacts_dir / "verovio_events.jsonl",
         failure_events_path=run_artifacts_dir / "failure_events.jsonl",
+        success_events_path=run_artifacts_dir / "success_events.jsonl",
         augmentation_events_path=run_artifacts_dir / "augmentation_events.jsonl",
         augmentation_previews_dir=run_artifacts_dir / "augmentation_previews",
         crash_samples_dir=run_artifacts_dir / "crash_samples",

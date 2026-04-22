@@ -587,6 +587,7 @@ def write_run_info(
         "quarantine_out": quarantine_out,
         "verovio_events_path": str(run_context.verovio_events_path),
         "failure_events_path": str(run_context.failure_events_path),
+        "success_events_path": str(run_context.success_events_path),
         "augmentation_events_path": str(run_context.augmentation_events_path),
         "augmentation_previews_dir": str(run_context.augmentation_previews_dir),
         "system_balance": system_balance,

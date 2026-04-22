@@ -338,6 +338,34 @@ class FailureTraceEvent:
     attempts: tuple[FailureRenderAttempt, ...] = ()
 
 
+@dataclass(frozen=True)
+class SuccessTraceEvent:
+    event: str
+    sample_id: str
+    sample_idx: int
+    source_paths: tuple[str, ...]
+    target_bucket: int | None
+    planned_line_count: int | None
+    candidate_in_target_range: bool | None
+    committed_to_dataset: bool
+    full_render_system_count: int | None
+    full_render_content_height_px: int | None
+    full_render_vertical_fill_ratio: float | None
+    full_render_rejection_reason: str | None
+    accepted_render_system_count: int | None
+    truncation_attempted: bool
+    truncation_rescued: bool
+    preferred_5_6_rescue_attempted: bool = False
+    preferred_5_6_rescue_succeeded: bool = False
+    preferred_5_6_status: PreferredFiveSixStatus | None = None
+    initial_kern_spine_count: int | None = None
+    segment_count: int | None = None
+    source_non_empty_line_count: int | None = None
+    truncation_applied: bool = False
+    truncation_reason: str | None = None
+    truncation_ratio: float | None = None
+
+
 WorkerOutcome = WorkerSuccess | WorkerFailure
 
 
