@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import numpy as np
-
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.truncation import classify_truncation_mode
 from scripts.dataset_generation.dataset_generation.types import AcceptanceDecision, RenderResult
@@ -35,7 +33,7 @@ def decide_acceptance(
 
 def evaluate_render_quality(
     render_result: RenderResult,
-    recipe: ProductionRecipe,
+    _recipe: ProductionRecipe,
 ) -> str | None:
     if render_result.rejection_reason is not None:
         return render_result.rejection_reason
@@ -43,20 +41,4 @@ def evaluate_render_quality(
         return "missing_image"
     if render_result.svg_diagnostics.page_count != 1:
         return "multi_page"
-    sparse, _ = _is_sparse_render(
-        render_result.image,
-        min_black_ratio=recipe.acceptance.sparse_render_black_ratio_min,
-    )
-    if sparse:
-        return "sparse_render"
     return None
-
-
-def _is_sparse_render(
-    image: np.ndarray,
-    *,
-    min_black_ratio: float,
-) -> tuple[bool, float]:
-    gray = image[:, :, :3].mean(axis=2)
-    black_ratio = float((gray <= 120.0).mean())
-    return black_ratio < min_black_ratio, black_ratio

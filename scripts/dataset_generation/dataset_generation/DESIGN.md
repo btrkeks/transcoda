@@ -350,7 +350,6 @@ Suggested rules:
 
 - reject clear renderer failures
 - reject multi-page renders unless truncation rescue succeeds
-- reject visually degenerate renders
 - let truncation policy decide how to respond to system count
 
 Acceptance logic should live in one place and should not be spread across the executor and augmentation code.
@@ -418,7 +417,6 @@ class ProductionRecipe:
     render_only_aug: RenderOnlyAugmentationPolicy
     truncation: TruncationPolicy
     offline_aug: OfflineAugmentationPolicy
-    acceptance: AcceptancePolicy
 ```
 
 The important point is not the exact class names. The important point is that the recipe owns policy and constants in code, and the rest of the pipeline depends on the recipe rather than on dozens of ad hoc parameters.
