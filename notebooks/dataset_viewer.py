@@ -76,13 +76,15 @@ class DatasetViewer:
             img = example["image"]
 
             # Build title
-            title_text = " | ".join(
-                [
-                    self.title,
-                    f"Image {self.current_idx + 1} / {len(self.dataset)}",
-                    f"Size: {img.size}",
-                ]
-            )
+            title_parts = [
+                self.title,
+                f"Image {self.current_idx + 1} / {len(self.dataset)}",
+                f"Size: {img.size}",
+            ]
+            system_count = example.get("svg_system_count")
+            if system_count is not None:
+                title_parts.append(f"Systems: {system_count}")
+            title_text = " | ".join(title_parts)
             display(HTML(f"<b>{title_text}</b>"))
 
             if "source" in example:
