@@ -1,4 +1,10 @@
+import sys
+import types
+
+import pytest
+
 from scripts.dataset_generation.dataset_generation.image_generation.rendering.verovio_backend import (
+    VerovioRenderer,
     count_nr_of_systems_in_svg,
 )
 from scripts.dataset_generation.dataset_generation.verovio_diagnostics import (
@@ -61,3 +67,56 @@ Detail: native parser did not like this
     assert diagnostic.diagnostic_kind == "verovio_error"
     assert diagnostic.render_attempt_idx == 1
     assert diagnostic.raw_message == "Error: Something else happened\nDetail: native parser did not like this"
+
+
+def test_render_to_svg_applies_options_before_loading_data_on_reused_toolkit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeToolkit:
+        def __init__(self) -> None:
+            self.options = None
+            self.page_count = 0
+            self.system_count = 0
+
+        def setOptions(self, options) -> None:
+            self.options = dict(options)
+
+        def loadData(self, data: str) -> None:
+            if data == "primer":
+                self.page_count = 1
+                self.system_count = 1
+                return
+            if data != "target":
+                raise AssertionError(f"Unexpected data payload: {data!r}")
+            # The target layout only computes correctly if the target options are
+            # already active when the score is loaded.
+            if self.options == {"profile": "target"}:
+                self.page_count = 2
+                self.system_count = 3
+            else:
+                self.page_count = 1
+                self.system_count = 5
+
+        def getPageCount(self) -> int:
+            return self.page_count
+
+        def renderToSVG(self, pageNo: int = 1) -> str:
+            assert pageNo == 1
+            systems = "".join(f'<g id="s{i}" class="system"></g>' for i in range(self.system_count))
+            return f"<svg>{systems}</svg>"
+
+    fake_verovio = types.SimpleNamespace(
+        LOG_ERROR=1,
+        enableLog=lambda _level: None,
+        toolkit=FakeToolkit,
+    )
+    monkeypatch.setitem(sys.modules, "verovio", fake_verovio)
+
+    renderer = VerovioRenderer()
+    primer_svg, primer_pages = renderer.render_to_svg("primer", {"profile": "primer"})
+    target_svg, target_pages = renderer.render_to_svg("target", {"profile": "target"})
+
+    assert primer_pages == 1
+    assert count_nr_of_systems_in_svg(primer_svg) == 1
+    assert target_pages == 2
+    assert count_nr_of_systems_in_svg(target_svg) == 3

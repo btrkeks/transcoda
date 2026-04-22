@@ -83,10 +83,10 @@ class VerovioRenderer:
         Returns:
             Tuple of (SVG string, page count)
         """
-        self.tk.loadData(music_sequence)
         self.tk.setOptions(render_options)
+        self.tk.loadData(music_sequence)
         page_count = self.tk.getPageCount()
-        svg = self.tk.renderToSVG()
+        svg = self.tk.renderToSVG(1)
         return svg, page_count
 
     def render_to_rgb(
