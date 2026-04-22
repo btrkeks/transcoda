@@ -95,8 +95,8 @@ def test_render_options_use_requested_staff_and_system_spacing_ranges():
         )
         options = attempt["render_options"]
 
-        assert 4 <= options["spacingStaff"] <= 20
-        assert 3 <= options["spacingSystem"] <= 10
+        assert 5 <= options["spacingStaff"] <= 18
+        assert 4 <= options["spacingSystem"] <= 11
 
 
 def _good_render(*, system_count: int) -> RenderResult:
@@ -252,8 +252,9 @@ def test_failed_5_6_render_attempts_rescue_before_truncation(monkeypatch):
     assert outcome.preferred_5_6_status == "preferred_5_6_failed"
     assert [attempt.stage for attempt in outcome.failure_attempts] == [
         "full",
-        "preferred_5_6_rescue",
+        "full_layout_rescue",
         "truncation_candidate",
+        "truncation_candidate_layout_rescue",
     ]
 
 
@@ -293,19 +294,10 @@ def test_truncation_exhausted_failure_keeps_full_attempt_diagnostics(monkeypatch
         augment_fn=lambda plan, render_result, recipe: render_result.image,
     )
 
-    assert isinstance(outcome, WorkerFailure)
-    assert outcome.failure_reason == "truncation_exhausted"
-    assert outcome.truncation_mode == "required"
-    assert [attempt.stage for attempt in outcome.failure_attempts] == [
-        "full",
-        "truncation_candidate",
-        "truncation_candidate",
-    ]
-    assert outcome.failure_attempts[0].decision_reason == "truncation_required"
-    assert outcome.failure_attempts[1].decision_reason == "post_truncation_preferred"
-    assert outcome.failure_attempts[1].chunk_count == 1
-    assert outcome.failure_attempts[2].decision_reason == "post_truncation_required"
-    assert outcome.failure_attempts[2].chunk_count == 2
+    assert isinstance(outcome, WorkerSuccess)
+    assert outcome.sample.truncation_applied is True
+    assert outcome.accepted_render_system_count == 5
+    assert outcome.preferred_5_6_status is None
 
 
 def test_rescued_5_6_render_is_accepted_as_full_not_truncated():
@@ -349,7 +341,7 @@ def test_rescue_render_verovio_diagnostics_are_stage_attributed():
     assert isinstance(outcome, WorkerSuccess)
     assert [event.stage for event in outcome.verovio_diagnostics] == [
         "full",
-        "preferred_5_6_rescue",
+        "full_layout_rescue",
     ]
     assert outcome.verovio_diagnostics[1].seed == ((plan.seed & 0xFFFFFFFF) ^ 0x5F3759DF)
 
@@ -514,3 +506,118 @@ def test_layout_rescue_tightens_render_options_deterministically():
     assert rescue["scale"] < baseline["scale"]
     assert rescue["spacingSystem"] <= baseline["spacingSystem"]
     assert rescue["measureMinWidth"] <= baseline["measureMinWidth"]
+
+
+def test_default_render_still_rejects_multi_page_without_retry():
+    class FakeRenderer:
+        def __init__(self):
+            self.calls = []
+
+        def render_with_counts(self, renderable, options):
+            self.calls.append(dict(options))
+            image = np.full((1200, 900, 3), 255, dtype=np.uint8)
+            image[40:200, 60:700] = 0
+            rendered = RenderedPage(
+                image=image,
+                foreground=image,
+                alpha=np.full((1200, 900), 255, dtype=np.uint8),
+            )
+            return rendered, 5, 2
+
+    recipe = _make_recipe()
+    renderer = FakeRenderer()
+
+    result = render_sample(
+        "**kern\n=1\n4c\n*-\n",
+        recipe,
+        seed=11,
+        renderer=renderer,
+    )
+
+    assert result.rejection_reason == "multi_page"
+    assert len(renderer.calls) == 1
+
+
+def test_layout_rescue_retries_on_multi_page_and_succeeds():
+    class FakeRenderer:
+        def __init__(self):
+            self.calls = []
+
+        def render_with_counts(self, renderable, options):
+            self.calls.append(dict(options))
+            image = np.full((1200, 900, 3), 255, dtype=np.uint8)
+            image[40:200, 60:700] = 0
+            rendered = RenderedPage(
+                image=image,
+                foreground=image,
+                alpha=np.full((1200, 900), 255, dtype=np.uint8),
+            )
+            page_count = 2 if len(self.calls) == 1 else 1
+            return rendered, 5, page_count
+
+    recipe = _make_recipe()
+    renderer = FakeRenderer()
+
+    result = render_sample_with_layout_rescue(
+        "**kern\n=1\n4c\n*-\n",
+        recipe,
+        seed=11,
+        renderer=renderer,
+    )
+
+    assert result.rejection_reason is None
+    assert len(renderer.calls) == 2
+    assert renderer.calls[1]["pageWidth"] > renderer.calls[0]["pageWidth"]
+
+
+def test_truncation_candidate_layout_rescue_is_stage_attributed(monkeypatch):
+    plan = _make_plan()
+    recipe = _make_recipe()
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.worker.build_prefix_candidates",
+        lambda transcription, recipe: [
+            PrefixTruncationCandidate(
+                transcription="**kern\n=1\n4c\n*-\n",
+                chunk_count=1,
+                total_chunks=2,
+                ratio=0.5,
+            )
+        ],
+    )
+
+    def fake_render(render_text, recipe, *, seed, renderer):
+        if seed == plan.seed + 17:
+            return RenderResult(
+                image=None,
+                render_layers=None,
+                svg_diagnostics=SvgLayoutDiagnostics(system_count=5, page_count=2),
+                bottom_whitespace_ratio=None,
+                vertical_fill_ratio=None,
+                rejection_reason="multi_page",
+                verovio_diagnostics=(
+                    VerovioDiagnostic(
+                        diagnostic_kind="warning",
+                        raw_message="multi-page",
+                        render_attempt_idx=1,
+                    ),
+                ),
+            )
+        return _bad_render(system_count=8)
+
+    outcome = evaluate_sample_plan(
+        plan,
+        recipe=recipe,
+        renderer=object(),
+        render_fn=fake_render,
+        rescue_render_fn=lambda render_text, recipe, *, seed, renderer: _with_verovio_diagnostic(
+            _good_render(system_count=5)
+        ),
+        augment_fn=lambda plan, render_result, recipe: render_result.image,
+    )
+
+    assert isinstance(outcome, WorkerSuccess)
+    assert [event.stage for event in outcome.verovio_diagnostics] == [
+        "truncation_candidate",
+        "truncation_candidate_layout_rescue",
+    ]
+    assert outcome.accepted_render_system_count == 5

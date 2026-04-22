@@ -15,7 +15,12 @@ AcceptanceAction = Literal[
     "accept_with_truncation",
     "reject",
 ]
-RenderAttemptStage = Literal["full", "preferred_5_6_rescue", "truncation_candidate"]
+RenderAttemptStage = Literal[
+    "full",
+    "full_layout_rescue",
+    "truncation_candidate",
+    "truncation_candidate_layout_rescue",
+]
 TruncationMode = Literal["forbidden", "preferred", "required"]
 AugmentationBand = Literal["roomy", "balanced", "tight"]
 PreferredFiveSixStatus = Literal[

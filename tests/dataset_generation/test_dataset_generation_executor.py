@@ -329,7 +329,7 @@ def _make_worker_failure_with_attempt_ledger(plan: SamplePlan) -> WorkerFailure:
                 verovio_diagnostic_count=1,
             ),
             FailureRenderAttempt(
-                stage="preferred_5_6_rescue",
+                stage="full_layout_rescue",
                 seed=((plan.seed & 0xFFFFFFFF) ^ 0x5F3759DF) & 0xFFFFFFFF,
                 system_count=6,
                 page_count=1,
@@ -350,8 +350,23 @@ def _make_worker_failure_with_attempt_ledger(plan: SamplePlan) -> WorkerFailure:
                 page_count=1,
                 content_height_px=1010,
                 vertical_fill_ratio=0.68,
-                render_rejection_reason=None,
-                decision_reason="post_truncation_preferred",
+                render_rejection_reason="multi_page",
+                decision_reason="multi_page",
+                accepted=False,
+                verovio_diagnostic_count=0,
+            ),
+            FailureRenderAttempt(
+                stage="truncation_candidate_layout_rescue",
+                seed=((plan.seed + 17) & 0xFFFFFFFF) ^ 0x5F3759DF,
+                chunk_count=1,
+                total_chunks=2,
+                ratio=0.5,
+                system_count=5,
+                page_count=1,
+                content_height_px=1010,
+                vertical_fill_ratio=0.68,
+                render_rejection_reason="right_clearance",
+                decision_reason="right_clearance",
                 accepted=False,
                 verovio_diagnostic_count=2,
             ),
@@ -817,16 +832,18 @@ def test_executor_failure_events_preserve_truncation_attempt_ledger(tmp_path, mo
     assert events[0]["preferred_5_6_status"] == "preferred_5_6_failed"
     assert [attempt["stage"] for attempt in events[0]["attempts"]] == [
         "full",
-        "preferred_5_6_rescue",
+        "full_layout_rescue",
         "truncation_candidate",
+        "truncation_candidate_layout_rescue",
         "truncation_candidate",
     ]
     assert events[0]["attempts"][0]["decision_reason"] == "truncation_required"
     assert events[0]["attempts"][2]["chunk_count"] == 1
     assert events[0]["attempts"][2]["total_chunks"] == 2
     assert events[0]["attempts"][2]["ratio"] == 0.5
-    assert events[0]["attempts"][2]["decision_reason"] == "post_truncation_preferred"
-    assert events[0]["attempts"][3]["decision_reason"] == "post_truncation_required"
+    assert events[0]["attempts"][2]["decision_reason"] == "multi_page"
+    assert events[0]["attempts"][3]["decision_reason"] == "right_clearance"
+    assert events[0]["attempts"][4]["decision_reason"] == "post_truncation_required"
 
 
 def test_executor_writes_success_events_jsonl_for_committed_successes(tmp_path, monkeypatch):

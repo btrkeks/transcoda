@@ -49,6 +49,16 @@ _WORKER_RECIPE: ProductionRecipe | None = None
 _WORKER_RENDERER: VerovioRenderer | None = None
 _WORKER_CAPTURE_VEROVIO_DIAGNOSTICS = True
 _RATIONAL_DURATION_PATTERN = re.compile(r"\d%-?\d")
+_LAYOUT_RESCUE_SEED_XOR = 0x5F3759DF
+_LAYOUT_RESCUE_REASONS = {
+    "multi_page",
+    "top_clearance",
+    "bottom_clearance",
+    "left_clearance",
+    "right_clearance",
+    "crop_risk",
+    "no_content_detected",
+}
 
 
 def compute_initial_kern_spine_count(transcription: str) -> int:
@@ -148,6 +158,12 @@ def evaluate_sample_plan(
     full_render_content_height_px = full_render.content_height_px
     full_render_vertical_fill_ratio = full_render.vertical_fill_ratio
     full_render_rejection_reason = full_render.rejection_reason
+    full_render_in_preferred_band = (
+        truncation_mode == "preferred"
+        and recipe.truncation.preferred_min_systems
+        <= full_render_system_count
+        <= recipe.truncation.preferred_max_systems
+    )
     preferred_5_6_rescue_attempted = False
     preferred_5_6_rescue_succeeded = False
     truncation_attempted = False
@@ -188,14 +204,9 @@ def evaluate_sample_plan(
             augmentation_preview=aug_preview,
         )
 
-    if (
-        truncation_mode == "preferred"
-        and recipe.truncation.preferred_min_systems
-        <= full_render_system_count
-        <= recipe.truncation.preferred_max_systems
-    ):
-        preferred_5_6_rescue_attempted = True
-        rescue_seed = ((plan.seed & 0xFFFFFFFF) ^ 0x5F3759DF) & 0xFFFFFFFF
+    if _should_attempt_layout_rescue(full_render, recipe):
+        preferred_5_6_rescue_attempted = full_render_in_preferred_band
+        rescue_seed = ((plan.seed & 0xFFFFFFFF) ^ _LAYOUT_RESCUE_SEED_XOR) & 0xFFFFFFFF
         rescue_callable = rescue_render_fn
         if rescue_callable is None and render_fn is render_sample:
             rescue_callable = render_sample_with_layout_rescue
@@ -210,7 +221,7 @@ def evaluate_sample_plan(
         verovio_events.extend(
             _build_verovio_events(
                 plan=plan,
-                stage="preferred_5_6_rescue",
+                stage="full_layout_rescue",
                 seed=rescue_seed,
                 result=rescue_render,
             )
@@ -222,14 +233,14 @@ def evaluate_sample_plan(
         )
         failure_attempts.append(
             _build_failure_attempt(
-                stage="preferred_5_6_rescue",
+                stage="full_layout_rescue",
                 seed=rescue_seed,
                 render_result=rescue_render,
                 decision=rescue_decision,
             )
         )
         if rescue_decision.action == "accept_without_truncation":
-            preferred_5_6_rescue_succeeded = True
+            preferred_5_6_rescue_succeeded = full_render_in_preferred_band
             sample, aug_trace, aug_preview = _finalize_sample(
                 plan=plan,
                 render_result=rescue_render,
@@ -249,9 +260,11 @@ def evaluate_sample_plan(
                 full_render_vertical_fill_ratio=full_render_vertical_fill_ratio,
                 full_render_rejection_reason=full_render_rejection_reason,
                 accepted_render_system_count=rescue_render.svg_diagnostics.system_count,
-                preferred_5_6_rescue_attempted=True,
-                preferred_5_6_rescue_succeeded=True,
-                preferred_5_6_status="preferred_5_6_rescued",
+                preferred_5_6_rescue_attempted=full_render_in_preferred_band,
+                preferred_5_6_rescue_succeeded=full_render_in_preferred_band,
+                preferred_5_6_status=(
+                    "preferred_5_6_rescued" if full_render_in_preferred_band else None
+                ),
                 verovio_diagnostics=tuple(verovio_events),
                 augmentation_trace=aug_trace,
                 augmentation_preview=aug_preview,
@@ -261,9 +274,14 @@ def evaluate_sample_plan(
         for candidate in build_prefix_candidates(plan.label_transcription, recipe):
             truncation_attempted = True
             candidate_seed = (plan.seed + candidate.chunk_count * 17) & 0xFFFFFFFF
+            candidate_render_transcription = build_render_transcription(
+                candidate.transcription,
+                recipe,
+                seed=candidate_seed,
+            )
             candidate_render = _call_render(
                 render_fn,
-                build_render_transcription(candidate.transcription, recipe, seed=candidate_seed),
+                candidate_render_transcription,
                 recipe,
                 seed=candidate_seed,
                 renderer=renderer,
@@ -297,39 +315,86 @@ def evaluate_sample_plan(
                 )
             )
             if candidate_decision.action == "accept_with_truncation":
-                sample, aug_trace, aug_preview = _finalize_sample(
+                return _build_truncated_success(
                     plan=plan,
-                    render_result=candidate_render,
-                    transcription=candidate.transcription,
-                    truncation_applied=True,
-                    truncation_ratio=candidate.ratio,
-                    truncation_reason="system_count_policy",
                     recipe=recipe,
                     augment_fn=augment_fn,
-                )
-                return WorkerSuccess(
-                    sample=sample,
-                    truncation_attempted=True,
-                    truncation_rescued=True,
+                    render_result=candidate_render,
+                    transcription=candidate.transcription,
+                    truncation_ratio=candidate.ratio,
+                    truncation_attempted=truncation_attempted,
                     full_render_system_count=full_render_system_count,
                     full_render_content_height_px=full_render_content_height_px,
                     full_render_vertical_fill_ratio=full_render_vertical_fill_ratio,
                     full_render_rejection_reason=full_render_rejection_reason,
-                    accepted_render_system_count=candidate_render.svg_diagnostics.system_count,
                     preferred_5_6_rescue_attempted=preferred_5_6_rescue_attempted,
                     preferred_5_6_rescue_succeeded=preferred_5_6_rescue_succeeded,
                     preferred_5_6_status=(
-                        "preferred_5_6_truncated"
-                        if truncation_mode == "preferred"
-                        and recipe.truncation.preferred_min_systems
-                        <= full_render_system_count
-                        <= recipe.truncation.preferred_max_systems
-                        else None
+                        "preferred_5_6_truncated" if full_render_in_preferred_band else None
                     ),
-                    verovio_diagnostics=tuple(verovio_events),
-                    augmentation_trace=aug_trace,
-                    augmentation_preview=aug_preview,
+                    verovio_events=tuple(verovio_events),
                 )
+
+            if _should_attempt_layout_rescue(candidate_render, recipe):
+                rescue_seed = ((candidate_seed & 0xFFFFFFFF) ^ _LAYOUT_RESCUE_SEED_XOR) & 0xFFFFFFFF
+                rescue_callable = rescue_render_fn
+                if rescue_callable is None and render_fn is render_sample:
+                    rescue_callable = render_sample_with_layout_rescue
+                rescued_candidate_render = _call_render(
+                    rescue_callable or render_fn,
+                    candidate_render_transcription,
+                    recipe,
+                    seed=rescue_seed,
+                    renderer=renderer,
+                    capture_verovio_diagnostics=capture_verovio_diagnostics,
+                )
+                verovio_events.extend(
+                    _build_verovio_events(
+                        plan=plan,
+                        stage="truncation_candidate_layout_rescue",
+                        seed=rescue_seed,
+                        result=rescued_candidate_render,
+                        truncation_chunk_count=candidate.chunk_count,
+                        truncation_total_chunks=candidate.total_chunks,
+                        truncation_ratio=candidate.ratio,
+                    )
+                )
+                rescued_candidate_decision = decide_acceptance(
+                    rescued_candidate_render,
+                    recipe,
+                    truncation_applied=True,
+                )
+                failure_attempts.append(
+                    _build_failure_attempt(
+                        stage="truncation_candidate_layout_rescue",
+                        seed=rescue_seed,
+                        render_result=rescued_candidate_render,
+                        decision=rescued_candidate_decision,
+                        chunk_count=candidate.chunk_count,
+                        total_chunks=candidate.total_chunks,
+                        ratio=candidate.ratio,
+                    )
+                )
+                if rescued_candidate_decision.action == "accept_with_truncation":
+                    return _build_truncated_success(
+                        plan=plan,
+                        recipe=recipe,
+                        augment_fn=augment_fn,
+                        render_result=rescued_candidate_render,
+                        transcription=candidate.transcription,
+                        truncation_ratio=candidate.ratio,
+                        truncation_attempted=truncation_attempted,
+                        full_render_system_count=full_render_system_count,
+                        full_render_content_height_px=full_render_content_height_px,
+                        full_render_vertical_fill_ratio=full_render_vertical_fill_ratio,
+                        full_render_rejection_reason=full_render_rejection_reason,
+                        preferred_5_6_rescue_attempted=preferred_5_6_rescue_attempted,
+                        preferred_5_6_rescue_succeeded=preferred_5_6_rescue_succeeded,
+                        preferred_5_6_status=(
+                            "preferred_5_6_truncated" if full_render_in_preferred_band else None
+                        ),
+                        verovio_events=tuple(verovio_events),
+                    )
 
     failure_reason = full_decision.reason or full_render.rejection_reason or "rejected"
     if truncation_mode in {"preferred", "required"} and truncation_attempted:
@@ -348,12 +413,7 @@ def evaluate_sample_plan(
         preferred_5_6_rescue_attempted=preferred_5_6_rescue_attempted,
         preferred_5_6_rescue_succeeded=False,
         preferred_5_6_status=(
-            "preferred_5_6_failed"
-            if truncation_mode == "preferred"
-            and recipe.truncation.preferred_min_systems
-            <= full_render_system_count
-            <= recipe.truncation.preferred_max_systems
-            else None
+            "preferred_5_6_failed" if full_render_in_preferred_band else None
         ),
         failure_attempts=tuple(failure_attempts),
         verovio_diagnostics=tuple(verovio_events),
@@ -376,6 +436,61 @@ def _call_render(
     if _callable_accepts_capture_flag(render_callable):
         kwargs["capture_verovio_diagnostics"] = capture_verovio_diagnostics
     return render_callable(render_transcription, recipe, **kwargs)
+
+
+def _should_attempt_layout_rescue(
+    render_result: RenderResult,
+    recipe: ProductionRecipe,
+) -> bool:
+    if render_result.rejection_reason not in _LAYOUT_RESCUE_REASONS:
+        return False
+    return render_result.svg_diagnostics.system_count <= recipe.truncation.preferred_max_systems
+
+
+def _build_truncated_success(
+    *,
+    plan: SamplePlan,
+    recipe: ProductionRecipe,
+    augment_fn: Callable[..., object],
+    render_result: RenderResult,
+    transcription: str,
+    truncation_ratio: float,
+    truncation_attempted: bool,
+    full_render_system_count: int | None,
+    full_render_content_height_px: int | None,
+    full_render_vertical_fill_ratio: float | None,
+    full_render_rejection_reason: str | None,
+    preferred_5_6_rescue_attempted: bool,
+    preferred_5_6_rescue_succeeded: bool,
+    preferred_5_6_status: str | None,
+    verovio_events: tuple[VerovioDiagnosticEvent, ...],
+) -> WorkerSuccess:
+    sample, aug_trace, aug_preview = _finalize_sample(
+        plan=plan,
+        render_result=render_result,
+        transcription=transcription,
+        truncation_applied=True,
+        truncation_ratio=truncation_ratio,
+        truncation_reason="system_count_policy",
+        recipe=recipe,
+        augment_fn=augment_fn,
+    )
+    return WorkerSuccess(
+        sample=sample,
+        truncation_attempted=truncation_attempted,
+        truncation_rescued=True,
+        full_render_system_count=full_render_system_count,
+        full_render_content_height_px=full_render_content_height_px,
+        full_render_vertical_fill_ratio=full_render_vertical_fill_ratio,
+        full_render_rejection_reason=full_render_rejection_reason,
+        accepted_render_system_count=render_result.svg_diagnostics.system_count,
+        preferred_5_6_rescue_attempted=preferred_5_6_rescue_attempted,
+        preferred_5_6_rescue_succeeded=preferred_5_6_rescue_succeeded,
+        preferred_5_6_status=preferred_5_6_status,
+        verovio_diagnostics=verovio_events,
+        augmentation_trace=aug_trace,
+        augmentation_preview=aug_preview,
+    )
 
 
 def _callable_accepts_capture_flag(render_callable: Callable[..., object]) -> bool:

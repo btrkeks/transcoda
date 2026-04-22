@@ -34,6 +34,7 @@ _RETRYABLE_REJECTION_REASONS = {
     "crop_risk",
     "no_content_detected",
 }
+_LAYOUT_RESCUE_REJECTION_REASONS = _RETRYABLE_REJECTION_REASONS | {"multi_page"}
 
 
 def count_systems_in_svg(svg: str) -> int:
@@ -71,7 +72,7 @@ def render_sample_with_layout_rescue(
         recipe,
         seed=seed,
         renderer=renderer,
-        mode="preferred_5_6_rescue",
+        mode="layout_rescue",
         capture_verovio_diagnostics=capture_verovio_diagnostics,
     )
 
@@ -87,9 +88,9 @@ def prepare_render_attempt(
         metadata_prefix = _generate_metadata_prefix(recipe)
         render_options = _sample_render_options(recipe)
         max_attempts = recipe.render_only_aug.max_render_attempts
-        if mode == "preferred_5_6_rescue":
-            render_options = _tighten_layout_for_preferred_5_6_rescue(render_options)
-            max_attempts = max(1, min(2, recipe.render_only_aug.max_render_attempts))
+        if mode == "layout_rescue":
+            render_options = _tighten_layout_for_layout_rescue(render_options)
+            max_attempts = 3
         return {
             "mode": mode,
             "seed": int(seed),
@@ -162,6 +163,15 @@ def _render_sample_impl(
 
         diagnostics = SvgLayoutDiagnostics(system_count=system_count, page_count=page_count)
         if page_count > 1:
+            rejection_reason = "multi_page"
+            if attempt_idx < max_attempts and rejection_reason in _retryable_rejection_reasons_for_mode(mode):
+                render_options = _next_retry_options_for_mode(
+                    mode,
+                    render_options,
+                    recipe,
+                    rejection_reason=rejection_reason,
+                )
+                continue
             return RenderResult(
                 image=None,
                 render_layers=None,
@@ -173,7 +183,7 @@ def _render_sample_impl(
                 bottom_whitespace_px=None,
                 top_whitespace_px=None,
                 content_height_px=None,
-                rejection_reason="multi_page",
+                rejection_reason=rejection_reason,
                 metadata_prefix=metadata_prefix,
                 verovio_diagnostics=tuple(verovio_diagnostics),
             )
@@ -217,19 +227,14 @@ def _render_sample_impl(
 
         if (
             attempt_idx < max_attempts
-            and rejection_reason in _RETRYABLE_REJECTION_REASONS
+            and rejection_reason in _retryable_rejection_reasons_for_mode(mode)
         ):
-            if mode == "preferred_5_6_rescue":
-                render_options = _next_preferred_5_6_rescue_options(
-                    render_options,
-                    rejection_reason=rejection_reason,
-                )
-            else:
-                render_options = _next_retry_render_options(
-                    render_options,
-                    recipe,
-                    rejection_reason=rejection_reason,
-                )
+            render_options = _next_retry_options_for_mode(
+                mode,
+                render_options,
+                recipe,
+                rejection_reason=rejection_reason,
+            )
             continue
 
         return RenderResult(
@@ -388,7 +393,7 @@ def _next_retry_render_options(
     return retry
 
 
-def _tighten_layout_for_preferred_5_6_rescue(
+def _tighten_layout_for_layout_rescue(
     options: VerovioRenderOptions,
 ) -> VerovioRenderOptions:
     rescue = dict(options)
@@ -404,7 +409,7 @@ def _tighten_layout_for_preferred_5_6_rescue(
     return rescue
 
 
-def _next_preferred_5_6_rescue_options(
+def _next_layout_rescue_options(
     options: VerovioRenderOptions,
     *,
     rejection_reason: str | None,
@@ -422,6 +427,24 @@ def _next_preferred_5_6_rescue_options(
     for key in ("pageMarginLeft", "pageMarginRight", "pageMarginTop", "pageMarginBottom"):
         retry[key] = max(0, int(retry.get(key, 0)) - 4)
     return retry
+
+
+def _retryable_rejection_reasons_for_mode(mode: str) -> set[str]:
+    if mode == "layout_rescue":
+        return _LAYOUT_RESCUE_REJECTION_REASONS
+    return _RETRYABLE_REJECTION_REASONS
+
+
+def _next_retry_options_for_mode(
+    mode: str,
+    options: VerovioRenderOptions,
+    recipe: ProductionRecipe,
+    *,
+    rejection_reason: str | None,
+) -> VerovioRenderOptions:
+    if mode == "layout_rescue":
+        return _next_layout_rescue_options(options, rejection_reason=rejection_reason)
+    return _next_retry_render_options(options, recipe, rejection_reason=rejection_reason)
 
 
 def _assess_frame_fit(

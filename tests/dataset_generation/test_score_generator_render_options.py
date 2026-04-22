@@ -137,11 +137,11 @@ def test_sample_render_options_target_5_6_systems_bounds():
 
     for _ in range(1000):
         opts = _sample_render_options(image_width=1050, layout_profile="target_5_6_systems")
-        assert 46 <= opts["scale"] <= 58
-        assert 4 <= opts["spacingStaff"] <= 8
-        assert 3 <= opts["spacingSystem"] <= 6
-        assert 4 <= opts["measureMinWidth"] <= 10
-        assert int(round(1050 * 2.42)) <= opts["pageWidth"] <= int(round(1050 * 2.54))
+        assert 56 <= opts["scale"] <= 74
+        assert 5 <= opts["spacingStaff"] <= 18
+        assert 4 <= opts["spacingSystem"] <= 11
+        assert 5 <= opts["measureMinWidth"] <= 14
+        assert int(round(1050 * 2.08)) <= opts["pageWidth"] <= int(round(1050 * 2.34))
         assert opts["justifyVertically"] is False
         assert opts["noJustification"] is False
         assert opts["breaksNoWidow"] is False

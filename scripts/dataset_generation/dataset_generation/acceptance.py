@@ -19,10 +19,10 @@ def decide_acceptance(
 
     truncation_mode = classify_truncation_mode(render_result.svg_diagnostics, recipe)
     if truncation_applied:
-        if truncation_mode != "forbidden":
+        if truncation_mode == "required":
             return AcceptanceDecision(
                 action="reject",
-                reason=f"post_truncation_{truncation_mode}",
+                reason="post_truncation_required",
             )
         return AcceptanceDecision(action="accept_with_truncation")
 

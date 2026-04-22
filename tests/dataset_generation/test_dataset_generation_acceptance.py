@@ -1,6 +1,9 @@
 import numpy as np
 
-from scripts.dataset_generation.dataset_generation.acceptance import evaluate_render_quality
+from scripts.dataset_generation.dataset_generation.acceptance import (
+    decide_acceptance,
+    evaluate_render_quality,
+)
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.types import RenderResult, SvgLayoutDiagnostics
 
@@ -44,3 +47,32 @@ def test_evaluate_render_quality_rejects_multi_page_output():
     assert evaluate_render_quality(_render_result(image=image, page_count=2), ProductionRecipe()) == (
         "multi_page"
     )
+
+
+def test_decide_acceptance_accepts_truncated_single_page_preferred_candidate():
+    decision = decide_acceptance(
+        _render_result(image=np.full((1485, 1050, 3), 255, dtype=np.uint8)),
+        ProductionRecipe(),
+        truncation_applied=True,
+    )
+
+    assert decision.action == "accept_with_truncation"
+    assert decision.reason is None
+
+
+def test_decide_acceptance_rejects_truncated_required_candidate():
+    image = np.full((1485, 1050, 3), 255, dtype=np.uint8)
+    decision = decide_acceptance(
+        RenderResult(
+            image=image,
+            render_layers=None,
+            svg_diagnostics=SvgLayoutDiagnostics(system_count=8, page_count=1),
+            bottom_whitespace_ratio=0.10,
+            vertical_fill_ratio=0.72,
+        ),
+        ProductionRecipe(),
+        truncation_applied=True,
+    )
+
+    assert decision.action == "reject"
+    assert decision.reason == "post_truncation_required"
