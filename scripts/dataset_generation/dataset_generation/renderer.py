@@ -302,25 +302,27 @@ def _sample_render_options(recipe: ProductionRecipe) -> VerovioRenderOptions:
     layout_profile = recipe.render_only_aug.render_layout_profile
 
     if layout_profile == "target_5_6_systems":
-        page_width_factor = random.uniform(2.42, 2.54)
+        # Keep a mild single-page bias for the preferred 5-6-system path, but
+        # avoid the ultra-compact look caused by very wide pages and tiny scale.
+        page_width_factor = random.uniform(2.08, 2.34)
         page_width = int(round(image_width * page_width_factor))
 
         def margin() -> int:
-            return max(0, min(500, int(round(page_width * random.uniform(0.01, 0.025)))))
+            return max(0, min(500, int(round(page_width * random.uniform(0.015, 0.040)))))
 
         options: VerovioRenderOptions = {
-            "scale": random.randint(46, 58),
+            "scale": random.randint(56, 74),
             "barLineWidth": random.uniform(0.16, 0.70),
             "beamMaxSlope": random.randint(4, 16),
             "staffLineWidth": random.uniform(0.10, 0.24),
             "stemWidth": random.uniform(0.10, 0.36),
             "ledgerLineThickness": random.uniform(0.10, 0.38),
             "thickBarlineThickness": random.uniform(0.60, 1.60),
-            "spacingLinear": random.uniform(0.13, 0.20),
-            "spacingNonLinear": random.uniform(0.20, 0.36),
-            "spacingStaff": random.randint(4, 20),
-            "spacingSystem": random.randint(3, 10),
-            "measureMinWidth": random.randint(4, 10),
+            "spacingLinear": random.uniform(0.15, 0.27),
+            "spacingNonLinear": random.uniform(0.24, 0.46),
+            "spacingStaff": random.randint(5, 18),
+            "spacingSystem": random.randint(4, 11),
+            "measureMinWidth": random.randint(5, 14),
             "pageMarginLeft": margin(),
             "pageMarginRight": margin(),
             "pageMarginTop": margin(),

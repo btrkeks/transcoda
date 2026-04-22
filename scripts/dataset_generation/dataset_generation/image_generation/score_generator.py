@@ -756,24 +756,24 @@ def _sample_render_options(
 
 
 def _sample_render_options_target_5_6_systems(image_width: int) -> VerovioRenderOptions:
-    """Sample compact single-page-biased render options for 5-6-system targets."""
-    page_width_factor = random.uniform(2.42, 2.54)
+    """Sample mildly compact render options for 5-6-system targets."""
+    page_width_factor = random.uniform(2.08, 2.34)
     page_width = int(round(image_width * page_width_factor))
 
-    margin_ratio = lambda: random.uniform(0.01, 0.025)
+    margin_ratio = lambda: random.uniform(0.015, 0.040)
     options: VerovioRenderOptions = {
-        "scale": random.randint(46, 58),
+        "scale": random.randint(56, 74),
         "barLineWidth": _clamp_float(random.uniform(0.16, 0.70), 0.10, 0.80),
         "beamMaxSlope": random.randint(4, 16),
         "staffLineWidth": _clamp_float(random.uniform(0.10, 0.24), 0.10, 0.30),
         "stemWidth": _clamp_float(random.uniform(0.10, 0.36), 0.10, 0.45),
         "ledgerLineThickness": _clamp_float(random.uniform(0.10, 0.38), 0.10, 0.50),
         "thickBarlineThickness": _clamp_float(random.uniform(0.60, 1.60), 0.50, 2.00),
-        "spacingLinear": _clamp_float(random.uniform(0.13, 0.20), 0.12, 1.0),
-        "spacingNonLinear": _clamp_float(random.uniform(0.20, 0.36), 0.20, 1.5),
-        "spacingStaff": random.randint(4, 8),
-        "spacingSystem": random.randint(3, 6),
-        "measureMinWidth": random.randint(4, 10),
+        "spacingLinear": _clamp_float(random.uniform(0.15, 0.27), 0.12, 1.0),
+        "spacingNonLinear": _clamp_float(random.uniform(0.24, 0.46), 0.20, 1.5),
+        "spacingStaff": random.randint(5, 18),
+        "spacingSystem": random.randint(4, 11),
+        "measureMinWidth": random.randint(5, 14),
         "pageMarginLeft": _clamp_int(int(round(page_width * margin_ratio())), 0, 500),
         "pageMarginRight": _clamp_int(int(round(page_width * margin_ratio())), 0, 500),
         "pageMarginTop": _clamp_int(int(round(page_width * margin_ratio())), 0, 500),
