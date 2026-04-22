@@ -215,9 +215,10 @@ source .venv/bin/activate && python -m scripts.dataset_generation.dataset_genera
   data/interim/train/pdmx/3_normalized \
   data/interim/train/grandstaff/3_normalized \
   data/interim/train/musetrainer/3_normalized \
+  data/interim/train/openscore-lieder/3_normalized \
+  data/interim/train/openscore-stringquartets/3_normalized \
   --name test_v1 \
-  --target_samples 50 \
-  --num_workers 2 \
-  --max_attempts 80 \
-  --quiet true
+  --target_samples 100 \
+  --num_workers 4 \
+  --max_attempts 999 \
 ```
