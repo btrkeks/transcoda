@@ -2,18 +2,21 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
+from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
+from scripts.dataset_generation.dataset_generation.types_domain import TruncationMode
+from scripts.dataset_generation.dataset_generation.types_render import (
+    RenderResult,
+    SvgLayoutDiagnostics,
+)
+from src.core.kern_postprocess import resolve_terminal_active_spine_count
 from src.core.kern_utils import (
     is_spinemerge_line,
     is_spinesplit_line,
+    is_terminator_line,
     split_into_same_spine_nr_chunks_and_measures,
-)
-
-from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation.types import (
-    SvgLayoutDiagnostics,
-    TruncationMode,
 )
 
 
@@ -63,6 +66,27 @@ class PrefixTruncationSpace:
         )
 
 
+@dataclass(frozen=True)
+class TruncationProbeResult:
+    """Result of probing one truncation candidate during search."""
+
+    candidate: PrefixTruncationCandidate
+    accepted: bool
+    rejection_reason: str | None
+    decision_reason: str | None
+    render_result: RenderResult | None = None
+
+
+@dataclass(frozen=True)
+class TruncationSearchResult:
+    """Outcome of bounded truncation search over canonical prefix candidates."""
+
+    selected_candidate: PrefixTruncationCandidate | None
+    selected_probe: TruncationProbeResult | None
+    probes: tuple[TruncationProbeResult, ...]
+    exhausted_budget: bool
+
+
 def build_prefix_truncation_space(kern_text: str) -> PrefixTruncationSpace:
     chunks = tuple(split_into_same_spine_nr_chunks_and_measures(kern_text))
     return PrefixTruncationSpace(chunks=chunks)
@@ -83,6 +107,28 @@ def truncate_by_chunk_count(kern_text: str, chunk_count: int) -> tuple[str, floa
     return candidate.transcription, candidate.ratio
 
 
+def build_canonical_prefix_candidates(kern_text: str) -> list[PrefixTruncationCandidate]:
+    """Return unique prefix candidates ordered from shortest to longest."""
+    space = build_prefix_truncation_space(kern_text)
+    total_chunks = space.total_chunks
+    if total_chunks <= 1:
+        return []
+
+    by_transcription: dict[str, PrefixTruncationCandidate] = {}
+    for chunk_count in range(1, total_chunks):
+        candidate = space.candidate_for_chunk_count(chunk_count)
+        if candidate is None:
+            continue
+        existing = by_transcription.get(candidate.transcription)
+        if existing is None or candidate.chunk_count > existing.chunk_count:
+            by_transcription[candidate.transcription] = candidate
+
+    return sorted(
+        by_transcription.values(),
+        key=lambda candidate: (candidate.chunk_count, candidate.ratio, candidate.transcription),
+    )
+
+
 def build_prefix_truncation_candidates(
     kern_text: str,
     *,
@@ -91,26 +137,10 @@ def build_prefix_truncation_candidates(
     if max_trials < 1:
         raise ValueError(f"max_trials must be >= 1, got {max_trials}")
 
-    space = build_prefix_truncation_space(kern_text)
-    total_chunks = space.total_chunks
-    if total_chunks <= 1:
+    canonical_candidates = build_canonical_prefix_candidates(kern_text)
+    if not canonical_candidates:
         return []
-
-    candidates: list[PrefixTruncationCandidate] = []
-    seen_transcriptions: set[str] = set()
-
-    for chunk_count in range(total_chunks - 1, 0, -1):
-        candidate = space.candidate_for_chunk_count(chunk_count)
-        if candidate is None:
-            continue
-        if candidate.transcription in seen_transcriptions:
-            continue
-        seen_transcriptions.add(candidate.transcription)
-        candidates.append(candidate)
-        if len(candidates) >= max_trials:
-            break
-
-    return candidates
+    return list(reversed(canonical_candidates[-max_trials:]))
 
 
 def classify_truncation_mode(
@@ -137,4 +167,126 @@ def build_prefix_candidates(
     return build_prefix_truncation_candidates(
         label_transcription,
         max_trials=recipe.truncation.max_candidate_trials,
+    )
+
+
+def validate_truncation_candidate_terminal_state(text: str) -> str | None:
+    """Return a rejection reason when candidate terminal spine state is invalid."""
+    if not text.strip():
+        return "invalid_terminal_spine_state"
+
+    active_spines = resolve_terminal_active_spine_count(text)
+    if active_spines is None or active_spines <= 0:
+        return "invalid_terminal_spine_state"
+
+    lines = text.rstrip("\n").splitlines()
+    if not lines:
+        return "invalid_terminal_spine_state"
+    if is_terminator_line(lines[-1]):
+        terminator_width = lines[-1].count("\t") + 1
+        if terminator_width != active_spines:
+            return "invalid_terminal_spine_state"
+    if is_spinesplit_line(lines[-1]) or is_spinemerge_line(lines[-1]):
+        return "invalid_terminal_spine_state"
+    return None
+
+
+def find_best_truncation_candidate(
+    kern_text: str,
+    *,
+    max_trials: int,
+    probe_candidate: Callable[[PrefixTruncationCandidate], TruncationProbeResult],
+    local_refinement_radius: int = 2,
+) -> TruncationSearchResult:
+    """Probe canonical candidates with bounded binary search and local refinement."""
+    if max_trials < 1:
+        raise ValueError(f"max_trials must be >= 1, got {max_trials}")
+    if local_refinement_radius < 0:
+        raise ValueError(
+            f"local_refinement_radius must be >= 0, got {local_refinement_radius}"
+        )
+
+    candidates = build_canonical_prefix_candidates(kern_text)
+    if not candidates:
+        return TruncationSearchResult(
+            selected_candidate=None,
+            selected_probe=None,
+            probes=(),
+            exhausted_budget=False,
+        )
+
+    ordered_probes: list[TruncationProbeResult] = []
+    probe_cache: dict[int, TruncationProbeResult] = {}
+    exhausted_budget = False
+
+    def probe_index(index: int) -> TruncationProbeResult | None:
+        nonlocal exhausted_budget
+        if index in probe_cache:
+            return probe_cache[index]
+        if len(ordered_probes) >= max_trials:
+            exhausted_budget = True
+            return None
+        probe = probe_candidate(candidates[index])
+        probe_cache[index] = probe
+        ordered_probes.append(probe)
+        return probe
+
+    low = 0
+    high = len(candidates) - 1
+    best_accepted_idx: int | None = None
+    first_rejected_mid: int | None = None
+
+    while low <= high:
+        mid = (low + high) // 2
+        probe = probe_index(mid)
+        if probe is None:
+            break
+        if probe.accepted:
+            best_accepted_idx = mid
+            low = mid + 1
+        else:
+            if first_rejected_mid is None:
+                first_rejected_mid = mid
+            high = mid - 1
+
+    refinement_indices: list[int] = []
+    if best_accepted_idx is not None:
+        refinement_indices.extend(
+            range(
+                max(0, best_accepted_idx - local_refinement_radius),
+                min(len(candidates) - 1, best_accepted_idx + local_refinement_radius) + 1,
+            )
+        )
+    elif first_rejected_mid is not None:
+        refinement_indices.extend(
+            range(
+                max(0, first_rejected_mid - local_refinement_radius),
+                min(len(candidates) - 1, first_rejected_mid + local_refinement_radius) + 1,
+            )
+        )
+    if first_rejected_mid is not None and first_rejected_mid - 1 >= 0:
+        refinement_indices.append(first_rejected_mid - 1)
+
+    seen_indices: set[int] = set()
+    for index in refinement_indices:
+        if index in seen_indices:
+            continue
+        seen_indices.add(index)
+        if probe_index(index) is None:
+            break
+
+    accepted_indices = [index for index, probe in probe_cache.items() if probe.accepted]
+    if accepted_indices:
+        selected_idx = max(accepted_indices)
+        selected_candidate = candidates[selected_idx]
+        selected_probe = probe_cache[selected_idx]
+    else:
+        selected_candidate = None
+        selected_probe = None
+
+    return TruncationSearchResult(
+        selected_candidate=selected_candidate,
+        selected_probe=selected_probe,
+        probes=tuple(ordered_probes),
+        exhausted_budget=exhausted_budget,
     )

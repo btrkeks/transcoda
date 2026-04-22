@@ -33,11 +33,22 @@ def append_terminator_if_missing(text: str) -> str:
     if is_terminator_line(lines[-1]):
         return "\n".join(lines)
 
-    spine_count = _infer_terminal_spine_count(lines)
+    spine_count = resolve_terminal_active_spine_count("\n".join(lines))
     if spine_count is None or spine_count <= 0:
         spine_count = lines[-1].count("\t") + 1
     terminator = "\t".join(["*-"] * spine_count)
     return "\n".join([*lines, terminator])
+
+
+def resolve_terminal_active_spine_count(text: str) -> int | None:
+    """Infer the active spine count immediately before any terminal terminators."""
+    if not text:
+        return None
+
+    stripped = strip_terminal_terminator_lines(text)
+    if not stripped:
+        return None
+    return _infer_terminal_spine_count(stripped.splitlines())
 
 
 def _infer_terminal_spine_count(lines: list[str]) -> int | None:

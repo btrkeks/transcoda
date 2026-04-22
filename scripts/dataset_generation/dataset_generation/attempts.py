@@ -12,13 +12,14 @@ from scripts.dataset_generation.dataset_generation.image_generation.rendering.ve
     VerovioRenderer,
 )
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
-from scripts.dataset_generation.dataset_generation.types import (
-    AcceptanceDecision,
-    AttemptStageName,
+from scripts.dataset_generation.dataset_generation.types_domain import AttemptStageName, SamplePlan
+from scripts.dataset_generation.dataset_generation.types_events import (
     FailureRenderAttempt,
-    RenderResult,
-    SamplePlan,
     VerovioDiagnosticEvent,
+)
+from scripts.dataset_generation.dataset_generation.types_render import (
+    AcceptanceDecision,
+    RenderResult,
 )
 
 
@@ -75,6 +76,21 @@ def execute_render_attempt(
         renderer=renderer,
         capture_verovio_diagnostics=capture_verovio_diagnostics,
     )
+    return finalize_render_attempt(
+        sample_plan=sample_plan,
+        attempt_plan=attempt_plan,
+        recipe=recipe,
+        render_result=render_result,
+    )
+
+
+def finalize_render_attempt(
+    *,
+    sample_plan: SamplePlan,
+    attempt_plan: RenderAttemptPlan,
+    recipe: ProductionRecipe,
+    render_result: RenderResult,
+) -> ExecutedRenderAttempt:
     decision = decide_acceptance(
         render_result,
         recipe,

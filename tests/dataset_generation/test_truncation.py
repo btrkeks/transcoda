@@ -1,7 +1,11 @@
 from scripts.dataset_generation.dataset_generation.truncation import (
-    build_prefix_truncation_space,
+    TruncationProbeResult,
+    build_canonical_prefix_candidates,
     build_prefix_truncation_candidates,
+    build_prefix_truncation_space,
+    find_best_truncation_candidate,
     truncate_by_chunk_count,
+    validate_truncation_candidate_terminal_state,
 )
 
 
@@ -72,3 +76,87 @@ def test_prefix_candidate_strips_trailing_merge_line():
     assert candidate is not None
     assert candidate.transcription.endswith("4d\t4e")
     assert "*v\t*v" not in candidate.transcription.splitlines()[-1]
+
+
+def test_build_canonical_prefix_candidates_deduplicates_and_keeps_larger_chunk_count():
+    candidates = build_canonical_prefix_candidates("**kern\n=1\n*^\n4c\t4e\n=2\t=2")
+
+    assert [candidate.chunk_count for candidate in candidates] == [2]
+    assert candidates[0].transcription == "**kern\n=1"
+
+
+def test_validate_truncation_candidate_terminal_state_rejects_wrong_terminator_width():
+    text = "**kern\t**kern\t**kern\n4c\t4e\t4g\n*\t*v\t*v\n*-\t*-\t*-"
+    assert validate_truncation_candidate_terminal_state(text) == "invalid_terminal_spine_state"
+
+
+def test_find_best_truncation_candidate_matches_exhaustive_search_for_monotone_profile():
+    candidates = build_prefix_truncation_candidates(_example_kern(), max_trials=10)
+    accepted_chunk_count = 3
+
+    result = find_best_truncation_candidate(
+        _example_kern(),
+        max_trials=10,
+        probe_candidate=lambda candidate: TruncationProbeResult(
+            candidate=candidate,
+            accepted=candidate.chunk_count <= accepted_chunk_count,
+            rejection_reason=None if candidate.chunk_count <= accepted_chunk_count else "too_long",
+            decision_reason=None,
+        ),
+    )
+
+    assert result.selected_candidate is not None
+    assert result.selected_candidate.chunk_count == accepted_chunk_count
+    assert next(candidate.chunk_count for candidate in candidates if candidate.chunk_count <= accepted_chunk_count) == accepted_chunk_count
+
+
+def test_find_best_truncation_candidate_refines_around_non_monotone_midpoint():
+    accepted_chunk_counts = {2, 4}
+
+    result = find_best_truncation_candidate(
+        _example_kern(),
+        max_trials=10,
+        probe_candidate=lambda candidate: TruncationProbeResult(
+            candidate=candidate,
+            accepted=candidate.chunk_count in accepted_chunk_counts,
+            rejection_reason=None if candidate.chunk_count in accepted_chunk_counts else "too_long",
+            decision_reason=None,
+        ),
+    )
+
+    assert result.selected_candidate is not None
+    assert result.selected_candidate.chunk_count == 4
+
+
+def test_find_best_truncation_candidate_reports_no_valid_candidate():
+    result = find_best_truncation_candidate(
+        _example_kern(),
+        max_trials=10,
+        probe_candidate=lambda candidate: TruncationProbeResult(
+            candidate=candidate,
+            accepted=False,
+            rejection_reason="too_long",
+            decision_reason="post_truncation_required",
+        ),
+    )
+
+    assert result.selected_candidate is None
+    assert result.selected_probe is None
+    assert result.exhausted_budget is False
+    assert result.probes
+
+
+def test_find_best_truncation_candidate_honors_probe_budget():
+    result = find_best_truncation_candidate(
+        _example_kern(),
+        max_trials=1,
+        probe_candidate=lambda candidate: TruncationProbeResult(
+            candidate=candidate,
+            accepted=False,
+            rejection_reason="too_long",
+            decision_reason="post_truncation_required",
+        ),
+    )
+
+    assert len(result.probes) == 1
+    assert result.exhausted_budget is True

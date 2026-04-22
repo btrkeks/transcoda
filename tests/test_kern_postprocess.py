@@ -1,4 +1,8 @@
-from src.core.kern_postprocess import append_terminator_if_missing, strip_terminal_terminator_lines
+from src.core.kern_postprocess import (
+    append_terminator_if_missing,
+    resolve_terminal_active_spine_count,
+    strip_terminal_terminator_lines,
+)
 
 
 def test_strip_terminal_terminator_lines():
@@ -29,3 +33,8 @@ def test_append_terminator_if_missing_uses_post_split_spine_count():
 def test_append_terminator_if_missing_uses_post_merge_spine_count():
     text = "**kern\t**kern\t**kern\n4c\t4e\t4g\n*\t*v\t*v"
     assert append_terminator_if_missing(text).splitlines()[-1] == "*-\t*-"
+
+
+def test_resolve_terminal_active_spine_count_ignores_existing_terminator_lines():
+    text = "**kern\t**kern\n4c\t4e\n*\t*^\n*-\t*-\t*-"
+    assert resolve_terminal_active_spine_count(text) == 3

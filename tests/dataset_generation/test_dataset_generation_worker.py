@@ -13,20 +13,25 @@ from scripts.dataset_generation.dataset_generation.renderer import (
     render_sample,
     render_sample_with_layout_rescue,
 )
-from scripts.dataset_generation.dataset_generation.truncation import PrefixTruncationCandidate
-from scripts.dataset_generation.dataset_generation.types import (
-    RenderResult,
-    SamplePlan,
-    SourceSegment,
-    SvgLayoutDiagnostics,
-    VerovioDiagnostic,
+from scripts.dataset_generation.dataset_generation.truncation import (
+    PrefixTruncationCandidate,
+    TruncationSearchResult,
+)
+from scripts.dataset_generation.dataset_generation.types_domain import SamplePlan
+from scripts.dataset_generation.dataset_generation.types_events import VerovioDiagnostic
+from scripts.dataset_generation.dataset_generation.types_outcomes import (
     WorkerFailure,
     WorkerSuccess,
+)
+from scripts.dataset_generation.dataset_generation.types_render import (
+    RenderResult,
+    SvgLayoutDiagnostics,
 )
 from scripts.dataset_generation.dataset_generation.worker import (
     compute_initial_kern_spine_count,
     evaluate_sample_plan,
 )
+from tests.dataset_generation.factories import make_render_result, make_sample_plan
 
 
 def test_compute_initial_kern_spine_count_with_header():
@@ -48,16 +53,7 @@ def test_compute_initial_kern_spine_count_uses_truncated_candidate_shape():
 
 
 def _make_plan() -> SamplePlan:
-    return SamplePlan(
-        sample_id="sample_00000000",
-        seed=123,
-        segments=(SourceSegment(source_id="input/piece", path="/tmp/piece.krn", order=0),),
-        label_transcription="**kern\n=1\n4c\n*-\n",
-        source_measure_count=1,
-        source_non_empty_line_count=4,
-        source_max_initial_spine_count=1,
-        segment_count=1,
-    )
+    return make_sample_plan(seed=123)
 
 
 def _make_recipe() -> ProductionRecipe:
@@ -84,6 +80,37 @@ def _make_recipe() -> ProductionRecipe:
     )
 
 
+def _patch_truncation_search(monkeypatch, candidates: list[PrefixTruncationCandidate]) -> None:
+    def fake_find_best_truncation_candidate(
+        kern_text,
+        *,
+        max_trials,
+        probe_candidate,
+        local_refinement_radius=2,
+    ):
+        del kern_text, max_trials, local_refinement_radius
+        probes = []
+        selected_candidate = None
+        selected_probe = None
+        for candidate in candidates:
+            probe = probe_candidate(candidate)
+            probes.append(probe)
+            if probe.accepted:
+                selected_candidate = candidate
+                selected_probe = probe
+        return TruncationSearchResult(
+            selected_candidate=selected_candidate,
+            selected_probe=selected_probe,
+            probes=tuple(probes),
+            exhausted_budget=False,
+        )
+
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.worker.find_best_truncation_candidate",
+        fake_find_best_truncation_candidate,
+    )
+
+
 def test_render_options_use_requested_staff_and_system_spacing_ranges():
     recipe = _make_recipe()
 
@@ -100,31 +127,18 @@ def test_render_options_use_requested_staff_and_system_spacing_ranges():
 
 
 def _good_render(*, system_count: int) -> RenderResult:
-    image = np.full((1485, 1050, 3), 255, dtype=np.uint8)
-    image[10:70, 10:600] = 0
-    return RenderResult(
-        image=image,
-        render_layers=None,
-        svg_diagnostics=SvgLayoutDiagnostics(system_count=system_count, page_count=1),
-        bottom_whitespace_ratio=0.10,
-        vertical_fill_ratio=0.72,
-        bottom_whitespace_px=149,
-        top_whitespace_px=33,
-        content_height_px=1069,
-    )
+    return make_render_result(system_count=system_count)
 
 
 def _bad_render(*, system_count: int, reason: str = "left_clearance") -> RenderResult:
-    return RenderResult(
-        image=None,
-        render_layers=None,
-        svg_diagnostics=SvgLayoutDiagnostics(system_count=system_count, page_count=1),
+    return make_render_result(
+        system_count=system_count,
+        rejection_reason=reason,
         bottom_whitespace_ratio=0.02,
         vertical_fill_ratio=0.90,
         bottom_whitespace_px=30,
         top_whitespace_px=14,
         content_height_px=1337,
-        rejection_reason=reason,
     )
 
 
@@ -219,9 +233,9 @@ def test_failed_5_6_render_attempts_rescue_before_truncation(monkeypatch):
     plan = _make_plan()
     recipe = _make_recipe()
     calls = []
-    monkeypatch.setattr(
-        "scripts.dataset_generation.dataset_generation.worker.build_prefix_candidates",
-        lambda transcription, recipe: [
+    _patch_truncation_search(
+        monkeypatch,
+        [
             PrefixTruncationCandidate(
                 transcription="**kern\n=1\n4c\n*-\n",
                 chunk_count=1,
@@ -261,9 +275,9 @@ def test_failed_5_6_render_attempts_rescue_before_truncation(monkeypatch):
 def test_truncation_exhausted_failure_keeps_full_attempt_diagnostics(monkeypatch):
     plan = _make_plan()
     recipe = _make_recipe()
-    monkeypatch.setattr(
-        "scripts.dataset_generation.dataset_generation.worker.build_prefix_candidates",
-        lambda transcription, recipe: [
+    _patch_truncation_search(
+        monkeypatch,
+        [
             PrefixTruncationCandidate(
                 transcription="**kern\n=1\n4c\n*-\n",
                 chunk_count=1,
@@ -368,9 +382,9 @@ def test_accepted_sample_keeps_clean_render_layout_metrics_before_augmentation()
 def test_failed_5_6_render_can_still_truncate_successfully(monkeypatch):
     plan = _make_plan()
     recipe = _make_recipe()
-    monkeypatch.setattr(
-        "scripts.dataset_generation.dataset_generation.worker.build_prefix_candidates",
-        lambda transcription, recipe: [
+    _patch_truncation_search(
+        monkeypatch,
+        [
             PrefixTruncationCandidate(
                 transcription="**kern\n=1\n4c\n*-\n",
                 chunk_count=1,
@@ -404,9 +418,9 @@ def test_failed_5_6_render_can_still_truncate_successfully(monkeypatch):
 def test_truncation_candidate_verovio_diagnostics_are_stage_attributed(monkeypatch):
     plan = _make_plan()
     recipe = _make_recipe()
-    monkeypatch.setattr(
-        "scripts.dataset_generation.dataset_generation.worker.build_prefix_candidates",
-        lambda transcription, recipe: [
+    _patch_truncation_search(
+        monkeypatch,
+        [
             PrefixTruncationCandidate(
                 transcription="**kern\n=1\n4c\n*-\n",
                 chunk_count=3,
@@ -441,10 +455,21 @@ def test_truncation_candidate_verovio_diagnostics_are_stage_attributed(monkeypat
     assert candidate_event.truncation_ratio == 0.6
 
 
-def test_required_over_7_systems_still_go_straight_to_truncation():
+def test_required_over_7_systems_still_go_straight_to_truncation(monkeypatch):
     plan = _make_plan()
     recipe = _make_recipe()
     rescue_calls = {"count": 0}
+    _patch_truncation_search(
+        monkeypatch,
+        [
+            PrefixTruncationCandidate(
+                transcription="**kern\n=1\n4c\n*-\n",
+                chunk_count=1,
+                total_chunks=2,
+                ratio=0.5,
+            )
+        ],
+    )
 
     def rescue_render(*args, **kwargs):
         rescue_calls["count"] += 1
@@ -467,6 +492,43 @@ def test_required_over_7_systems_still_go_straight_to_truncation():
     assert isinstance(outcome, WorkerSuccess)
     assert outcome.sample.truncation_applied is True
     assert rescue_calls["count"] == 0
+
+
+def test_invalid_truncation_candidate_is_rejected_before_render(monkeypatch):
+    plan = _make_plan()
+    recipe = _make_recipe()
+    _patch_truncation_search(
+        monkeypatch,
+        [
+            PrefixTruncationCandidate(
+                transcription="**kern\t**kern\t**kern\n4c\t4e\t4g\n*\t*v\t*v\n*-\t*-\t*-",
+                chunk_count=1,
+                total_chunks=2,
+                ratio=0.5,
+            )
+        ],
+    )
+
+    def fake_render(render_text, recipe, *, seed, renderer):
+        if seed == plan.seed:
+            return _good_render(system_count=8)
+        raise AssertionError("Invalid truncation candidate should not reach renderer")
+
+    outcome = evaluate_sample_plan(
+        plan,
+        recipe=recipe,
+        renderer=object(),
+        render_fn=fake_render,
+        augment_fn=lambda plan, render_result, recipe: render_result.image,
+    )
+
+    assert isinstance(outcome, WorkerFailure)
+    assert outcome.failure_reason == "truncation_exhausted"
+    assert [attempt.stage for attempt in outcome.failure_attempts] == [
+        "full",
+        "truncation_candidate",
+    ]
+    assert outcome.failure_attempts[1].render_rejection_reason == "invalid_terminal_spine_state"
 
 
 def test_layout_rescue_tightens_render_options_deterministically():
@@ -573,9 +635,9 @@ def test_layout_rescue_retries_on_multi_page_and_succeeds():
 def test_truncation_candidate_layout_rescue_is_stage_attributed(monkeypatch):
     plan = _make_plan()
     recipe = _make_recipe()
-    monkeypatch.setattr(
-        "scripts.dataset_generation.dataset_generation.worker.build_prefix_candidates",
-        lambda transcription, recipe: [
+    _patch_truncation_search(
+        monkeypatch,
+        [
             PrefixTruncationCandidate(
                 transcription="**kern\n=1\n4c\n*-\n",
                 chunk_count=1,
