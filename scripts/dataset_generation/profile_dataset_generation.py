@@ -26,6 +26,22 @@ def _command_available(command: str) -> bool:
     return shutil.which(command) is not None
 
 
+def _parse_last_json_object(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    for raw_line in reversed(path.read_text(encoding="utf-8").splitlines()):
+        line = raw_line.strip()
+        if not line.startswith("{"):
+            continue
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            return payload
+    return None
+
+
 def _stop_process(proc: subprocess.Popen[bytes], *, timeout_s: float = 10.0) -> int | None:
     if proc.poll() is not None:
         return proc.returncode
@@ -176,8 +192,6 @@ def main(
         if dataset_output_dir is not None
         else run_dir / "dataset_output"
     )
-    profile_out = run_dir / "profile_artifacts"
-    profile_out.mkdir(parents=True, exist_ok=True)
     dataset_out.parent.mkdir(parents=True, exist_ok=True)
 
     generation_cmd = [
@@ -212,6 +226,11 @@ def main(
     pyspy_active = bool(pyspy_enabled and pyspy_available)
     pyspy_output_path: Path | None = None
     run_cmd = list(generation_cmd)
+    generation_stdout_path = run_dir / "generation.stdout.log"
+    generation_stderr_path = run_dir / "generation.stderr.log"
+    system_vmstat_path = run_dir / "system_vmstat.log"
+    system_top_path = run_dir / "system_top.log"
+    system_ps_path = run_dir / "system_ps.log"
     if pyspy_active:
         output_extension = _pyspy_extension(pyspy_format)
         pyspy_output_path = run_dir / f"pyspy.{output_extension}"
@@ -237,13 +256,13 @@ def main(
 
     generation_proc, generation_stdout, generation_stderr = _start_bg_process(
         run_cmd,
-        stdout_path=run_dir / "generation.stdout.log",
-        stderr_path=run_dir / "generation.stderr.log",
+        stdout_path=generation_stdout_path,
+        stderr_path=generation_stderr_path,
         env=generation_env,
     )
 
     stop_event = threading.Event()
-    ps_thread = _start_ps_sampler(output_path=run_dir / "system_ps.log", stop_event=stop_event)
+    ps_thread = _start_ps_sampler(output_path=system_ps_path, stop_event=stop_event)
     vmstat_proc, vmstat_stdout, vmstat_stderr = _maybe_start_vmstat(
         run_dir=run_dir,
         interval_s=vmstat_interval,
@@ -276,14 +295,20 @@ def main(
         if handle is not None:
             handle.close()
 
-    benchmark_summary = profile_out / "benchmark_summary.json"
-    stage_stats = profile_out / "stage_stats.json"
-    orchestrator_stats = profile_out / "orchestrator_stats.json"
-    run_manifest = profile_out / "run_manifest.json"
+    dataset_generation_summary = _parse_last_json_object(generation_stdout_path)
+    dataset_generation_run_artifacts_dir: str | None = None
+    if dataset_generation_summary is not None:
+        raw_run_artifacts_dir = dataset_generation_summary.get("run_artifacts_dir")
+        if isinstance(raw_run_artifacts_dir, str):
+            dataset_generation_run_artifacts_dir = raw_run_artifacts_dir
 
     telemetry_notes: dict[str, str] = {}
     if telemetry_returncodes["vmstat"] == -2:
         telemetry_notes["vmstat"] = "terminated by harness signal; expected on shutdown"
+    if dataset_generation_summary is None:
+        telemetry_notes["generation_stdout"] = (
+            "Could not parse the dataset-generation JSON summary from generation.stdout.log"
+        )
 
     report = {
         "run_dir": str(run_dir),
@@ -304,27 +329,23 @@ def main(
             "output_path": str(pyspy_output_path) if pyspy_output_path is not None else None,
         },
         "kern_dirs": [str(path) for path in kern_dir_paths],
-        "num_samples": num_samples,
+        "target_samples": target_samples,
         "num_workers": num_workers,
-        "variants_per_file": variants_per_file,
+        "dataset_generation_summary": dataset_generation_summary,
         "artifacts": {
-            "generation_stdout": str(run_dir / "generation.stdout.log"),
-            "generation_stderr": str(run_dir / "generation.stderr.log"),
-            "system_vmstat": str(run_dir / "system_vmstat.log"),
-            "system_top": str(run_dir / "system_top.log"),
-            "system_ps": str(run_dir / "system_ps.log"),
+            "dataset_output_dir": str(dataset_out),
+            "hf_datasets_cache": str(datasets_cache_dir),
+            "generation_stdout": str(generation_stdout_path),
+            "generation_stderr": str(generation_stderr_path),
+            "system_vmstat": str(system_vmstat_path),
+            "system_top": str(system_top_path),
+            "system_ps": str(system_ps_path),
             "pyspy_output": str(pyspy_output_path) if pyspy_output_path is not None else None,
-            "stage_stats": str(stage_stats),
-            "orchestrator_stats": str(orchestrator_stats),
-            "run_manifest": str(run_manifest),
-            "benchmark_summary": str(benchmark_summary),
+            "dataset_generation_run_artifacts_dir": dataset_generation_run_artifacts_dir,
         },
         "available_artifacts": {
             "pyspy_output": pyspy_output_path.exists() if pyspy_output_path is not None else False,
-            "stage_stats": stage_stats.exists(),
-            "orchestrator_stats": orchestrator_stats.exists(),
-            "run_manifest": run_manifest.exists(),
-            "benchmark_summary": benchmark_summary.exists(),
+            "dataset_generation_run_artifacts_dir": dataset_generation_run_artifacts_dir is not None,
         },
     }
     _write_json(run_dir / "summary.json", report)

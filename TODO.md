@@ -1,0 +1,4 @@
+- [x] Fix Black boxes at the bottom of many scores
+- [ ] Too little rotation
+- [ ] Add vertical space jitter?
+- [ ] Image 71 changes meter way too often. Why?

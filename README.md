@@ -220,5 +220,28 @@ source .venv/bin/activate && python -m scripts.dataset_generation.dataset_genera
   --name test_v1 \
   --target_samples 100 \
   --num_workers 4 \
-  --max_attempts 999 \
+  --max_attempts 999
 ```
+
+### Profile dataset generation
+
+```bash
+source .venv/bin/activate
+
+python scripts/dataset_generation/profile_dataset_generation.py \
+  data/interim/train/pdmx/3_normalized \
+  data/interim/train/grandstaff/3_normalized \
+  data/interim/train/musetrainer/3_normalized \
+  data/interim/train/openscore-lieder/3_normalized \
+  data/interim/train/openscore-stringquartets/3_normalized \
+  --target_samples 100 \
+  --num_workers 4
+```
+
+The harness writes a timestamped run directory under `/tmp/dataset_generation_profiles/` by default. Start with:
+
+- `summary.json` for the full command, elapsed time, and artifact paths
+- `pyspy.svg` for the subprocess flamegraph
+- `generation.stdout.log` and `generation.stderr.log` for harness output
+- `system_ps.log`, `system_vmstat.log`, and `system_top.log` for machine telemetry
+- the dataset-generation `run_artifacts_dir` referenced from `summary.json`

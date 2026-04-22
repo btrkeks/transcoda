@@ -33,6 +33,7 @@ def plot_seq_length_distribution(
 ) -> None:
     """Plot a histogram of sequence lengths with percentile annotations."""
     sorted_lengths = sorted(seq_lengths)
+    polish_dataset_median = 1188
 
     title = "Sequence length distribution"
     if dataset_name:
@@ -47,6 +48,14 @@ def plot_seq_length_distribution(
     for pct, color, style in [(50, "green", "--"), (95, "orange", "--"), (99, "red", "--")]:
         val = _percentile(sorted_lengths, pct)
         ax.axvline(val, color=color, linestyle=style, linewidth=1.5, label=f"p{pct}: {val}")
+
+    ax.axvline(
+        polish_dataset_median,
+        color="blue",
+        linestyle="-.",
+        linewidth=1.5,
+        label="polish dataset median",
+    )
 
     ax.legend()
     fig.tight_layout()
