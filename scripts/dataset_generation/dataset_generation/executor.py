@@ -49,6 +49,7 @@ from scripts.dataset_generation.dataset_generation.system_balance import (
 )
 from scripts.dataset_generation.dataset_generation.types import (
     AugmentationTraceEvent,
+    FailureTraceEvent,
     ResumeSnapshot,
     SamplePlan,
     WorkerFailure,
@@ -213,6 +214,7 @@ def run_dataset_generation(
     next_to_commit = counters["next_sample_idx"]
     next_to_schedule = next_to_commit
     pending_terminal: dict[int, WorkerSuccess | WorkerFailure] = {}
+    pending_terminal_tasks: dict[int, ScheduledTask] = {}
     pending_rows: list[dict[str, object]] = []
     futures_by_handle: dict[object, ScheduledTask] = {}
     tasks_by_sample_idx: dict[int, ScheduledTask] = {}
@@ -278,10 +280,20 @@ def run_dataset_generation(
                     capture_verovio_diagnostics=capture_verovio_diagnostics,
                 )
                 pending_terminal[next_to_schedule] = outcome
+                pending_terminal_tasks[next_to_schedule] = ScheduledTask(
+                    future=object(),
+                    sample_idx=next_to_schedule,
+                    plan=plan.plan,
+                    scheduled_ns=0,
+                    target_bucket=plan.target_bucket,
+                    planned_line_count=plan.planned_line_count,
+                    candidate_in_target_range=plan.candidate_in_target_range,
+                )
                 next_to_schedule += 1
                 next_to_commit_ref = [next_to_commit]
                 pending_rows = _commit_contiguous_results(
                     pending_terminal=pending_terminal,
+                    pending_terminal_tasks=pending_terminal_tasks,
                     pending_rows=pending_rows,
                     counters=counters,
                     next_to_commit_ref=next_to_commit_ref,
@@ -391,6 +403,7 @@ def run_dataset_generation(
                                 pool=pool,
                                 counters=counters,
                                 pending_terminal=pending_terminal,
+                                pending_terminal_tasks=pending_terminal_tasks,
                                 futures_by_handle=futures_by_handle,
                                 tasks_by_sample_idx=tasks_by_sample_idx,
                             )
@@ -410,6 +423,7 @@ def run_dataset_generation(
                                     trigger_task=task,
                                     counters=counters,
                                     pending_terminal=pending_terminal,
+                                    pending_terminal_tasks=pending_terminal_tasks,
                                     futures_by_handle=futures_by_handle,
                                     tasks_by_sample_idx=tasks_by_sample_idx,
                                 )
@@ -445,6 +459,7 @@ def run_dataset_generation(
                                 pool=pool,
                                 counters=counters,
                                 pending_terminal=pending_terminal,
+                                pending_terminal_tasks=pending_terminal_tasks,
                                 futures_by_handle=futures_by_handle,
                                 tasks_by_sample_idx=tasks_by_sample_idx,
                             )
@@ -465,6 +480,7 @@ def run_dataset_generation(
                                     trigger_task=task,
                                     counters=counters,
                                     pending_terminal=pending_terminal,
+                                    pending_terminal_tasks=pending_terminal_tasks,
                                     futures_by_handle=futures_by_handle,
                                     tasks_by_sample_idx=tasks_by_sample_idx,
                                 )
@@ -500,19 +516,23 @@ def run_dataset_generation(
                                 failure_reason=f"task_error:{type(exc).__name__}",
                                 truncation_attempted=False,
                             )
+                            pending_terminal_tasks[task.sample_idx] = task
                             dropped_pending_tasks = _quarantine_pending_tasks(
                                 trigger_task=task,
                                 counters=counters,
                                 pending_terminal=pending_terminal,
+                                pending_terminal_tasks=pending_terminal_tasks,
                                 futures_by_handle=futures_by_handle,
                                 tasks_by_sample_idx=tasks_by_sample_idx,
                             )
                         else:
                             pending_terminal[task.sample_idx] = outcome
+                            pending_terminal_tasks[task.sample_idx] = task
 
                     next_to_commit_ref = [next_to_commit]
                     pending_rows = _commit_contiguous_results(
                         pending_terminal=pending_terminal,
+                        pending_terminal_tasks=pending_terminal_tasks,
                         pending_rows=pending_rows,
                         counters=counters,
                         next_to_commit_ref=next_to_commit_ref,
@@ -776,6 +796,7 @@ def _maybe_retry_task(
     pool: ProcessPool,
     counters: dict[str, object],
     pending_terminal: dict[int, WorkerSuccess | WorkerFailure],
+    pending_terminal_tasks: dict[int, ScheduledTask],
     futures_by_handle: dict[object, ScheduledTask],
     tasks_by_sample_idx: dict[int, ScheduledTask],
 ) -> bool:
@@ -787,6 +808,7 @@ def _maybe_retry_task(
                 failure_reason="timeout",
                 truncation_attempted=False,
             )
+            pending_terminal_tasks[task.sample_idx] = task
             return False
         retried_task = _schedule_task(
             pool=pool,
@@ -806,6 +828,7 @@ def _maybe_retry_task(
                 failure_reason="process_expired",
                 truncation_attempted=False,
             )
+            pending_terminal_tasks[task.sample_idx] = task
             return False
         retried_task = _schedule_task(
             pool=pool,
@@ -829,6 +852,7 @@ def _quarantine_pending_tasks(
     trigger_task: ScheduledTask,
     counters: dict[str, object],
     pending_terminal: dict[int, WorkerSuccess | WorkerFailure],
+    pending_terminal_tasks: dict[int, ScheduledTask],
     futures_by_handle: dict[object, ScheduledTask],
     tasks_by_sample_idx: dict[int, ScheduledTask],
 ) -> int:
@@ -850,6 +874,7 @@ def _quarantine_pending_tasks(
             failure_reason="quarantined",
             truncation_attempted=False,
         )
+        pending_terminal_tasks[sample_idx] = task
         dropped_pending_tasks += 1
     return dropped_pending_tasks
 
@@ -1045,6 +1070,7 @@ def _build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object
 def _commit_contiguous_results(
     *,
     pending_terminal: dict[int, WorkerSuccess | WorkerFailure],
+    pending_terminal_tasks: dict[int, ScheduledTask],
     pending_rows: list[dict[str, object]],
     counters: dict[str, object],
     next_to_commit_ref: list[int],
@@ -1055,7 +1081,9 @@ def _commit_contiguous_results(
     next_to_commit = next_to_commit_ref[0]
     while next_to_commit in pending_terminal:
         outcome = pending_terminal.pop(next_to_commit)
+        task = pending_terminal_tasks.pop(next_to_commit, None)
         _write_verovio_events(run_context=run_context, outcome=outcome)
+        _write_failure_events(run_context=run_context, outcome=outcome, task=task)
         _write_augmentation_events(run_context=run_context, outcome=outcome)
         _maybe_write_augmentation_preview(run_context=run_context, outcome=outcome, counters=counters)
         truncation_counts: Counter = counters["truncation_counts"]  # type: ignore[assignment]
@@ -1127,6 +1155,54 @@ def _write_verovio_events(
     append_jsonl(
         run_context.verovio_events_path,
         [asdict(event) for event in outcome.verovio_diagnostics],
+    )
+
+
+def _write_failure_events(
+    *,
+    run_context: RunContext,
+    outcome: WorkerSuccess | WorkerFailure,
+    task: ScheduledTask | None,
+) -> None:
+    if not isinstance(outcome, WorkerFailure):
+        return
+    append_jsonl(
+        run_context.failure_events_path,
+        [asdict(_build_failure_trace_event(outcome=outcome, task=task))],
+    )
+
+
+def _build_failure_trace_event(
+    *,
+    outcome: WorkerFailure,
+    task: ScheduledTask | None,
+) -> FailureTraceEvent:
+    source_paths: tuple[str, ...] = ()
+    target_bucket = None
+    planned_line_count = None
+    candidate_in_target_range = None
+    sample_idx = int(outcome.sample_id.split("_")[-1])
+    if task is not None:
+        sample_idx = task.sample_idx
+        source_paths = tuple(str(segment.path.resolve()) for segment in task.plan.segments)
+        target_bucket = task.target_bucket
+        planned_line_count = task.planned_line_count
+        candidate_in_target_range = task.candidate_in_target_range
+    return FailureTraceEvent(
+        event="failure_trace",
+        sample_id=outcome.sample_id,
+        sample_idx=sample_idx,
+        source_paths=source_paths,
+        target_bucket=target_bucket,
+        planned_line_count=planned_line_count,
+        candidate_in_target_range=candidate_in_target_range,
+        failure_reason=outcome.failure_reason,
+        truncation_mode=outcome.truncation_mode,
+        truncation_attempted=outcome.truncation_attempted,
+        preferred_5_6_rescue_attempted=outcome.preferred_5_6_rescue_attempted,
+        preferred_5_6_rescue_succeeded=outcome.preferred_5_6_rescue_succeeded,
+        preferred_5_6_status=outcome.preferred_5_6_status,
+        attempts=outcome.failure_attempts,
     )
 
 

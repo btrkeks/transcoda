@@ -31,10 +31,13 @@ from scripts.dataset_generation.dataset_generation.truncation import (
 )
 from scripts.dataset_generation.dataset_generation.types import (
     AcceptedSample,
+    AcceptanceDecision,
     AugmentedRenderResult,
     AugmentationPreviewArtifacts,
     AugmentationTraceEvent,
+    FailureRenderAttempt,
     RenderResult,
+    RenderAttemptStage,
     SamplePlan,
     VerovioDiagnosticEvent,
     WorkerFailure,
@@ -120,6 +123,7 @@ def evaluate_sample_plan(
     capture_verovio_diagnostics: bool = True,
 ) -> WorkerOutcome:
     verovio_events: list[VerovioDiagnosticEvent] = []
+    failure_attempts: list[FailureRenderAttempt] = []
     render_transcription = build_render_transcription(plan.label_transcription, recipe, seed=plan.seed)
     full_render = _call_render(
         render_fn,
@@ -132,6 +136,14 @@ def evaluate_sample_plan(
     verovio_events.extend(_build_verovio_events(plan=plan, stage="full", seed=plan.seed, result=full_render))
     full_decision = decide_acceptance(full_render, recipe, truncation_applied=False)
     truncation_mode = classify_truncation_mode(full_render.svg_diagnostics, recipe)
+    failure_attempts.append(
+        _build_failure_attempt(
+            stage="full",
+            seed=plan.seed,
+            render_result=full_render,
+            decision=full_decision,
+        )
+    )
     full_render_system_count = full_render.svg_diagnostics.system_count
     full_render_content_height_px = full_render.content_height_px
     full_render_vertical_fill_ratio = full_render.vertical_fill_ratio
@@ -208,6 +220,14 @@ def evaluate_sample_plan(
             recipe,
             truncation_applied=False,
         )
+        failure_attempts.append(
+            _build_failure_attempt(
+                stage="preferred_5_6_rescue",
+                seed=rescue_seed,
+                render_result=rescue_render,
+                decision=rescue_decision,
+            )
+        )
         if rescue_decision.action == "accept_without_truncation":
             preferred_5_6_rescue_succeeded = True
             sample, aug_trace, aug_preview = _finalize_sample(
@@ -265,6 +285,17 @@ def evaluate_sample_plan(
                 recipe,
                 truncation_applied=True,
             )
+            failure_attempts.append(
+                _build_failure_attempt(
+                    stage="truncation_candidate",
+                    seed=candidate_seed,
+                    render_result=candidate_render,
+                    decision=candidate_decision,
+                    chunk_count=candidate.chunk_count,
+                    total_chunks=candidate.total_chunks,
+                    ratio=candidate.ratio,
+                )
+            )
             if candidate_decision.action == "accept_with_truncation":
                 sample, aug_trace, aug_preview = _finalize_sample(
                     plan=plan,
@@ -308,6 +339,7 @@ def evaluate_sample_plan(
         failure_reason=failure_reason,
         truncation_attempted=truncation_attempted,
         truncation_rescued=False,
+        truncation_mode=truncation_mode,
         full_render_system_count=full_render_system_count,
         full_render_content_height_px=full_render_content_height_px,
         full_render_vertical_fill_ratio=full_render_vertical_fill_ratio,
@@ -323,6 +355,7 @@ def evaluate_sample_plan(
             <= recipe.truncation.preferred_max_systems
             else None
         ),
+        failure_attempts=tuple(failure_attempts),
         verovio_diagnostics=tuple(verovio_events),
     )
 
@@ -390,6 +423,33 @@ def _build_verovio_events(
             truncation_ratio=truncation_ratio,
         )
         for diagnostic in result.verovio_diagnostics
+    )
+
+
+def _build_failure_attempt(
+    *,
+    stage: RenderAttemptStage,
+    seed: int,
+    render_result: RenderResult,
+    decision: AcceptanceDecision,
+    chunk_count: int | None = None,
+    total_chunks: int | None = None,
+    ratio: float | None = None,
+) -> FailureRenderAttempt:
+    return FailureRenderAttempt(
+        stage=stage,
+        seed=seed,
+        chunk_count=chunk_count,
+        total_chunks=total_chunks,
+        ratio=ratio,
+        system_count=render_result.svg_diagnostics.system_count,
+        page_count=render_result.svg_diagnostics.page_count,
+        content_height_px=render_result.content_height_px,
+        vertical_fill_ratio=render_result.vertical_fill_ratio,
+        render_rejection_reason=render_result.rejection_reason,
+        decision_reason=decision.reason,
+        accepted=decision.action != "reject",
+        verovio_diagnostic_count=len(render_result.verovio_diagnostics),
     )
 
 

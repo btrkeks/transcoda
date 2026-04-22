@@ -215,10 +215,21 @@ def test_full_render_verovio_diagnostics_are_stage_attributed():
     assert event.near_line == 12
 
 
-def test_failed_5_6_render_attempts_rescue_before_truncation():
+def test_failed_5_6_render_attempts_rescue_before_truncation(monkeypatch):
     plan = _make_plan()
     recipe = _make_recipe()
     calls = []
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.worker.build_prefix_candidates",
+        lambda transcription, recipe: [
+            PrefixTruncationCandidate(
+                transcription="**kern\n=1\n4c\n*-\n",
+                chunk_count=1,
+                total_chunks=2,
+                ratio=0.5,
+            )
+        ],
+    )
 
     def fake_render(render_text, recipe, *, seed, renderer):
         calls.append(seed)
@@ -239,6 +250,62 @@ def test_failed_5_6_render_attempts_rescue_before_truncation():
     assert isinstance(outcome, WorkerFailure)
     assert outcome.preferred_5_6_rescue_attempted is True
     assert outcome.preferred_5_6_status == "preferred_5_6_failed"
+    assert [attempt.stage for attempt in outcome.failure_attempts] == [
+        "full",
+        "preferred_5_6_rescue",
+        "truncation_candidate",
+    ]
+
+
+def test_truncation_exhausted_failure_keeps_full_attempt_diagnostics(monkeypatch):
+    plan = _make_plan()
+    recipe = _make_recipe()
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.worker.build_prefix_candidates",
+        lambda transcription, recipe: [
+            PrefixTruncationCandidate(
+                transcription="**kern\n=1\n4c\n*-\n",
+                chunk_count=1,
+                total_chunks=2,
+                ratio=0.5,
+            ),
+            PrefixTruncationCandidate(
+                transcription="**kern\n=1\n4c\n*-\n",
+                chunk_count=2,
+                total_chunks=2,
+                ratio=1.0,
+            ),
+        ],
+    )
+
+    def fake_render(render_text, recipe, *, seed, renderer):
+        if seed == plan.seed:
+            return _good_render(system_count=8)
+        if seed == plan.seed + 17:
+            return _good_render(system_count=5)
+        return _good_render(system_count=8)
+
+    outcome = evaluate_sample_plan(
+        plan,
+        recipe=recipe,
+        renderer=object(),
+        render_fn=fake_render,
+        augment_fn=lambda plan, render_result, recipe: render_result.image,
+    )
+
+    assert isinstance(outcome, WorkerFailure)
+    assert outcome.failure_reason == "truncation_exhausted"
+    assert outcome.truncation_mode == "required"
+    assert [attempt.stage for attempt in outcome.failure_attempts] == [
+        "full",
+        "truncation_candidate",
+        "truncation_candidate",
+    ]
+    assert outcome.failure_attempts[0].decision_reason == "truncation_required"
+    assert outcome.failure_attempts[1].decision_reason == "post_truncation_preferred"
+    assert outcome.failure_attempts[1].chunk_count == 1
+    assert outcome.failure_attempts[2].decision_reason == "post_truncation_required"
+    assert outcome.failure_attempts[2].chunk_count == 2
 
 
 def test_rescued_5_6_render_is_accepted_as_full_not_truncated():

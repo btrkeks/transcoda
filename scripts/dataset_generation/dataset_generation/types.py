@@ -15,6 +15,7 @@ AcceptanceAction = Literal[
     "accept_with_truncation",
     "reject",
 ]
+RenderAttemptStage = Literal["full", "preferred_5_6_rescue", "truncation_candidate"]
 TruncationMode = Literal["forbidden", "preferred", "required"]
 AugmentationBand = Literal["roomy", "balanced", "tight"]
 PreferredFiveSixStatus = Literal[
@@ -245,6 +246,23 @@ class AcceptanceDecision:
 
 
 @dataclass(frozen=True)
+class FailureRenderAttempt:
+    stage: RenderAttemptStage
+    seed: int
+    chunk_count: int | None = None
+    total_chunks: int | None = None
+    ratio: float | None = None
+    system_count: int | None = None
+    page_count: int | None = None
+    content_height_px: int | None = None
+    vertical_fill_ratio: float | None = None
+    render_rejection_reason: str | None = None
+    decision_reason: str | None = None
+    accepted: bool = False
+    verovio_diagnostic_count: int = 0
+
+
+@dataclass(frozen=True)
 class AcceptedSample:
     sample_id: str
     label_transcription: str
@@ -289,6 +307,7 @@ class WorkerFailure:
     failure_reason: str
     truncation_attempted: bool
     truncation_rescued: bool = False
+    truncation_mode: TruncationMode | None = None
     full_render_system_count: int | None = None
     full_render_content_height_px: int | None = None
     full_render_vertical_fill_ratio: float | None = None
@@ -297,7 +316,26 @@ class WorkerFailure:
     preferred_5_6_rescue_attempted: bool = False
     preferred_5_6_rescue_succeeded: bool = False
     preferred_5_6_status: PreferredFiveSixStatus | None = None
+    failure_attempts: tuple[FailureRenderAttempt, ...] = ()
     verovio_diagnostics: tuple[VerovioDiagnosticEvent, ...] = ()
+
+
+@dataclass(frozen=True)
+class FailureTraceEvent:
+    event: str
+    sample_id: str
+    sample_idx: int
+    source_paths: tuple[str, ...]
+    target_bucket: int | None
+    planned_line_count: int | None
+    candidate_in_target_range: bool | None
+    failure_reason: str
+    truncation_mode: TruncationMode | None
+    truncation_attempted: bool
+    preferred_5_6_rescue_attempted: bool = False
+    preferred_5_6_rescue_succeeded: bool = False
+    preferred_5_6_status: PreferredFiveSixStatus | None = None
+    attempts: tuple[FailureRenderAttempt, ...] = ()
 
 
 WorkerOutcome = WorkerSuccess | WorkerFailure

@@ -29,6 +29,7 @@ from scripts.dataset_generation.dataset_generation.types import (
     AugmentationPreviewArtifacts,
     AugmentationTraceEvent,
     BoundsGateTrace,
+    FailureRenderAttempt,
     GeometryTrace,
     MarginTrace,
     OuterGateTrace,
@@ -260,6 +261,73 @@ def _make_worker_failure_with_verovio_diagnostic(plan: SamplePlan) -> WorkerFail
     )
 
 
+def _make_worker_failure_with_attempt_ledger(plan: SamplePlan) -> WorkerFailure:
+    return WorkerFailure(
+        sample_id=plan.sample_id,
+        failure_reason="truncation_exhausted",
+        truncation_attempted=True,
+        truncation_mode="required",
+        preferred_5_6_rescue_attempted=True,
+        preferred_5_6_status="preferred_5_6_failed",
+        failure_attempts=(
+            FailureRenderAttempt(
+                stage="full",
+                seed=plan.seed,
+                system_count=6,
+                page_count=2,
+                content_height_px=1185,
+                vertical_fill_ratio=0.81,
+                render_rejection_reason=None,
+                decision_reason="truncation_required",
+                accepted=False,
+                verovio_diagnostic_count=1,
+            ),
+            FailureRenderAttempt(
+                stage="preferred_5_6_rescue",
+                seed=((plan.seed & 0xFFFFFFFF) ^ 0x5F3759DF) & 0xFFFFFFFF,
+                system_count=6,
+                page_count=1,
+                content_height_px=1120,
+                vertical_fill_ratio=0.75,
+                render_rejection_reason="right_clearance",
+                decision_reason="right_clearance",
+                accepted=False,
+                verovio_diagnostic_count=0,
+            ),
+            FailureRenderAttempt(
+                stage="truncation_candidate",
+                seed=plan.seed + 17,
+                chunk_count=1,
+                total_chunks=2,
+                ratio=0.5,
+                system_count=5,
+                page_count=1,
+                content_height_px=1010,
+                vertical_fill_ratio=0.68,
+                render_rejection_reason=None,
+                decision_reason="post_truncation_preferred",
+                accepted=False,
+                verovio_diagnostic_count=2,
+            ),
+            FailureRenderAttempt(
+                stage="truncation_candidate",
+                seed=plan.seed + 34,
+                chunk_count=2,
+                total_chunks=2,
+                ratio=1.0,
+                system_count=8,
+                page_count=2,
+                content_height_px=1200,
+                vertical_fill_ratio=0.84,
+                render_rejection_reason=None,
+                decision_reason="post_truncation_required",
+                accepted=False,
+                verovio_diagnostic_count=0,
+            ),
+        ),
+    )
+
+
 def _make_fake_plan_sample(entry_groups_by_sample_idx):
     def fake_plan_sample(source_index, recipe, *, sample_idx, base_seed=0, excluded_paths=None):
         del recipe, base_seed
@@ -290,6 +358,12 @@ def _make_fake_plan_sample(entry_groups_by_sample_idx):
 
 def _read_json(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _read_jsonl(path: Path) -> list[dict[str, object]]:
+    if not path.exists():
+        return []
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
 
 
 class _DummyRenderer:
@@ -621,6 +695,84 @@ def test_executor_writes_verovio_events_for_rejected_outcomes(tmp_path, monkeypa
     assert events[0]["truncation_chunk_count"] == 1
     assert events[0]["truncation_total_chunks"] == 2
     assert events[0]["truncation_ratio"] == 0.5
+
+
+def test_executor_writes_failure_events_jsonl_for_rejected_outcomes(tmp_path, monkeypatch):
+    input_dir = _make_simple_input_dir(tmp_path, ("a", "b"))
+    output_dir = tmp_path / "output"
+    _install_fake_pool(
+        monkeypatch,
+        outcomes_by_sample_idx={
+            0: [_make_worker_failure_with_attempt_ledger],
+            1: [_make_worker_success],
+        },
+    )
+    _install_fake_balanced_planner(monkeypatch, {0: [0], 1: [1]})
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=1,
+        num_workers=2,
+        max_attempts=2,
+        quiet=True,
+    )
+
+    info = _read_json(summary.run_artifacts_dir / "info.json")
+    events_path = summary.run_artifacts_dir / "failure_events.jsonl"
+    events = _read_jsonl(events_path)
+
+    assert summary.rejected_samples == 1
+    assert info["failure_events_path"] == str(events_path)
+    assert len(events) == 1
+    assert events[0]["event"] == "failure_trace"
+    assert events[0]["sample_id"] == "sample_00000000"
+    assert events[0]["source_paths"] == [str((input_dir / "a.krn").resolve())]
+    assert events[0]["target_bucket"] == 1
+    assert events[0]["planned_line_count"] == 4
+    assert events[0]["candidate_in_target_range"] is True
+
+
+def test_executor_failure_events_preserve_truncation_attempt_ledger(tmp_path, monkeypatch):
+    input_dir = _make_simple_input_dir(tmp_path, ("a", "b"))
+    output_dir = tmp_path / "output"
+    _install_fake_pool(
+        monkeypatch,
+        outcomes_by_sample_idx={
+            0: [_make_worker_failure_with_attempt_ledger],
+            1: [_make_worker_success],
+        },
+    )
+    _install_fake_balanced_planner(monkeypatch, {0: [0], 1: [1]})
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=1,
+        num_workers=2,
+        max_attempts=2,
+        quiet=True,
+    )
+
+    events = _read_jsonl(summary.run_artifacts_dir / "failure_events.jsonl")
+
+    assert len(events) == 1
+    assert events[0]["failure_reason"] == "truncation_exhausted"
+    assert events[0]["truncation_mode"] == "required"
+    assert events[0]["preferred_5_6_rescue_attempted"] is True
+    assert events[0]["preferred_5_6_status"] == "preferred_5_6_failed"
+    assert [attempt["stage"] for attempt in events[0]["attempts"]] == [
+        "full",
+        "preferred_5_6_rescue",
+        "truncation_candidate",
+        "truncation_candidate",
+    ]
+    assert events[0]["attempts"][0]["decision_reason"] == "truncation_required"
+    assert events[0]["attempts"][2]["chunk_count"] == 1
+    assert events[0]["attempts"][2]["total_chunks"] == 2
+    assert events[0]["attempts"][2]["ratio"] == 0.5
+    assert events[0]["attempts"][2]["decision_reason"] == "post_truncation_preferred"
+    assert events[0]["attempts"][3]["decision_reason"] == "post_truncation_required"
 
 
 def test_executor_writes_redesigned_augmentation_events_and_previews(tmp_path, monkeypatch):
@@ -1227,6 +1379,40 @@ def test_executor_semantic_rejection_does_not_quarantine_sources(tmp_path, monke
     assert info["snapshot"]["failure_reason_counts"]["truncation_exhausted"] == 1
     assert quarantined["quarantined_sources"] == []
     assert not (summary.run_artifacts_dir / "crash_samples").exists()
+
+
+def test_executor_does_not_write_failure_events_for_discarded_after_target_successes(
+    tmp_path, monkeypatch
+):
+    input_dir = _make_simple_input_dir(tmp_path, ("a", "b"))
+    output_dir = tmp_path / "output"
+    _install_fake_pool(
+        monkeypatch,
+        outcomes_by_sample_idx={
+            0: [_make_worker_success],
+            1: [_make_worker_success],
+        },
+        serial_wait=True,
+    )
+    _install_fake_balanced_planner(monkeypatch, {0: [0], 1: [1]})
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=1,
+        num_workers=2,
+        max_attempts=2,
+        quiet=True,
+    )
+
+    info = _read_json(summary.run_artifacts_dir / "info.json")
+    failure_events_path = summary.run_artifacts_dir / "failure_events.jsonl"
+
+    assert summary.accepted_samples == 1
+    assert summary.rejected_samples == 0
+    assert info["snapshot"]["failure_reason_counts"]["discarded_after_target"] == 1
+    assert info["failure_events_path"] == str(failure_events_path)
+    assert _read_jsonl(failure_events_path) == []
 
 
 def test_executor_tracks_requested_target_buckets_and_candidate_hits(tmp_path, monkeypatch):
