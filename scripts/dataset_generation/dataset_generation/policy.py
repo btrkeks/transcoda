@@ -13,13 +13,6 @@ class RenderMode(StrEnum):
     LAYOUT_RESCUE = "layout_rescue"
 
 
-class AttemptStageName(StrEnum):
-    FULL = "full"
-    FULL_LAYOUT_RESCUE = "full_layout_rescue"
-    TRUNCATION_CANDIDATE = "truncation_candidate"
-    TRUNCATION_CANDIDATE_LAYOUT_RESCUE = "truncation_candidate_layout_rescue"
-
-
 class RejectionReason(StrEnum):
     MULTI_PAGE = "multi_page"
     TOP_CLEARANCE = "top_clearance"

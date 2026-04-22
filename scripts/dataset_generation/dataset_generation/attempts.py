@@ -11,10 +11,10 @@ from scripts.dataset_generation.dataset_generation.acceptance import decide_acce
 from scripts.dataset_generation.dataset_generation.image_generation.rendering.verovio_backend import (
     VerovioRenderer,
 )
-from scripts.dataset_generation.dataset_generation.policy import AttemptStageName
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.types import (
     AcceptanceDecision,
+    AttemptStageName,
     FailureRenderAttempt,
     RenderResult,
     SamplePlan,

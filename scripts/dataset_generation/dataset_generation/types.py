@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
 from pathlib import Path
 from typing import Literal
 
@@ -15,12 +16,6 @@ AcceptanceAction = Literal[
     "accept_with_truncation",
     "reject",
 ]
-RenderAttemptStage = Literal[
-    "full",
-    "full_layout_rescue",
-    "truncation_candidate",
-    "truncation_candidate_layout_rescue",
-]
 TruncationMode = Literal["forbidden", "preferred", "required"]
 AugmentationBand = Literal["roomy", "balanced", "tight"]
 PreferredFiveSixStatus = Literal[
@@ -29,6 +24,13 @@ PreferredFiveSixStatus = Literal[
     "preferred_5_6_truncated",
     "preferred_5_6_failed",
 ]
+
+
+class AttemptStageName(StrEnum):
+    FULL = "full"
+    FULL_LAYOUT_RESCUE = "full_layout_rescue"
+    TRUNCATION_CANDIDATE = "truncation_candidate"
+    TRUNCATION_CANDIDATE_LAYOUT_RESCUE = "truncation_candidate_layout_rescue"
 
 
 @dataclass(frozen=True)
@@ -88,7 +90,7 @@ class VerovioDiagnosticEvent:
     sample_id: str
     sample_idx: int
     source_paths: tuple[str, ...]
-    stage: str
+    stage: AttemptStageName
     seed: int
     render_attempt_idx: int | None
     diagnostic_kind: str
@@ -252,7 +254,7 @@ class AcceptanceDecision:
 
 @dataclass(frozen=True)
 class FailureRenderAttempt:
-    stage: RenderAttemptStage
+    stage: AttemptStageName
     seed: int
     chunk_count: int | None = None
     total_chunks: int | None = None

@@ -20,7 +20,6 @@ from scripts.dataset_generation.dataset_generation.image_generation.rendering.ve
 )
 from scripts.dataset_generation.dataset_generation.io import encode_jpeg_image
 from scripts.dataset_generation.dataset_generation.policy import (
-    AttemptStageName,
     RenderMode,
     finalize_failure_reason,
     is_in_preferred_band,
@@ -43,11 +42,13 @@ from scripts.dataset_generation.dataset_generation.truncation import (
 )
 from scripts.dataset_generation.dataset_generation.types import (
     AcceptedSample,
+    AttemptStageName,
     AugmentedRenderResult,
     AugmentationPreviewArtifacts,
     AugmentationTraceEvent,
     RenderResult,
     SamplePlan,
+    VerovioDiagnosticEvent,
     WorkerFailure,
     WorkerOutcome,
     WorkerSuccess,
@@ -212,7 +213,6 @@ def evaluate_sample_plan(
             truncation_applied=False,
             capture_verovio_diagnostics=capture_verovio_diagnostics,
         )
-        assert rescue_attempt is not None
         rescue_render = rescue_attempt.render_result
         rescue_decision = rescue_attempt.decision
         if rescue_decision.action == "accept_without_truncation":
@@ -312,7 +312,6 @@ def evaluate_sample_plan(
                     ratio=candidate.ratio,
                     capture_verovio_diagnostics=capture_verovio_diagnostics,
                 )
-                assert rescued_candidate_attempt is not None
                 rescued_candidate_render = rescued_candidate_attempt.render_result
                 rescued_candidate_decision = rescued_candidate_attempt.decision
                 if rescued_candidate_decision.action == "accept_with_truncation":
@@ -379,7 +378,7 @@ def _build_truncated_success(
     preferred_5_6_rescue_attempted: bool,
     preferred_5_6_rescue_succeeded: bool,
     preferred_5_6_status: str | None,
-    verovio_events: tuple,
+    verovio_events: tuple[VerovioDiagnosticEvent, ...],
 ) -> WorkerSuccess:
     sample, aug_trace, aug_preview = _finalize_sample(
         plan=plan,

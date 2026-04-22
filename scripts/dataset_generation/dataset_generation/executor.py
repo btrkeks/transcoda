@@ -54,11 +54,8 @@ from scripts.dataset_generation.dataset_generation.system_balance import (
     spine_class_for_count,
 )
 from scripts.dataset_generation.dataset_generation.types import (
-    AugmentationTraceEvent,
-    FailureTraceEvent,
     ResumeSnapshot,
     SamplePlan,
-    SuccessTraceEvent,
     WorkerFailure,
     WorkerSuccess,
 )

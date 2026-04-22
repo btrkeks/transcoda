@@ -1,6 +1,7 @@
 import json
 from collections import Counter, defaultdict
 from concurrent.futures import Future, TimeoutError
+from dataclasses import asdict
 from pathlib import Path
 
 import numpy as np
@@ -26,6 +27,7 @@ from scripts.dataset_generation.dataset_generation.system_balance import (
 )
 from scripts.dataset_generation.dataset_generation.types import (
     AcceptedSample,
+    AttemptStageName,
     AugmentationPreviewArtifacts,
     AugmentationTraceEvent,
     BoundsGateTrace,
@@ -387,6 +389,31 @@ def _make_worker_failure_with_attempt_ledger(plan: SamplePlan) -> WorkerFailure:
             ),
         ),
     )
+
+
+def test_stage_enum_serializes_as_existing_artifact_strings(tmp_path: Path) -> None:
+    source_path = tmp_path / "source.krn"
+    source_path.write_text("**kern\n*M4/4\n=1\n4c\n*-\n")
+
+    diagnostic = VerovioDiagnosticEvent(
+        event="verovio_diagnostic",
+        sample_id="sample_00000001",
+        sample_idx=1,
+        source_paths=(str(source_path),),
+        stage=AttemptStageName.FULL_LAYOUT_RESCUE,
+        seed=123,
+        render_attempt_idx=1,
+        diagnostic_kind="verovio_error",
+        raw_message="Error: Generic Verovio error",
+    )
+    failure_attempt = FailureRenderAttempt(
+        stage=AttemptStageName.TRUNCATION_CANDIDATE_LAYOUT_RESCUE,
+        seed=456,
+        accepted=False,
+    )
+
+    assert asdict(diagnostic)["stage"] == "full_layout_rescue"
+    assert asdict(failure_attempt)["stage"] == "truncation_candidate_layout_rescue"
 
 
 def _make_fake_plan_sample(entry_groups_by_sample_idx):
