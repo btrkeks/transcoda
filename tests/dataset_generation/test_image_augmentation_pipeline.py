@@ -2,6 +2,7 @@ import numpy as np
 
 from scripts.dataset_generation.dataset_generation.image_augmentation.geometric_augment import (
     geometric_augment,
+    sample_geometric_transform,
 )
 from scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment import (
     OfflineAugmentTrace,
@@ -11,6 +12,22 @@ from scripts.dataset_generation.dataset_generation.image_augmentation.offline_au
     passes_transform_consistency,
 )
 from scripts.dataset_generation.dataset_generation.image_generation.types import RenderedPage
+
+
+class _StubRng:
+    def __init__(self, *, random_values, uniform_values):
+        self._random_values = iter(random_values)
+        self._uniform_values = iter(uniform_values)
+
+    def random(self):
+        return next(self._random_values)
+
+    def uniform(self, low=0.0, high=1.0, size=None):
+        value = next(self._uniform_values)
+        if size is None:
+            return value
+        array = np.asarray(value, dtype=np.float32)
+        return np.broadcast_to(array, size).copy()
 
 
 def _make_good_candidate(base):
@@ -61,6 +78,28 @@ def test_geometric_augment_deterministic_seed():
     out1 = geometric_augment(img, np.random.default_rng(123))
     out2 = geometric_augment(img, np.random.default_rng(123))
     assert np.array_equal(out1, out2)
+
+
+def test_sample_geometric_transform_uses_available_bottom_whitespace():
+    mask = np.zeros((200, 200), dtype=bool)
+    mask[20:40, 50:150] = True
+    rng = _StubRng(
+        random_values=[0.0],
+        uniform_values=[0.0, 0.0, 148.0, 0.0],
+    )
+
+    transform = sample_geometric_transform(
+        (200, 200),
+        rng,
+        conservative=True,
+        x_squeeze_prob=0.0,
+        content_mask=mask,
+        min_margin_px=12,
+    )
+
+    assert transform is not None
+    assert np.isclose(transform.ty_px, 148.0)
+    assert transform.ty_px > 0.025 * 200
 
 
 def test_passes_quality_gate_rejects_extremes():

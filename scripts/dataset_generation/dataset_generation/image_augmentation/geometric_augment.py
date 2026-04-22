@@ -9,6 +9,7 @@ import numpy.typing as npt
 ImageU8 = npt.NDArray[np.uint8]
 
 _WHITE_RGB = (255, 255, 255)
+_DEFAULT_MIN_MARGIN_PX = 12
 
 
 @dataclass(frozen=True)
@@ -24,6 +25,43 @@ class GeometricTransform:
     x_scale: float = 1.0
     y_scale: float = 1.0
     conservative: bool = False
+
+
+def _content_bbox_from_mask(mask: np.ndarray | None) -> tuple[int, int, int, int] | None:
+    if mask is None:
+        return None
+    coords = np.argwhere(mask)
+    if coords.size == 0:
+        return None
+    top = int(coords[:, 0].min())
+    bottom = int(coords[:, 0].max())
+    left = int(coords[:, 1].min())
+    right = int(coords[:, 1].max())
+    return top, bottom, left, right
+
+
+def _content_mask_from_image(image: ImageU8, *, threshold: int = 250) -> np.ndarray:
+    if image.ndim == 2:
+        return image < threshold
+    return np.min(image[:, :, :3], axis=2) < threshold
+
+
+def _translation_interval_from_bbox(
+    bbox: tuple[int, int, int, int] | None,
+    image_shape: tuple[int, int],
+    *,
+    min_margin_px: int,
+) -> tuple[float, float, float, float]:
+    if bbox is None:
+        return 0.0, 0.0, 0.0, 0.0
+
+    top, bottom, left, right = bbox
+    height, width = image_shape
+    left_room = float(max(0, left - min_margin_px))
+    right_room = float(max(0, (width - 1 - right) - min_margin_px))
+    top_room = float(max(0, top - min_margin_px))
+    bottom_room = float(max(0, (height - 1 - bottom) - min_margin_px))
+    return -left_room, right_room, -top_room, bottom_room
 
 
 def transform_matrix(transform: GeometricTransform | None) -> np.ndarray | None:
@@ -71,6 +109,8 @@ def sample_geometric_transform(
     x_squeeze_max_scale: float = 0.95,
     x_squeeze_apply_in_conservative: bool = True,
     x_squeeze_force_scale: float | None = None,
+    content_mask: np.ndarray | None = None,
+    min_margin_px: int = _DEFAULT_MIN_MARGIN_PX,
 ) -> GeometricTransform | None:
     """Sample a scanner-like transform while preserving the output size."""
     height, width = image_shape
@@ -79,7 +119,6 @@ def sample_geometric_transform(
 
     if conservative:
         scale_range = (0.95, 1.08)
-        translation_frac = 0.025
         rotation_deg = 1.2
         perspective_prob = 0.0
         perspective_frac = 0.0
@@ -87,7 +126,6 @@ def sample_geometric_transform(
         stretch_frac = 0.0
     else:
         scale_range = (0.90, 1.15)
-        translation_frac = 0.04
         rotation_deg = 1.8
         perspective_prob = 0.30
         perspective_frac = 0.015
@@ -96,7 +134,6 @@ def sample_geometric_transform(
 
     if x_squeeze_force_scale is not None:
         scale_range = (1.0, 1.0)
-        translation_frac = 0.0
         rotation_deg = 0.0
         perspective_prob = 0.0
         perspective_frac = 0.0
@@ -107,8 +144,17 @@ def sample_geometric_transform(
         return None
 
     scale = float(np.exp(rng.uniform(np.log(scale_range[0]), np.log(scale_range[1]))))
-    tx = float(rng.uniform(-translation_frac, translation_frac) * width)
-    ty = float(rng.uniform(-translation_frac, translation_frac) * height)
+    if x_squeeze_force_scale is not None:
+        tx = 0.0
+        ty = 0.0
+    else:
+        tx_min, tx_max, ty_min, ty_max = _translation_interval_from_bbox(
+            _content_bbox_from_mask(content_mask),
+            image_shape,
+            min_margin_px=min_margin_px,
+        )
+        tx = float(rng.uniform(tx_min, tx_max))
+        ty = float(rng.uniform(ty_min, ty_max))
     angle = float(rng.uniform(-rotation_deg, rotation_deg))
 
     sx = 1.0
@@ -219,6 +265,7 @@ def geometric_augment(
     x_squeeze_max_scale: float = 0.95,
     x_squeeze_apply_in_conservative: bool = True,
     x_squeeze_force_scale: float | None = None,
+    min_margin_px: int = _DEFAULT_MIN_MARGIN_PX,
 ) -> ImageU8:
     """Apply scanner-centric transforms to a white-backed score image."""
     if image.ndim != 3 or image.shape[2] != 3 or image.dtype != np.uint8:
@@ -233,6 +280,8 @@ def geometric_augment(
         x_squeeze_max_scale=x_squeeze_max_scale,
         x_squeeze_apply_in_conservative=x_squeeze_apply_in_conservative,
         x_squeeze_force_scale=x_squeeze_force_scale,
+        content_mask=_content_mask_from_image(image),
+        min_margin_px=min_margin_px,
     )
     scale = np.sqrt(float(np.linalg.det(transform.affine[:, :2]))) if transform is not None else 1.0
     interp = cv2.INTER_LINEAR if scale >= 1.0 else cv2.INTER_AREA

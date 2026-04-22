@@ -505,6 +505,10 @@ def _build_augmented_candidate(
     Background synthesis is handled separately after the OOB gate.
     """
     height, width = base_layers.foreground.shape[:2]
+    content_mask = _merge_visible_and_hint_masks(
+        _visible_notation_mask(base_layers.foreground),
+        base_layers.alpha >= 8,
+    )
     transform = sample_geometric_transform(
         (height, width),
         rng,
@@ -514,6 +518,8 @@ def _build_augmented_candidate(
         x_squeeze_max_scale=geom_x_squeeze_max_scale,
         x_squeeze_apply_in_conservative=geom_x_squeeze_apply_in_conservative,
         x_squeeze_force_scale=geom_x_squeeze_preview_force_scale,
+        content_mask=content_mask,
+        min_margin_px=_MIN_MARGIN_PX,
     )
     warped_fg = apply_geometric_transform(
         base_layers.foreground,
