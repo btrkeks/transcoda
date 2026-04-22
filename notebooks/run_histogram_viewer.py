@@ -20,6 +20,13 @@ HISTOGRAM_BUCKET_WIDTHS = {
 }
 
 
+def _extract_snapshot(info: dict) -> dict:
+    snapshot = info.get("snapshot")
+    if not isinstance(snapshot, dict):
+        snapshot = info.get("finalization", {}).get("snapshot", {})
+    return snapshot if isinstance(snapshot, dict) else {}
+
+
 def _run_dir_sort_key(path: Path) -> tuple[tuple[int, ...], str]:
     numeric_parts = tuple(int(part) for part in re.findall(r"\d+", path.name))
     return numeric_parts, path.name
@@ -50,9 +57,7 @@ def load_latest_run_info(dataset_name: str) -> tuple[dict, Path]:
 
 
 def collect_histograms(info: dict) -> dict[str, dict[int, int]]:
-    snapshot = info.get("snapshot")
-    if not isinstance(snapshot, dict):
-        snapshot = info.get("finalization", {}).get("snapshot", {})
+    snapshot = _extract_snapshot(info)
 
     histograms: dict[str, dict[int, int]] = {}
     for key, value in snapshot.items():
@@ -109,6 +114,111 @@ def _plot_spine_system_heatmap(ax, dataset) -> None:
     plt.colorbar(image, ax=ax, label="Count")
 
 
+def _collect_rejection_summary(info: dict) -> dict | None:
+    snapshot = _extract_snapshot(info)
+    accepted_samples = int(snapshot.get("accepted_samples", 0) or 0)
+    rejected_samples = int(snapshot.get("rejected_samples", 0) or 0)
+
+    raw_failure_reason_counts = snapshot.get("failure_reason_counts", {})
+    failure_reason_counts = (
+        {str(name): int(count) for name, count in raw_failure_reason_counts.items()}
+        if isinstance(raw_failure_reason_counts, dict)
+        else {}
+    )
+    attempted_samples = accepted_samples + sum(failure_reason_counts.values())
+    resolved_samples = accepted_samples + rejected_samples
+
+    raw_augmentation_outcome_counts = snapshot.get("augmentation_outcome_counts", {})
+    augmentation_outcome_counts = (
+        {str(name): int(count) for name, count in raw_augmentation_outcome_counts.items()}
+        if isinstance(raw_augmentation_outcome_counts, dict)
+        else {}
+    )
+    clean_gate_rejected = int(augmentation_outcome_counts.get("clean_gate_rejected", 0))
+
+    rates: list[dict[str, float | int | str]] = []
+    if attempted_samples > 0 and rejected_samples > 0:
+        rates.append(
+            {
+                "label": "Hard rejects / attempts",
+                "numerator": rejected_samples,
+                "denominator": attempted_samples,
+                "rate": rejected_samples / attempted_samples,
+            }
+        )
+    if resolved_samples > 0 and rejected_samples > 0:
+        rates.append(
+            {
+                "label": "Hard rejects / resolved",
+                "numerator": rejected_samples,
+                "denominator": resolved_samples,
+                "rate": rejected_samples / resolved_samples,
+            }
+        )
+    if accepted_samples > 0 and clean_gate_rejected > 0:
+        rates.append(
+            {
+                "label": "Clean-gate rejects / accepted",
+                "numerator": clean_gate_rejected,
+                "denominator": accepted_samples,
+                "rate": clean_gate_rejected / accepted_samples,
+            }
+        )
+
+    if not rates and not failure_reason_counts:
+        return None
+
+    return {
+        "accepted_samples": accepted_samples,
+        "attempted_samples": attempted_samples,
+        "rejected_samples": rejected_samples,
+        "failure_reason_counts": failure_reason_counts,
+        "rates": rates,
+    }
+
+
+def _plot_rejection_summary(ax, summary: dict) -> None:
+    rates = summary.get("rates", [])
+    labels = [str(item["label"]) for item in rates]
+    percentages = [float(item["rate"]) * 100.0 for item in rates]
+    positions = np.arange(len(rates))
+
+    colors = ["#c2410c", "#ea580c", "#2563eb"]
+    ax.barh(positions, percentages, color=colors[: len(rates)])
+    ax.set_yticks(positions, labels=labels)
+    ax.invert_yaxis()
+    ax.set_xlim(0, 100)
+    ax.set_xlabel("Rate (%)")
+    ax.set_title("Rejection rate summary")
+    ax.grid(axis="x", alpha=0.25)
+
+    for pos, pct, item in zip(positions, percentages, rates):
+        numerator = int(item["numerator"])
+        denominator = int(item["denominator"])
+        label = f"{numerator}/{denominator} ({pct:.1f}%)"
+        text_x = min(pct + 1.0, 99.0)
+        ax.text(text_x, pos, label, va="center", ha="left", fontsize=9)
+
+    failure_reason_counts = summary.get("failure_reason_counts", {})
+    if failure_reason_counts:
+        reason_lines = []
+        for reason, count in sorted(
+            failure_reason_counts.items(), key=lambda item: (-int(item[1]), str(item[0]))
+        )[:4]:
+            suffix = " (not a rejection)" if reason == "discarded_after_target" else ""
+            reason_lines.append(f"{reason}: {int(count)}{suffix}")
+        ax.text(
+            1.0,
+            0.02,
+            "\n".join(reason_lines),
+            transform=ax.transAxes,
+            ha="right",
+            va="bottom",
+            fontsize=9,
+            bbox={"boxstyle": "round,pad=0.3", "facecolor": "white", "alpha": 0.9},
+        )
+
+
 def plot_histograms(
     histograms: dict[str, dict[int, int]],
     *,
@@ -116,16 +226,30 @@ def plot_histograms(
     info_path: Path,
     dataset=None,
 ) -> None:
-    if not histograms:
+    info = json.loads(info_path.read_text(encoding="utf-8"))
+    rejection_summary = _collect_rejection_summary(info)
+
+    panels: list[tuple[str, str, dict]] = [
+        ("histogram", name, histogram) for name, histogram in sorted(histograms.items())
+    ]
+    if rejection_summary is not None:
+        panels.append(("summary", "rejection_rate_summary", rejection_summary))
+
+    if not panels:
         print(f"No histograms found in {info_path}")
         return
 
     columns = 2
-    rows = math.ceil(len(histograms) / columns)
+    rows = math.ceil(len(panels) / columns)
     fig, axes = plt.subplots(rows, columns, figsize=(16, 4 * rows))
     axes = list(axes.flat) if hasattr(axes, "flat") else [axes]
 
-    for ax, (name, histogram) in zip(axes, sorted(histograms.items())):
+    for ax, (panel_type, name, payload) in zip(axes, panels):
+        if panel_type == "summary":
+            _plot_rejection_summary(ax, payload)
+            continue
+
+        histogram = payload
         if name == "accepted_system_histogram" and dataset is not None:
             _plot_spine_system_heatmap(ax, dataset)
             continue
@@ -154,7 +278,7 @@ def plot_histograms(
         ax.set_ylabel("Count")
         ax.tick_params(axis="x", rotation=45)
 
-    for ax in axes[len(histograms):]:
+    for ax in axes[len(panels):]:
         ax.axis("off")
 
     fig.suptitle(
