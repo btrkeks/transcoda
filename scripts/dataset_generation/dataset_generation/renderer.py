@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import random
 from contextlib import contextmanager
+from dataclasses import dataclass
+from typing import Callable
 
 import numpy as np
 
@@ -19,6 +21,12 @@ from scripts.dataset_generation.dataset_generation.image_generation.rendering.ve
     count_nr_of_systems_in_svg,
 )
 from scripts.dataset_generation.dataset_generation.image_generation.types import RenderedPage
+from scripts.dataset_generation.dataset_generation.policy import (
+    DEFAULT_RETRYABLE_REJECTION_REASONS,
+    LAYOUT_RESCUE_RETRYABLE_REJECTION_REASONS,
+    RejectionReason,
+    RenderMode,
+)
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.types import RenderResult, SvgLayoutDiagnostics
 from scripts.dataset_generation.dataset_generation.verovio_diagnostics import (
@@ -26,15 +34,13 @@ from scripts.dataset_generation.dataset_generation.verovio_diagnostics import (
     parse_verovio_diagnostics,
 )
 
-_RETRYABLE_REJECTION_REASONS = {
-    "top_clearance",
-    "bottom_clearance",
-    "left_clearance",
-    "right_clearance",
-    "crop_risk",
-    "no_content_detected",
-}
-_LAYOUT_RESCUE_REJECTION_REASONS = _RETRYABLE_REJECTION_REASONS | {"multi_page"}
+
+@dataclass(frozen=True)
+class RenderModeStrategy:
+    retryable_reasons: frozenset[str]
+    max_attempts: Callable[[ProductionRecipe], int]
+    initial_transform: Callable[[VerovioRenderOptions], VerovioRenderOptions] | None
+    retry_transform: Callable[[VerovioRenderOptions, ProductionRecipe, str | None], VerovioRenderOptions]
 
 
 def count_systems_in_svg(svg: str) -> int:
@@ -54,7 +60,7 @@ def render_sample(
         recipe,
         seed=seed,
         renderer=renderer,
-        mode="default",
+        mode=RenderMode.DEFAULT,
         capture_verovio_diagnostics=capture_verovio_diagnostics,
     )
 
@@ -72,7 +78,7 @@ def render_sample_with_layout_rescue(
         recipe,
         seed=seed,
         renderer=renderer,
-        mode="layout_rescue",
+        mode=RenderMode.LAYOUT_RESCUE,
         capture_verovio_diagnostics=capture_verovio_diagnostics,
     )
 
@@ -82,17 +88,18 @@ def prepare_render_attempt(
     recipe: ProductionRecipe,
     *,
     seed: int,
-    mode: str = "default",
+    mode: RenderMode | str = RenderMode.DEFAULT,
 ) -> dict[str, object]:
+    active_mode = RenderMode(mode)
+    strategy = _render_mode_strategy(active_mode)
     with _seeded_random(seed):
         metadata_prefix = _generate_metadata_prefix(recipe)
         render_options = _sample_render_options(recipe)
-        max_attempts = recipe.render_only_aug.max_render_attempts
-        if mode == "layout_rescue":
-            render_options = _tighten_layout_for_layout_rescue(render_options)
-            max_attempts = 3
+        max_attempts = strategy.max_attempts(recipe)
+        if strategy.initial_transform is not None:
+            render_options = strategy.initial_transform(render_options)
         return {
-            "mode": mode,
+            "mode": active_mode,
             "seed": int(seed),
             "metadata_prefix": metadata_prefix,
             "render_transcription": render_transcription,
@@ -108,15 +115,17 @@ def _render_sample_impl(
     *,
     seed: int,
     renderer: VerovioRenderer | None = None,
-    mode: str = "default",
+    mode: RenderMode | str = RenderMode.DEFAULT,
     capture_verovio_diagnostics: bool = True,
 ) -> RenderResult:
     active_renderer = renderer or VerovioRenderer()
+    active_mode = RenderMode(mode)
+    strategy = _render_mode_strategy(active_mode)
     prepared_attempt = prepare_render_attempt(
         render_transcription,
         recipe,
         seed=seed,
-        mode=mode,
+        mode=active_mode,
     )
     metadata_prefix = str(prepared_attempt["metadata_prefix"])
     renderable = str(prepared_attempt["renderable"])
@@ -163,10 +172,9 @@ def _render_sample_impl(
 
         diagnostics = SvgLayoutDiagnostics(system_count=system_count, page_count=page_count)
         if page_count > 1:
-            rejection_reason = "multi_page"
-            if attempt_idx < max_attempts and rejection_reason in _retryable_rejection_reasons_for_mode(mode):
-                render_options = _next_retry_options_for_mode(
-                    mode,
+            rejection_reason = RejectionReason.MULTI_PAGE
+            if attempt_idx < max_attempts and rejection_reason in strategy.retryable_reasons:
+                render_options = strategy.retry_transform(
                     render_options,
                     recipe,
                     rejection_reason=rejection_reason,
@@ -227,10 +235,9 @@ def _render_sample_impl(
 
         if (
             attempt_idx < max_attempts
-            and rejection_reason in _retryable_rejection_reasons_for_mode(mode)
+            and rejection_reason in strategy.retryable_reasons
         ):
-            render_options = _next_retry_options_for_mode(
-                mode,
+            render_options = strategy.retry_transform(
                 render_options,
                 recipe,
                 rejection_reason=rejection_reason,
@@ -429,22 +436,27 @@ def _next_layout_rescue_options(
     return retry
 
 
-def _retryable_rejection_reasons_for_mode(mode: str) -> set[str]:
-    if mode == "layout_rescue":
-        return _LAYOUT_RESCUE_REJECTION_REASONS
-    return _RETRYABLE_REJECTION_REASONS
-
-
-def _next_retry_options_for_mode(
-    mode: str,
-    options: VerovioRenderOptions,
-    recipe: ProductionRecipe,
-    *,
-    rejection_reason: str | None,
-) -> VerovioRenderOptions:
-    if mode == "layout_rescue":
-        return _next_layout_rescue_options(options, rejection_reason=rejection_reason)
-    return _next_retry_render_options(options, recipe, rejection_reason=rejection_reason)
+def _render_mode_strategy(mode: RenderMode) -> RenderModeStrategy:
+    if mode == RenderMode.LAYOUT_RESCUE:
+        return RenderModeStrategy(
+            retryable_reasons=frozenset(value.value for value in LAYOUT_RESCUE_RETRYABLE_REJECTION_REASONS),
+            max_attempts=lambda _recipe: 3,
+            initial_transform=_tighten_layout_for_layout_rescue,
+            retry_transform=lambda options, _recipe, rejection_reason: _next_layout_rescue_options(
+                options,
+                rejection_reason=rejection_reason,
+            ),
+        )
+    return RenderModeStrategy(
+        retryable_reasons=frozenset(value.value for value in DEFAULT_RETRYABLE_REJECTION_REASONS),
+        max_attempts=lambda recipe: recipe.render_only_aug.max_render_attempts,
+        initial_transform=None,
+        retry_transform=lambda options, recipe, rejection_reason: _next_retry_render_options(
+            options,
+            recipe,
+            rejection_reason=rejection_reason,
+        ),
+    )
 
 
 def _assess_frame_fit(

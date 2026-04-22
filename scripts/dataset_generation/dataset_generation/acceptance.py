@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from scripts.dataset_generation.dataset_generation.policy import DecisionReason
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.truncation import classify_truncation_mode
 from scripts.dataset_generation.dataset_generation.types import AcceptanceDecision, RenderResult
@@ -22,12 +23,12 @@ def decide_acceptance(
         if truncation_mode == "required":
             return AcceptanceDecision(
                 action="reject",
-                reason="post_truncation_required",
+                reason=DecisionReason.POST_TRUNCATION_REQUIRED,
             )
         return AcceptanceDecision(action="accept_with_truncation")
 
     if truncation_mode == "required":
-        return AcceptanceDecision(action="reject", reason="truncation_required")
+        return AcceptanceDecision(action="reject", reason=DecisionReason.TRUNCATION_REQUIRED)
     return AcceptanceDecision(action="accept_without_truncation")
 
 

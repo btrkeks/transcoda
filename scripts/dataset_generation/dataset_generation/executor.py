@@ -24,6 +24,12 @@ from scripts.dataset_generation.dataset_generation.image_generation.rendering.ve
     VerovioRenderer,
 )
 from scripts.dataset_generation.dataset_generation.io import append_jsonl, write_json
+from scripts.dataset_generation.dataset_generation.outcome_events import (
+    build_failure_trace_event,
+    build_success_trace_event,
+    update_augmentation_summary_counters,
+    write_outcome_events,
+)
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.renderer import render_sample
 from scripts.dataset_generation.dataset_generation.resume_store import (
@@ -1086,15 +1092,12 @@ def _commit_contiguous_results(
         committed_to_dataset = isinstance(outcome, WorkerSuccess) and int(
             counters["accepted_samples"]
         ) < target_samples
-        _write_verovio_events(run_context=run_context, outcome=outcome)
-        _write_failure_events(run_context=run_context, outcome=outcome, task=task)
-        _write_success_events(
+        write_outcome_events(
             run_context=run_context,
             outcome=outcome,
             task=task,
             committed_to_dataset=committed_to_dataset,
         )
-        _write_augmentation_events(run_context=run_context, outcome=outcome)
         _maybe_write_augmentation_preview(run_context=run_context, outcome=outcome, counters=counters)
         truncation_counts: Counter = counters["truncation_counts"]  # type: ignore[assignment]
         failure_counts: Counter = counters["failure_reason_counts"]  # type: ignore[assignment]
@@ -1139,7 +1142,7 @@ def _commit_contiguous_results(
                     aug_outcome_counts[outcome.augmentation_trace.final_outcome] += 1
                     aug_band_counts[outcome.augmentation_trace.band] += 1
                     aug_branch_counts[outcome.augmentation_trace.branch] += 1
-                    _update_augmentation_summary_counters(
+                    update_augmentation_summary_counters(
                         counters=counters,
                         trace=outcome.augmentation_trace,
                     )
@@ -1153,173 +1156,6 @@ def _commit_contiguous_results(
     counters["next_sample_idx"] = next_to_commit
     next_to_commit_ref[0] = next_to_commit
     return pending_rows
-
-
-def _write_verovio_events(
-    *,
-    run_context: RunContext,
-    outcome: WorkerSuccess | WorkerFailure,
-) -> None:
-    if not outcome.verovio_diagnostics:
-        return
-    append_jsonl(
-        run_context.verovio_events_path,
-        [asdict(event) for event in outcome.verovio_diagnostics],
-    )
-
-
-def _write_failure_events(
-    *,
-    run_context: RunContext,
-    outcome: WorkerSuccess | WorkerFailure,
-    task: ScheduledTask | None,
-) -> None:
-    if not isinstance(outcome, WorkerFailure):
-        return
-    append_jsonl(
-        run_context.failure_events_path,
-        [asdict(_build_failure_trace_event(outcome=outcome, task=task))],
-    )
-
-
-def _write_success_events(
-    *,
-    run_context: RunContext,
-    outcome: WorkerSuccess | WorkerFailure,
-    task: ScheduledTask | None,
-    committed_to_dataset: bool,
-) -> None:
-    if not isinstance(outcome, WorkerSuccess):
-        return
-    append_jsonl(
-        run_context.success_events_path,
-        [
-            asdict(
-                _build_success_trace_event(
-                    outcome=outcome,
-                    task=task,
-                    committed_to_dataset=committed_to_dataset,
-                )
-            )
-        ],
-    )
-
-
-def _build_failure_trace_event(
-    *,
-    outcome: WorkerFailure,
-    task: ScheduledTask | None,
-) -> FailureTraceEvent:
-    source_paths: tuple[str, ...] = ()
-    target_bucket = None
-    planned_line_count = None
-    candidate_in_target_range = None
-    sample_idx = int(outcome.sample_id.split("_")[-1])
-    if task is not None:
-        sample_idx = task.sample_idx
-        source_paths = tuple(str(segment.path.resolve()) for segment in task.plan.segments)
-        target_bucket = task.target_bucket
-        planned_line_count = task.planned_line_count
-        candidate_in_target_range = task.candidate_in_target_range
-    return FailureTraceEvent(
-        event="failure_trace",
-        sample_id=outcome.sample_id,
-        sample_idx=sample_idx,
-        source_paths=source_paths,
-        target_bucket=target_bucket,
-        planned_line_count=planned_line_count,
-        candidate_in_target_range=candidate_in_target_range,
-        failure_reason=outcome.failure_reason,
-        truncation_mode=outcome.truncation_mode,
-        truncation_attempted=outcome.truncation_attempted,
-        preferred_5_6_rescue_attempted=outcome.preferred_5_6_rescue_attempted,
-        preferred_5_6_rescue_succeeded=outcome.preferred_5_6_rescue_succeeded,
-        preferred_5_6_status=outcome.preferred_5_6_status,
-        attempts=outcome.failure_attempts,
-    )
-
-
-def _build_success_trace_event(
-    *,
-    outcome: WorkerSuccess,
-    task: ScheduledTask | None,
-    committed_to_dataset: bool,
-) -> SuccessTraceEvent:
-    source_paths: tuple[str, ...] = ()
-    target_bucket = None
-    planned_line_count = None
-    candidate_in_target_range = None
-    sample_idx = int(outcome.sample.sample_id.split("_")[-1])
-    if task is not None:
-        sample_idx = task.sample_idx
-        source_paths = tuple(str(segment.path.resolve()) for segment in task.plan.segments)
-        target_bucket = task.target_bucket
-        planned_line_count = task.planned_line_count
-        candidate_in_target_range = task.candidate_in_target_range
-    return SuccessTraceEvent(
-        event="success_trace",
-        sample_id=outcome.sample.sample_id,
-        sample_idx=sample_idx,
-        source_paths=source_paths,
-        target_bucket=target_bucket,
-        planned_line_count=planned_line_count,
-        candidate_in_target_range=candidate_in_target_range,
-        committed_to_dataset=committed_to_dataset,
-        full_render_system_count=outcome.full_render_system_count,
-        full_render_content_height_px=outcome.full_render_content_height_px,
-        full_render_vertical_fill_ratio=outcome.full_render_vertical_fill_ratio,
-        full_render_rejection_reason=outcome.full_render_rejection_reason,
-        accepted_render_system_count=outcome.accepted_render_system_count,
-        truncation_attempted=outcome.truncation_attempted,
-        truncation_rescued=outcome.truncation_rescued,
-        preferred_5_6_rescue_attempted=outcome.preferred_5_6_rescue_attempted,
-        preferred_5_6_rescue_succeeded=outcome.preferred_5_6_rescue_succeeded,
-        preferred_5_6_status=outcome.preferred_5_6_status,
-        initial_kern_spine_count=outcome.sample.initial_kern_spine_count,
-        segment_count=outcome.sample.segment_count,
-        source_non_empty_line_count=outcome.sample.source_non_empty_line_count,
-        truncation_applied=outcome.sample.truncation_applied,
-        truncation_reason=outcome.sample.truncation_reason,
-        truncation_ratio=outcome.sample.truncation_ratio,
-    )
-
-
-def _write_augmentation_events(
-    *,
-    run_context: RunContext,
-    outcome: WorkerSuccess | WorkerFailure,
-) -> None:
-    if not isinstance(outcome, WorkerSuccess) or outcome.augmentation_trace is None:
-        return
-    append_jsonl(
-        run_context.augmentation_events_path,
-        [asdict(outcome.augmentation_trace)],
-    )
-
-
-def _update_augmentation_summary_counters(
-    *,
-    counters: dict[str, object],
-    trace: AugmentationTraceEvent,
-) -> None:
-    final_geometry_counts: Counter = counters["final_geometry_counts"]  # type: ignore[assignment]
-    oob_failure_reason_counts: Counter = counters["oob_failure_reason_counts"]  # type: ignore[assignment]
-    outer_gate_failure_reason_counts: Counter = counters["outer_gate_failure_reason_counts"]  # type: ignore[assignment]
-
-    if not trace.outer_gate.passed:
-        final_geometry_counts["base_image_returned"] += 1
-    elif trace.final_geometry_applied:
-        final_geometry_counts["geometry_survived"] += 1
-    else:
-        final_geometry_counts["geometry_discarded"] += 1
-
-    if trace.initial_oob_gate.failure_reason is not None:
-        oob_failure_reason_counts[trace.initial_oob_gate.failure_reason] += 1
-    if trace.retry_oob_gate is not None and trace.retry_oob_gate.failure_reason is not None:
-        oob_failure_reason_counts[trace.retry_oob_gate.failure_reason] += 1
-    if trace.outer_gate.failure_reason is not None:
-        outer_gate_failure_reason_counts[trace.outer_gate.failure_reason] += 1
-
 
 def _maybe_write_augmentation_preview(
     *,
