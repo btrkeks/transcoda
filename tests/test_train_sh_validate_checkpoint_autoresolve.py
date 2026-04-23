@@ -206,6 +206,7 @@ def test_validate_prefers_last_submitted_run_and_adds_dependency_when_checkpoint
     assert "Validation will wait for training job 4321 before starting." in result.stdout
     assert "--dependency=afterok:4321" in result.stdout
     assert f"--checkpoint_path={checkpoint_dir / 'last.ckpt'}" in result.stdout
+    assert f"--checkpoint.run_name={run_id}-validate" in result.stdout
 
 
 def test_validate_auto_resolves_newest_ckpt_from_forwarded_dir_override(tmp_path: Path) -> None:
@@ -239,3 +240,4 @@ def test_validate_auto_resolves_newest_ckpt_from_forwarded_dir_override(tmp_path
     assert f"Selected validation run: {override_dir.name} ({override_dir})" in result.stdout
     assert "Auto-selected validation checkpoint (auto_validate_newest_ckpt):" in result.stdout
     assert f"--checkpoint_path={newer}" in result.stdout
+    assert f"--checkpoint.run_name={override_dir.name}-validate" in result.stdout

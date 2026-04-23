@@ -235,6 +235,29 @@ prepare_submit_run_identity() {
   fi
 }
 
+prepare_validate_run_identity() {
+  local validate_run_name=""
+
+  if [ "${COMMAND}" != "validate" ]; then
+    return 0
+  fi
+
+  if has_forwarded_override "checkpoint.run_name"; then
+    return 0
+  fi
+
+  if [ -n "${RESOLVED_RUN_NAME}" ]; then
+    validate_run_name="${RESOLVED_RUN_NAME}-validate"
+  elif validate_run_name="$(resolve_effective_config_value "checkpoint.run_name")"; then
+    validate_run_name="${validate_run_name}-validate"
+  else
+    validate_run_name="validate"
+  fi
+
+  AUTO_FORWARDED_ARGS+=("--checkpoint.run_name=${validate_run_name}")
+  RESOLVED_RUN_NAME="${validate_run_name}"
+}
+
 resolve_validate_checkpoint_path() {
   local checkpoint_dir=""
   local last_ckpt=""
@@ -1064,6 +1087,8 @@ prepare_submit_run_identity
 if ! resolve_validate_checkpoint_path; then
   exit 2
 fi
+
+prepare_validate_run_identity
 
 if [ "${COMMAND}" = "doctor" ]; then
   if run_doctor; then
