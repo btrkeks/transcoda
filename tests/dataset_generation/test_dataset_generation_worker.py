@@ -81,6 +81,22 @@ def _make_recipe() -> ProductionRecipe:
     )
 
 
+def _make_candidate(
+    transcription: str,
+    *,
+    chunk_count: int,
+    total_chunks: int,
+    ratio: float,
+) -> PrefixTruncationCandidate:
+    return PrefixTruncationCandidate(
+        transcription=transcription,
+        chunk_count=chunk_count,
+        total_chunks=total_chunks,
+        ratio=ratio,
+        origin_line_indices=tuple(range(len(transcription.splitlines()))),
+    )
+
+
 def _patch_truncation_search(monkeypatch, candidates: list[PrefixTruncationCandidate]) -> None:
     def fake_find_best_truncation_candidate(
         kern_text,
@@ -264,7 +280,7 @@ def test_failed_5_6_render_attempts_rescue_before_truncation(monkeypatch):
     _patch_truncation_search(
         monkeypatch,
         [
-            PrefixTruncationCandidate(
+            _make_candidate(
                 transcription="**kern\n=1\n4c\n*-\n",
                 chunk_count=1,
                 total_chunks=2,
@@ -306,13 +322,13 @@ def test_truncation_exhausted_failure_keeps_full_attempt_diagnostics(monkeypatch
     _patch_truncation_search(
         monkeypatch,
         [
-            PrefixTruncationCandidate(
+            _make_candidate(
                 transcription="**kern\n=1\n4c\n*-\n",
                 chunk_count=1,
                 total_chunks=2,
                 ratio=0.5,
             ),
-            PrefixTruncationCandidate(
+            _make_candidate(
                 transcription="**kern\n=1\n4c\n*-\n",
                 chunk_count=2,
                 total_chunks=2,
@@ -413,7 +429,7 @@ def test_failed_5_6_render_can_still_truncate_successfully(monkeypatch):
     _patch_truncation_search(
         monkeypatch,
         [
-            PrefixTruncationCandidate(
+            _make_candidate(
                 transcription="**kern\n=1\n4c\n*-\n",
                 chunk_count=1,
                 total_chunks=2,
@@ -449,7 +465,7 @@ def test_truncation_candidate_verovio_diagnostics_are_stage_attributed(monkeypat
     _patch_truncation_search(
         monkeypatch,
         [
-            PrefixTruncationCandidate(
+            _make_candidate(
                 transcription="**kern\n=1\n4c\n*-\n",
                 chunk_count=3,
                 total_chunks=5,
@@ -490,7 +506,7 @@ def test_required_over_7_systems_still_go_straight_to_truncation(monkeypatch):
     _patch_truncation_search(
         monkeypatch,
         [
-            PrefixTruncationCandidate(
+            _make_candidate(
                 transcription="**kern\n=1\n4c\n*-\n",
                 chunk_count=1,
                 total_chunks=2,
@@ -528,7 +544,7 @@ def test_invalid_truncation_candidate_is_rejected_before_render(monkeypatch):
     _patch_truncation_search(
         monkeypatch,
         [
-            PrefixTruncationCandidate(
+            _make_candidate(
                 transcription="**kern\t**kern\t**kern\n4c\t4e\t4g\n*\t*v\t*v\n*-\t*-\t*-",
                 chunk_count=1,
                 total_chunks=2,
@@ -666,7 +682,7 @@ def test_truncation_candidate_layout_rescue_is_stage_attributed(monkeypatch):
     _patch_truncation_search(
         monkeypatch,
         [
-            PrefixTruncationCandidate(
+            _make_candidate(
                 transcription="**kern\n=1\n4c\n*-\n",
                 chunk_count=1,
                 total_chunks=2,

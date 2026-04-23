@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import random
 from collections.abc import Callable
-from contextlib import contextmanager
 from dataclasses import dataclass
 
 import numpy as np
 
+from scripts.dataset_generation.dataset_generation.render_transcription import (
+    RenderAugmentationPlan,
+    sample_render_augmentation_plan,
+)
 from scripts.dataset_generation.dataset_generation.image_generation.image_post import (
     pad_or_crop_alpha_to_height,
     pad_or_crop_to_height,
@@ -46,8 +49,39 @@ class RenderModeStrategy:
     retry_transform: Callable[[VerovioRenderOptions, ProductionRecipe, str | None], VerovioRenderOptions]
 
 
+@dataclass(frozen=True)
+class SampleRenderContext:
+    augmentation_plan: RenderAugmentationPlan
+    metadata_prefix: str
+    base_render_options: VerovioRenderOptions
+    layout_rescue_render_options: VerovioRenderOptions
+
+
 def count_systems_in_svg(svg: str) -> int:
     return count_nr_of_systems_in_svg(svg)
+
+
+def prepare_sample_render_context(
+    label_transcription: str,
+    recipe: ProductionRecipe,
+    *,
+    seed: int,
+) -> SampleRenderContext:
+    rng = random.Random(seed)
+    augmentation_plan = sample_render_augmentation_plan(
+        label_transcription,
+        recipe,
+        rng=rng,
+    )
+    metadata_prefix = _generate_metadata_prefix(recipe, rng)
+    base_render_options = _sample_render_options(recipe, rng)
+    layout_rescue_render_options = _tighten_layout_for_layout_rescue(base_render_options)
+    return SampleRenderContext(
+        augmentation_plan=augmentation_plan,
+        metadata_prefix=metadata_prefix,
+        base_render_options=base_render_options,
+        layout_rescue_render_options=layout_rescue_render_options,
+    )
 
 
 def render_sample(
@@ -57,6 +91,7 @@ def render_sample(
     seed: int,
     renderer: VerovioRenderer | None = None,
     capture_verovio_diagnostics: bool = True,
+    context: SampleRenderContext | None = None,
 ) -> RenderResult:
     return _render_sample_impl(
         render_transcription,
@@ -65,6 +100,7 @@ def render_sample(
         renderer=renderer,
         mode=RenderMode.DEFAULT,
         capture_verovio_diagnostics=capture_verovio_diagnostics,
+        context=context,
     )
 
 
@@ -75,6 +111,7 @@ def render_sample_with_layout_rescue(
     seed: int,
     renderer: VerovioRenderer | None = None,
     capture_verovio_diagnostics: bool = True,
+    context: SampleRenderContext | None = None,
 ) -> RenderResult:
     return _render_sample_impl(
         render_transcription,
@@ -83,6 +120,7 @@ def render_sample_with_layout_rescue(
         renderer=renderer,
         mode=RenderMode.LAYOUT_RESCUE,
         capture_verovio_diagnostics=capture_verovio_diagnostics,
+        context=context,
     )
 
 
@@ -92,24 +130,33 @@ def prepare_render_attempt(
     *,
     seed: int,
     mode: RenderMode | str = RenderMode.DEFAULT,
+    context: SampleRenderContext | None = None,
 ) -> dict[str, object]:
     active_mode = RenderMode(mode)
     strategy = _render_mode_strategy(active_mode)
-    with _seeded_random(seed):
-        metadata_prefix = _generate_metadata_prefix(recipe)
-        render_options = _sample_render_options(recipe)
-        max_attempts = strategy.max_attempts(recipe)
+    if context is None:
+        rng = random.Random(seed)
+        metadata_prefix = _generate_metadata_prefix(recipe, rng)
+        render_options = _sample_render_options(recipe, rng)
         if strategy.initial_transform is not None:
             render_options = strategy.initial_transform(render_options)
-        return {
-            "mode": active_mode,
-            "seed": int(seed),
-            "metadata_prefix": metadata_prefix,
-            "render_transcription": render_transcription,
-            "renderable": metadata_prefix + render_transcription,
-            "render_options": dict(render_options),
-            "max_attempts": int(max_attempts),
-        }
+    elif active_mode == RenderMode.LAYOUT_RESCUE:
+        metadata_prefix = context.metadata_prefix
+        render_options = dict(context.layout_rescue_render_options)
+    else:
+        metadata_prefix = context.metadata_prefix
+        render_options = dict(context.base_render_options)
+
+    max_attempts = strategy.max_attempts(recipe)
+    return {
+        "mode": active_mode,
+        "seed": int(seed),
+        "metadata_prefix": metadata_prefix,
+        "render_transcription": render_transcription,
+        "renderable": metadata_prefix + render_transcription,
+        "render_options": dict(render_options),
+        "max_attempts": int(max_attempts),
+    }
 
 
 def _render_sample_impl(
@@ -120,6 +167,7 @@ def _render_sample_impl(
     renderer: VerovioRenderer | None = None,
     mode: RenderMode | str = RenderMode.DEFAULT,
     capture_verovio_diagnostics: bool = True,
+    context: SampleRenderContext | None = None,
 ) -> RenderResult:
     active_renderer = renderer or VerovioRenderer()
     active_mode = RenderMode(mode)
@@ -129,6 +177,7 @@ def _render_sample_impl(
         recipe,
         seed=seed,
         mode=active_mode,
+        context=context,
     )
     metadata_prefix = str(prepared_attempt["metadata_prefix"])
     renderable = str(prepared_attempt["renderable"])
@@ -283,7 +332,10 @@ def _render_sample_impl(
     )
 
 
-def _generate_metadata_prefix(recipe: ProductionRecipe) -> str:
+def _generate_metadata_prefix(
+    recipe: ProductionRecipe,
+    rng: random.Random,
+) -> str:
     try:
         from scripts.dataset_generation.dataset_generation.image_generation.metadata_generator import (
             generate_metadata_prefix,
@@ -291,8 +343,8 @@ def _generate_metadata_prefix(recipe: ProductionRecipe) -> str:
     except ImportError:
         return ""
 
-    include_title = random.random() < recipe.render_only_aug.include_title_probability
-    include_author = random.random() < recipe.render_only_aug.include_author_probability
+    include_title = rng.random() < recipe.render_only_aug.include_title_probability
+    include_author = rng.random() < recipe.render_only_aug.include_author_probability
     return generate_metadata_prefix(include_title=include_title, include_author=include_author)
 
 
@@ -312,38 +364,41 @@ def _resize_rendered_page(
     )
 
 
-def _sample_render_options(recipe: ProductionRecipe) -> VerovioRenderOptions:
+def _sample_render_options(
+    recipe: ProductionRecipe,
+    rng: random.Random,
+) -> VerovioRenderOptions:
     image_width = recipe.image_width
     layout_profile = recipe.render_only_aug.render_layout_profile
 
     if layout_profile == "target_5_6_systems":
         # Keep a mild single-page bias for the preferred 5-6-system path, but
         # avoid the ultra-compact look caused by very wide pages and tiny scale.
-        page_width_factor = random.uniform(2.08, 2.34)
+        page_width_factor = rng.uniform(2.08, 2.34)
         page_width = int(round(image_width * page_width_factor))
 
         def margin() -> int:
-            return max(0, min(500, int(round(page_width * random.uniform(0.015, 0.040)))))
+            return max(0, min(500, int(round(page_width * rng.uniform(0.015, 0.040)))))
 
         options: VerovioRenderOptions = {
-            "scale": random.randint(56, 74),
-            "barLineWidth": random.uniform(0.16, 0.70),
-            "beamMaxSlope": random.randint(4, 16),
-            "staffLineWidth": random.uniform(0.10, 0.24),
-            "stemWidth": random.uniform(0.10, 0.36),
-            "ledgerLineThickness": random.uniform(0.10, 0.38),
-            "thickBarlineThickness": random.uniform(0.60, 1.60),
-            "spacingLinear": random.uniform(0.15, 0.27),
-            "spacingNonLinear": random.uniform(0.24, 0.46),
-            "spacingStaff": random.randint(5, 18),
-            "spacingSystem": random.randint(4, 11),
-            "measureMinWidth": random.randint(5, 14),
+            "scale": rng.randint(56, 74),
+            "barLineWidth": rng.uniform(0.16, 0.70),
+            "beamMaxSlope": rng.randint(4, 16),
+            "staffLineWidth": rng.uniform(0.10, 0.24),
+            "stemWidth": rng.uniform(0.10, 0.36),
+            "ledgerLineThickness": rng.uniform(0.10, 0.38),
+            "thickBarlineThickness": rng.uniform(0.60, 1.60),
+            "spacingLinear": rng.uniform(0.15, 0.27),
+            "spacingNonLinear": rng.uniform(0.24, 0.46),
+            "spacingStaff": rng.randint(5, 18),
+            "spacingSystem": rng.randint(4, 11),
+            "measureMinWidth": rng.randint(5, 14),
             "pageMarginLeft": margin(),
             "pageMarginRight": margin(),
             "pageMarginTop": margin(),
             "pageMarginBottom": margin(),
             "pageWidth": page_width,
-            "font": random.choice(VEROVIO_FONTS),
+            "font": rng.choice(VEROVIO_FONTS),
             "breaksNoWidow": False,
             "justifyVertically": False,
             "noJustification": False,
@@ -351,31 +406,31 @@ def _sample_render_options(recipe: ProductionRecipe) -> VerovioRenderOptions:
             "breaks": "auto",
         }
     else:
-        page_width_factor = random.uniform(1.80, 2.40)
+        page_width_factor = rng.uniform(1.80, 2.40)
         page_width = int(round(image_width * page_width_factor))
 
         def margin() -> int:
-            return max(0, min(500, int(round(page_width * random.uniform(0.015, 0.05)))))
+            return max(0, min(500, int(round(page_width * rng.uniform(0.015, 0.05)))))
 
         options = {
-            "scale": random.randint(52, 84),
-            "barLineWidth": random.uniform(0.16, 0.72),
-            "beamMaxSlope": random.randint(4, 16),
-            "staffLineWidth": random.uniform(0.10, 0.26),
-            "stemWidth": random.uniform(0.10, 0.36),
-            "ledgerLineThickness": random.uniform(0.10, 0.40),
-            "thickBarlineThickness": random.uniform(0.60, 1.80),
-            "spacingLinear": random.uniform(0.16, 0.32),
-            "spacingNonLinear": random.uniform(0.24, 0.56),
-            "spacingStaff": random.randint(4, 20),
-            "spacingSystem": random.randint(3, 10),
-            "measureMinWidth": random.randint(6, 18),
+            "scale": rng.randint(52, 84),
+            "barLineWidth": rng.uniform(0.16, 0.72),
+            "beamMaxSlope": rng.randint(4, 16),
+            "staffLineWidth": rng.uniform(0.10, 0.26),
+            "stemWidth": rng.uniform(0.10, 0.36),
+            "ledgerLineThickness": rng.uniform(0.10, 0.40),
+            "thickBarlineThickness": rng.uniform(0.60, 1.80),
+            "spacingLinear": rng.uniform(0.16, 0.32),
+            "spacingNonLinear": rng.uniform(0.24, 0.56),
+            "spacingStaff": rng.randint(4, 20),
+            "spacingSystem": rng.randint(3, 10),
+            "measureMinWidth": rng.randint(6, 18),
             "pageMarginLeft": margin(),
             "pageMarginRight": margin(),
             "pageMarginTop": margin(),
             "pageMarginBottom": margin(),
             "pageWidth": page_width,
-            "font": random.choice(VEROVIO_FONTS),
+            "font": rng.choice(VEROVIO_FONTS),
             "breaksNoWidow": False,
             "justifyVertically": False,
             "noJustification": False,
@@ -561,13 +616,3 @@ def _coerce_int(value: object) -> int | None:
     if value is None:
         return None
     return int(value)
-
-
-@contextmanager
-def _seeded_random(seed: int):
-    state = random.getstate()
-    random.seed(seed)
-    try:
-        yield
-    finally:
-        random.setstate(state)

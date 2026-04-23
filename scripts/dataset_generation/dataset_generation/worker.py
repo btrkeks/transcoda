@@ -31,10 +31,12 @@ from scripts.dataset_generation.dataset_generation.policy import (
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.records import build_dataset_row
 from scripts.dataset_generation.dataset_generation.render_transcription import (
-    build_render_transcription,
     ensure_render_header,
+    materialize_render_transcription,
 )
 from scripts.dataset_generation.dataset_generation.renderer import (
+    SampleRenderContext,
+    prepare_sample_render_context,
     render_sample,
     render_sample_with_layout_rescue,
 )
@@ -148,7 +150,17 @@ def evaluate_sample_plan(
 ) -> WorkerOutcome:
     attempt_ledger = AttemptLedger()
     resolved_stage_events_path = _resolve_stage_events_path(stage_events_path)
-    render_transcription = build_render_transcription(plan.label_transcription, recipe, seed=plan.seed)
+    render_context = prepare_sample_render_context(
+        plan.label_transcription,
+        recipe,
+        seed=plan.seed,
+    )
+    render_transcription = materialize_render_transcription(
+        plan.label_transcription,
+        recipe,
+        augmentation_plan=render_context.augmentation_plan,
+        source_line_indices=tuple(range(len(plan.label_transcription.splitlines()))),
+    )
     full_attempt = _execute_attempt(
         sample_plan=plan,
         attempt_ledger=attempt_ledger,
@@ -163,6 +175,7 @@ def evaluate_sample_plan(
         render_callable=render_fn,
         capture_verovio_diagnostics=capture_verovio_diagnostics,
         stage_events_path=resolved_stage_events_path,
+        render_context=render_context,
     )
     full_render = full_attempt.render_result
     full_decision = full_attempt.decision
@@ -230,6 +243,7 @@ def evaluate_sample_plan(
             truncation_applied=False,
             capture_verovio_diagnostics=capture_verovio_diagnostics,
             stage_events_path=resolved_stage_events_path,
+            render_context=render_context,
         )
         rescue_render = rescue_attempt.render_result
         rescue_decision = rescue_attempt.decision
@@ -278,6 +292,7 @@ def evaluate_sample_plan(
                 rescue_render_fn=rescue_render_fn,
                 capture_verovio_diagnostics=capture_verovio_diagnostics,
                 stage_events_path=resolved_stage_events_path,
+                render_context=render_context,
             ),
         )
         truncation_attempted = bool(search_result.probes)
@@ -389,6 +404,7 @@ def _execute_attempt(
     render_callable: Callable[..., RenderResult],
     capture_verovio_diagnostics: bool,
     stage_events_path: Path | None,
+    render_context: SampleRenderContext | None = None,
 ) -> ExecutedRenderAttempt:
     stage_started_at = time.time()
     _write_worker_stage_event(
@@ -405,6 +421,7 @@ def _execute_attempt(
         renderer=renderer,
         render_callable=render_callable,
         capture_verovio_diagnostics=capture_verovio_diagnostics,
+        context=render_context,
     )
     _write_worker_stage_event(
         sample_plan=sample_plan,
@@ -429,12 +446,14 @@ def _probe_truncation_candidate(
     rescue_render_fn: Callable[..., RenderResult] | None,
     capture_verovio_diagnostics: bool,
     stage_events_path: Path | None,
+    render_context: SampleRenderContext,
 ) -> TruncationProbeResult:
     candidate_seed = (sample_plan.seed + candidate.chunk_count * 17) & 0xFFFFFFFF
-    candidate_render_transcription = build_render_transcription(
+    candidate_render_transcription = materialize_render_transcription(
         candidate.transcription,
         recipe,
-        seed=candidate_seed,
+        augmentation_plan=render_context.augmentation_plan,
+        source_line_indices=candidate.origin_line_indices,
     )
     attempt_plan = RenderAttemptPlan(
         stage=AttemptStageName.TRUNCATION_CANDIDATE,
@@ -468,6 +487,7 @@ def _probe_truncation_candidate(
         render_callable=render_fn,
         capture_verovio_diagnostics=capture_verovio_diagnostics,
         stage_events_path=stage_events_path,
+        render_context=render_context,
     )
     if candidate_attempt.decision.action == "accept_with_truncation":
         return _build_probe_result(candidate, candidate_attempt)
@@ -490,6 +510,7 @@ def _probe_truncation_candidate(
             ratio=candidate.ratio,
             capture_verovio_diagnostics=capture_verovio_diagnostics,
             stage_events_path=stage_events_path,
+            render_context=render_context,
         )
         if rescued_candidate_attempt.decision.action == "accept_with_truncation":
             return _build_probe_result(candidate, rescued_candidate_attempt)
@@ -572,6 +593,7 @@ def _execute_layout_rescue_attempt(
     ratio: float | None = None,
     capture_verovio_diagnostics: bool,
     stage_events_path: Path | None,
+    render_context: SampleRenderContext | None = None,
 ) -> ExecutedRenderAttempt:
     rescue_callable = rescue_render_fn
     if rescue_callable is None and render_fn is render_sample:
@@ -593,6 +615,7 @@ def _execute_layout_rescue_attempt(
         render_callable=rescue_callable or render_fn,
         capture_verovio_diagnostics=capture_verovio_diagnostics,
         stage_events_path=stage_events_path,
+        render_context=render_context,
     )
 
 

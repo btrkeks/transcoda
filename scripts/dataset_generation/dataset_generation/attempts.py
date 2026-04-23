@@ -12,6 +12,7 @@ from scripts.dataset_generation.dataset_generation.image_generation.rendering.ve
     VerovioRenderer,
 )
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
+from scripts.dataset_generation.dataset_generation.renderer import SampleRenderContext
 from scripts.dataset_generation.dataset_generation.types_domain import AttemptStageName, SamplePlan
 from scripts.dataset_generation.dataset_generation.types_events import (
     FailureRenderAttempt,
@@ -67,6 +68,7 @@ def execute_render_attempt(
     renderer: VerovioRenderer,
     render_callable: Callable[..., RenderResult],
     capture_verovio_diagnostics: bool,
+    context: SampleRenderContext | None = None,
 ) -> ExecutedRenderAttempt:
     render_result = _call_render(
         render_callable,
@@ -75,6 +77,7 @@ def execute_render_attempt(
         seed=attempt_plan.seed,
         renderer=renderer,
         capture_verovio_diagnostics=capture_verovio_diagnostics,
+        context=context,
     )
     return finalize_render_attempt(
         sample_plan=sample_plan,
@@ -113,22 +116,25 @@ def _call_render(
     seed: int,
     renderer: VerovioRenderer,
     capture_verovio_diagnostics: bool,
+    context: SampleRenderContext | None,
 ) -> RenderResult:
     kwargs = {
         "seed": seed,
         "renderer": renderer,
     }
-    if _callable_accepts_capture_flag(render_callable):
+    if _callable_accepts_parameter(render_callable, "capture_verovio_diagnostics"):
         kwargs["capture_verovio_diagnostics"] = capture_verovio_diagnostics
+    if context is not None and _callable_accepts_parameter(render_callable, "context"):
+        kwargs["context"] = context
     return render_callable(render_transcription, recipe, **kwargs)
 
 
-def _callable_accepts_capture_flag(render_callable: Callable[..., object]) -> bool:
+def _callable_accepts_parameter(render_callable: Callable[..., object], name: str) -> bool:
     try:
         signature = inspect.signature(render_callable)
     except (TypeError, ValueError):
         return False
-    if "capture_verovio_diagnostics" in signature.parameters:
+    if name in signature.parameters:
         return True
     return any(
         parameter.kind == inspect.Parameter.VAR_KEYWORD

@@ -7,8 +7,9 @@ from pathlib import Path
 
 from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
 from scripts.dataset_generation.dataset_generation.render_transcription import (
-    build_render_transcription,
+    materialize_render_transcription,
 )
+from scripts.dataset_generation.dataset_generation.renderer import prepare_sample_render_context
 from scripts.dataset_generation.dataset_generation.run_context import RunContext
 from scripts.dataset_generation.dataset_generation.truncation import build_prefix_candidates
 from scripts.dataset_generation.dataset_generation.types_domain import SamplePlan
@@ -35,10 +36,21 @@ def write_crash_artifact(
     crash_dir.mkdir(parents=True, exist_ok=True)
 
     repro_entries: list[dict[str, object]] = []
+    render_context = prepare_sample_render_context(
+        plan.label_transcription,
+        recipe,
+        seed=plan.seed,
+    )
 
     full_render_path = crash_dir / f"{sample_idx:08d}_full.krn"
     full_render_path.write_text(
-        build_render_transcription(plan.label_transcription, recipe, seed=plan.seed) + "\n",
+        materialize_render_transcription(
+            plan.label_transcription,
+            recipe,
+            augmentation_plan=render_context.augmentation_plan,
+            source_line_indices=tuple(range(len(plan.label_transcription.splitlines()))),
+        )
+        + "\n",
         encoding="utf-8",
     )
     repro_entries.append(
@@ -53,7 +65,13 @@ def write_crash_artifact(
         candidate_seed = (plan.seed + candidate.chunk_count * 17) & 0xFFFFFFFF
         candidate_path = crash_dir / f"{sample_idx:08d}_truncation_{idx:02d}.krn"
         candidate_path.write_text(
-            build_render_transcription(candidate.transcription, recipe, seed=candidate_seed) + "\n",
+            materialize_render_transcription(
+                candidate.transcription,
+                recipe,
+                augmentation_plan=render_context.augmentation_plan,
+                source_line_indices=candidate.origin_line_indices,
+            )
+            + "\n",
             encoding="utf-8",
         )
         repro_entries.append(

@@ -13,6 +13,7 @@ from scripts.dataset_generation.dataset_generation.types_render import (
 )
 from src.core.kern_postprocess import resolve_terminal_active_spine_count
 from src.core.kern_utils import (
+    is_bar_line,
     is_spinemerge_line,
     is_spinesplit_line,
     is_terminator_line,
@@ -28,6 +29,7 @@ class PrefixTruncationCandidate:
     chunk_count: int
     total_chunks: int
     ratio: float
+    origin_line_indices: tuple[int, ...]
 
 
 @dataclass(frozen=True)
@@ -35,6 +37,7 @@ class PrefixTruncationSpace:
     """Cached chunk-aligned truncation search space for one transcription."""
 
     chunks: tuple[str, ...]
+    chunk_origin_line_indices: tuple[tuple[int, ...], ...]
 
     @property
     def total_chunks(self) -> int:
@@ -52,8 +55,13 @@ class PrefixTruncationSpace:
                 f"chunk_count must be in [1, {total_chunks}], got {chunk_count}"
             )
 
-        transcription = _strip_trailing_spine_transition_lines(
-            "".join(self.chunks[:chunk_count]).rstrip("\n")
+        transcription, origin_line_indices = _strip_trailing_spine_transition_lines(
+            "".join(self.chunks[:chunk_count]).rstrip("\n").splitlines(),
+            [
+                line_idx
+                for chunk_origin_line_indices in self.chunk_origin_line_indices[:chunk_count]
+                for line_idx in chunk_origin_line_indices
+            ],
         )
         if not transcription.strip():
             return None
@@ -63,6 +71,7 @@ class PrefixTruncationSpace:
             chunk_count=chunk_count,
             total_chunks=total_chunks,
             ratio=ratio,
+            origin_line_indices=origin_line_indices,
         )
 
 
@@ -89,14 +98,34 @@ class TruncationSearchResult:
 
 def build_prefix_truncation_space(kern_text: str) -> PrefixTruncationSpace:
     chunks = tuple(split_into_same_spine_nr_chunks_and_measures(kern_text))
-    return PrefixTruncationSpace(chunks=chunks)
+    chunk_origin_line_indices: list[tuple[int, ...]] = []
+    current_chunk_origin_line_indices: list[int] = []
+    for line_idx, line in enumerate(kern_text.splitlines()):
+        current_chunk_origin_line_indices.append(line_idx)
+        if is_bar_line(line) or is_spinesplit_line(line) or is_spinemerge_line(line):
+            chunk_origin_line_indices.append(tuple(current_chunk_origin_line_indices))
+            current_chunk_origin_line_indices = []
+    if current_chunk_origin_line_indices:
+        chunk_origin_line_indices.append(tuple(current_chunk_origin_line_indices))
+
+    return PrefixTruncationSpace(
+        chunks=chunks,
+        chunk_origin_line_indices=tuple(chunk_origin_line_indices),
+    )
 
 
-def _strip_trailing_spine_transition_lines(text: str) -> str:
-    lines = text.rstrip("\n").split("\n")
-    while lines and (is_spinesplit_line(lines[-1]) or is_spinemerge_line(lines[-1])):
-        lines.pop()
-    return "\n".join(lines)
+def _strip_trailing_spine_transition_lines(
+    lines: list[str],
+    origin_line_indices: list[int],
+) -> tuple[str, tuple[int, ...]]:
+    trimmed_lines = list(lines)
+    trimmed_origin_line_indices = list(origin_line_indices)
+    while trimmed_lines and (
+        is_spinesplit_line(trimmed_lines[-1]) or is_spinemerge_line(trimmed_lines[-1])
+    ):
+        trimmed_lines.pop()
+        trimmed_origin_line_indices.pop()
+    return "\n".join(trimmed_lines), tuple(trimmed_origin_line_indices)
 
 
 def truncate_by_chunk_count(kern_text: str, chunk_count: int) -> tuple[str, float]:
