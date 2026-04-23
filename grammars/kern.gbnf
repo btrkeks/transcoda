@@ -205,6 +205,7 @@ reciprocal-dur ::=
     "32" |          # thirty-second
     "34" |
     "36" |          # tuplet
+    "38" |
     "40" |          # tuplet
     "44" |
     "48" |          # thirty-second triplet
