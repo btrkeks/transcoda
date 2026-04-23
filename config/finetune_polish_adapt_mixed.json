@@ -39,7 +39,7 @@
     "monitor": "val/polish_dev/CER_no_ties_beams",
     "mode": "min",
     "save_last": true,
-    "auto_resume": true,
+    "auto_resume": false,
     "run_name": "SMT-Finetune-Polish-Adapt-Mixed",
     "tags": ["finetune", "real-scans", "polish-adapt", "mixed"]
   },

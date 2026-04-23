@@ -89,8 +89,8 @@ python train.py config/train.json
 # Override config values via CLI (dot notation)
 python train.py config/train.json --model.d_model=256 --training.max_epochs=10
 
-# Resume from last checkpoint (auto_resume is on by default)
-python train.py config/train.json
+# Resume from last checkpoint (enable auto_resume explicitly)
+python train.py config/train.json --checkpoint.auto_resume=true
 
 # Start fresh, ignoring existing checkpoints
 python train.py config/train.json --fresh_run=true

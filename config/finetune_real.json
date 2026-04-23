@@ -39,7 +39,7 @@
     "monitor": "val/olimpic/CER",
     "mode": "min",
     "save_last": true,
-    "auto_resume": true,
+    "auto_resume": false,
     "run_name": "SMT-Finetune-Real",
     "tags": ["finetune", "real-scans", "olimpic"]
   },

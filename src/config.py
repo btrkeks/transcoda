@@ -297,7 +297,7 @@ class Checkpoint(BaseModel):
     tags: list[str] = Field(  # W&B tags for filtering (e.g., ["scale-study", "data-50k"])
         default_factory=list
     )
-    auto_resume: bool = True
+    auto_resume: bool = False
 
 
 class ModelConfig(BaseModel):

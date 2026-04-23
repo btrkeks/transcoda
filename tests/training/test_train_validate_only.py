@@ -200,7 +200,9 @@ def test_main_validate_only_runs_validate_not_fit(tmp_path: Path, monkeypatch: p
     assert _DummyDataModule.train_dataloader_calls == 0
 
 
-def test_main_default_path_runs_fit(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def test_main_default_path_runs_fit_without_auto_resume(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
     config_path = _write_min_config(tmp_path)
     weights_dir = tmp_path / "weights"
     weights_dir.mkdir(parents=True, exist_ok=True)
@@ -214,7 +216,7 @@ def test_main_default_path_runs_fit(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     assert len(trainer.fit_calls) == 1
     assert len(trainer.validate_calls) == 1
     _, fit_kwargs = trainer.fit_calls[0]
-    assert fit_kwargs["ckpt_path"] == str(last_ckpt)
+    assert fit_kwargs["ckpt_path"] is None
     _, validate_kwargs = trainer.validate_calls[0]
     assert validate_kwargs["ckpt_path"] == str(last_ckpt)
     assert _DummyDataModule.last_instance is not None
@@ -300,6 +302,9 @@ def test_validate_only_forces_log_example_images_true(
 
 def test_main_auto_resume_uses_last_ckpt(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     config_path = _write_min_config(tmp_path)
+    cfg = json.loads(config_path.read_text())
+    cfg["checkpoint"]["auto_resume"] = True
+    config_path.write_text(json.dumps(cfg))
     weights_dir = tmp_path / "weights"
     weights_dir.mkdir(parents=True, exist_ok=True)
     last_ckpt = weights_dir / "last.ckpt"

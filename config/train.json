@@ -40,7 +40,7 @@
     "monitor": "val/polish/CER_no_ties_beams",
     "mode": "min",
     "save_last": true,
-    "auto_resume": true
+    "auto_resume": false
   },
   "generation": {
     "strategy": "greedy"

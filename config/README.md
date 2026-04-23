@@ -68,14 +68,14 @@ python train.py --config_path config/train.json --seed=1337
 ## Current Production Defaults (`config/train.json`)
 
 - Checkpoint monitor: `checkpoint.monitor="val/polish/CER_no_ties_beams"` (`mode="min"`)
-- Auto-resume: `checkpoint.auto_resume=true` with `checkpoint.save_last=true`
+- Auto-resume: off by default (`checkpoint.auto_resume=false`); set `checkpoint.auto_resume=true` to resume from `last.ckpt`
 - Scheduler: `optimizer.lr_scheduler="cosine"` (warmup + single cosine decay)
 - Tiered validation:
   - frequent: every `training.val_check_interval` (default 1000 steps) on `training.frequent_validation_set_names` (default `["polish"]`)
   - frequent subset metrics: every validation pass on deterministic subsets from `training.frequent_validation_subset_sizes` (default `{"synth": 256}`), logged separately as `val/synth_subset/CER`
   - full: every `training.full_validation_every_n_steps` (default 5000 steps) on all validation sets
 
-To force a fresh run without auto-resume:
+To force a fresh run explicitly:
 
 ```bash
 python train.py config/train.json --fresh_run=true
