@@ -526,6 +526,23 @@ def _normalize_render_layers(base_image: ImageU8, render_layers: RenderedPage | 
     return RenderedPage(image=base_image, foreground=foreground, alpha=alpha)
 
 
+def _geometry_gate_mask_from_layers(
+    foreground: np.ndarray,
+    alpha: np.ndarray,
+) -> np.ndarray:
+    """Build the geometry-gate mask, preferring renderer alpha when available.
+
+    The reconstructed RGB foreground can pick up large dark regions after
+    interpolation even when the notation alpha stays sparse and correct. For
+    geometry gating we trust the renderer alpha first and only fall back to the
+    visible-foreground heuristic when alpha is empty or unavailable.
+    """
+    alpha_mask = np.asarray(alpha >= 8)
+    if alpha_mask.any():
+        return np.ascontiguousarray(alpha_mask)
+    return np.ascontiguousarray(_visible_notation_mask(foreground))
+
+
 def _build_augmented_candidate(
     *,
     base_layers: RenderedPage,
@@ -543,10 +560,7 @@ def _build_augmented_candidate(
     Background synthesis is handled separately after the OOB gate.
     """
     height, width = base_layers.foreground.shape[:2]
-    content_mask = _merge_visible_and_hint_masks(
-        _visible_notation_mask(base_layers.foreground),
-        base_layers.alpha >= 8,
-    )
+    content_mask = _geometry_gate_mask_from_layers(base_layers.foreground, base_layers.alpha)
     transform = sample_geometric_transform(
         (height, width),
         rng,
@@ -574,10 +588,7 @@ def _build_augmented_candidate(
         interpolation=cv2.INTER_LINEAR,
     )
 
-    visible_mask = _merge_visible_and_hint_masks(
-        _visible_notation_mask(warped_fg),
-        warped_alpha >= 8,
-    )
+    visible_mask = _geometry_gate_mask_from_layers(warped_fg, warped_alpha)
     return AugmentedCandidate(
         foreground=warped_fg,
         alpha=warped_alpha,

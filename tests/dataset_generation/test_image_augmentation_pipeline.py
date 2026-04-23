@@ -1,6 +1,7 @@
 import numpy as np
 
 from scripts.dataset_generation.dataset_generation.image_augmentation.geometric_augment import (
+    apply_geometric_transform,
     geometric_augment,
     sample_geometric_transform,
 )
@@ -60,7 +61,8 @@ def test_geometric_augment_preserves_shape_dtype():
 
 
 def test_geometric_zoom_out_keeps_white_fill_for_clean_page_warp():
-    img = np.zeros((64, 64, 3), dtype=np.uint8)
+    img = np.full((64, 64, 3), 255, dtype=np.uint8)
+    img[2:62, 2:62] = 0
     out = geometric_augment(img, np.random.default_rng(0))
     assert np.any(np.all(out == 255, axis=2))
 
@@ -81,12 +83,12 @@ def test_geometric_augment_deterministic_seed():
     assert np.array_equal(out1, out2)
 
 
-def test_sample_geometric_transform_uses_available_bottom_whitespace():
+def test_sample_geometric_transform_limits_ty_by_centroid_budget():
     mask = np.zeros((200, 200), dtype=bool)
     mask[20:40, 50:150] = True
     rng = _StubRng(
         random_values=[0.0],
-        uniform_values=[0.0, 0.0, 148.0, 0.0],
+        uniform_values=[0.0, 0.0, 0.0, 16.0],
     )
 
     transform = sample_geometric_transform(
@@ -99,8 +101,119 @@ def test_sample_geometric_transform_uses_available_bottom_whitespace():
     )
 
     assert transform is not None
-    assert np.isclose(transform.ty_px, 148.0)
-    assert transform.ty_px > 0.025 * 200
+    assert np.isclose(transform.ty_px, 16.0)
+    assert transform.ty_px <= 0.08 * 200
+
+
+def test_sample_geometric_transform_affine_only_passes_oob_gate():
+    base = np.full((200, 200, 3), 255, dtype=np.uint8)
+    base[40:80, 50:150] = 0
+    base_mask = (np.min(base, axis=2) < 255).astype(np.uint8) * 255
+
+    transform = sample_geometric_transform(
+        base.shape[:2],
+        np.random.default_rng(5),
+        conservative=True,
+        x_squeeze_prob=0.0,
+        content_mask=base_mask > 0,
+        min_margin_px=2,
+    )
+
+    assert transform is not None
+    assert transform.perspective is None
+
+    warped = apply_geometric_transform(base, transform)
+    candidate_mask = (np.min(warped, axis=2) < 255).astype(np.uint8) * 255
+    assert _passes_out_of_bounds_gate_from_masks(base_mask, candidate_mask)
+
+
+def test_sample_geometric_transform_perspective_passes_oob_gate():
+    base = np.full((200, 200, 3), 255, dtype=np.uint8)
+    base[60:100, 70:130] = 0
+    base_mask = (np.min(base, axis=2) < 255).astype(np.uint8) * 255
+    rng = _StubRng(
+        random_values=[0.0, 1.0, 0.0],
+        uniform_values=[
+            0.0,
+            0.0,
+            np.array(
+                [[0.0, 0.0], [-1.0, 0.0], [0.0, 1.0], [1.0, 0.0]],
+                dtype=np.float32,
+            ),
+            0.0,
+            0.0,
+        ],
+    )
+
+    transform = sample_geometric_transform(
+        base.shape[:2],
+        rng,
+        conservative=False,
+        x_squeeze_prob=0.0,
+        content_mask=base_mask > 0,
+        min_margin_px=2,
+    )
+
+    assert transform is not None
+    assert transform.perspective is not None
+
+    warped = apply_geometric_transform(base, transform)
+    candidate_mask = (np.min(warped, axis=2) < 255).astype(np.uint8) * 255
+    assert _passes_out_of_bounds_gate_from_masks(base_mask, candidate_mask)
+
+
+def test_sample_geometric_transform_returns_none_when_nontranslation_is_infeasible():
+    mask = np.zeros((50, 50), dtype=bool)
+    mask[2:48, 2:48] = True
+    rng = _StubRng(
+        random_values=[0.0, 1.0, 1.0],
+        uniform_values=[np.log(1.15), 0.0],
+    )
+
+    transform = sample_geometric_transform(
+        (50, 50),
+        rng,
+        conservative=False,
+        x_squeeze_prob=0.0,
+        content_mask=mask,
+        min_margin_px=2,
+    )
+
+    assert transform is None
+
+
+def test_sample_geometric_transform_non_none_samples_pass_oob_gate():
+    base = np.full((220, 220, 3), 255, dtype=np.uint8)
+    base[50:110, 70:150] = 0
+    base_mask = (np.min(base, axis=2) < 255).astype(np.uint8) * 255
+
+    for seed in range(16):
+        transform = sample_geometric_transform(
+            base.shape[:2],
+            np.random.default_rng(seed),
+            conservative=False,
+            content_mask=base_mask > 0,
+            min_margin_px=2,
+        )
+        if transform is None:
+            continue
+        warped = apply_geometric_transform(base, transform)
+        candidate_mask = (np.min(warped, axis=2) < 255).astype(np.uint8) * 255
+        assert _passes_out_of_bounds_gate_from_masks(base_mask, candidate_mask), seed
+
+
+def test_sample_geometric_transform_empty_mask_does_not_crash():
+    transform = sample_geometric_transform(
+        (80, 80),
+        np.random.default_rng(0),
+        conservative=False,
+        content_mask=np.zeros((80, 80), dtype=bool),
+        min_margin_px=2,
+    )
+
+    assert transform is None or (
+        np.isclose(transform.tx_px, 0.0) and np.isclose(transform.ty_px, 0.0)
+    )
 
 
 def test_passes_quality_gate_rejects_extremes():
@@ -325,6 +438,37 @@ def test_offline_augment_outer_gate_rejects_sparse_mask_even_with_dark_composite
     assert np.any(pre[20:44, 20:44] == 110)
     assert not trace.outer_gate.passed
     assert trace.outer_gate.failure_reason == "quality:content_ratio"
+
+
+def test_offline_augment_geometry_gate_prefers_alpha_mask_over_dark_foreground(monkeypatch):
+    base = np.full((64, 64, 3), 255, dtype=np.uint8)
+    alpha = np.zeros((64, 64), dtype=np.uint8)
+    alpha[24:40, 24:40] = 255
+    foreground = np.full((64, 64, 3), 150, dtype=np.uint8)
+    layers = RenderedPage(image=base, foreground=foreground, alpha=alpha)
+
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment.sample_geometric_transform",
+        lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment.augraphy_augment",
+        lambda image, seed=None: (image, "applied"),
+    )
+
+    out, _, trace = offline_augment(
+        base,
+        render_layers=layers,
+        filename="x.krn",
+        variant_idx=0,
+        augment_seed=13,
+    )
+
+    assert out.shape == base.shape
+    assert trace.initial_oob_gate.passed
+    assert trace.initial_oob_gate.failure_reason is None
+    assert trace.outer_gate.passed
+    assert trace.outer_gate.failure_reason is None
 
 
 def test_offline_augment_trace_records_augraphy_fallback(monkeypatch):

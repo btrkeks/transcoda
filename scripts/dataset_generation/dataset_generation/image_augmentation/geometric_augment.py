@@ -10,6 +10,7 @@ ImageU8 = npt.NDArray[np.uint8]
 
 _WHITE_RGB = (255, 255, 255)
 _DEFAULT_MIN_MARGIN_PX = 2
+_DEFAULT_MAX_CENTROID_SHIFT_FRACTION = 0.08
 
 
 @dataclass(frozen=True)
@@ -64,14 +65,118 @@ def _translation_interval_from_bbox(
     return -left_room, right_room, -top_room, bottom_room
 
 
+def _bbox_corners(bbox: tuple[int, int, int, int] | None) -> np.ndarray | None:
+    if bbox is None:
+        return None
+    top, bottom, left, right = bbox
+    return np.array(
+        [
+            [left, top],
+            [right, top],
+            [right, bottom],
+            [left, bottom],
+        ],
+        dtype=np.float32,
+    )
+
+
+def _bbox_from_points(points: np.ndarray | None) -> tuple[float, float, float, float] | None:
+    if points is None or points.size == 0:
+        return None
+    return (
+        float(points[:, 1].min()),
+        float(points[:, 1].max()),
+        float(points[:, 0].min()),
+        float(points[:, 0].max()),
+    )
+
+
+def _interval_intersection(
+    left: tuple[float, float],
+    right: tuple[float, float],
+) -> tuple[float, float] | None:
+    lo = max(left[0], right[0])
+    hi = min(left[1], right[1])
+    if lo > hi:
+        return None
+    return float(lo), float(hi)
+
+
+def _translation_interval_from_transformed_bbox(
+    base_bbox: tuple[int, int, int, int] | None,
+    transformed_bbox: tuple[float, float, float, float] | None,
+    image_shape: tuple[int, int],
+    *,
+    min_margin_px: int,
+    max_centroid_shift_fraction: float,
+) -> tuple[float, float, float, float] | None:
+    if base_bbox is None or transformed_bbox is None:
+        return 0.0, 0.0, 0.0, 0.0
+
+    trans_top, trans_bottom, trans_left, trans_right = transformed_bbox
+    height, width = image_shape
+
+    tx_margin = (
+        float(min_margin_px) - trans_left,
+        float(width - 1 - min_margin_px) - trans_right,
+    )
+    ty_margin = (
+        float(min_margin_px) - trans_top,
+        float(height - 1 - min_margin_px) - trans_bottom,
+    )
+
+    base_top, base_bottom, base_left, base_right = base_bbox
+    base_cx = (base_left + base_right) / 2.0
+    base_cy = (base_top + base_bottom) / 2.0
+    trans_cx = (trans_left + trans_right) / 2.0
+    trans_cy = (trans_top + trans_bottom) / 2.0
+    max_dx = float(max_centroid_shift_fraction) * float(width)
+    max_dy = float(max_centroid_shift_fraction) * float(height)
+    tx_centroid = (base_cx - max_dx - trans_cx, base_cx + max_dx - trans_cx)
+    ty_centroid = (base_cy - max_dy - trans_cy, base_cy + max_dy - trans_cy)
+
+    tx_interval = _interval_intersection(tx_margin, tx_centroid)
+    ty_interval = _interval_intersection(ty_margin, ty_centroid)
+    if tx_interval is None or ty_interval is None:
+        return None
+    return tx_interval[0], tx_interval[1], ty_interval[0], ty_interval[1]
+
+
+def _translation_matrix(tx_px: float, ty_px: float) -> np.ndarray:
+    return np.array(
+        [
+            [1.0, 0.0, tx_px],
+            [0.0, 1.0, ty_px],
+            [0.0, 0.0, 1.0],
+        ],
+        dtype=np.float32,
+    )
+
+
+def _compose_transform_matrix(
+    affine: np.ndarray,
+    perspective: np.ndarray | None,
+    *,
+    tx_px: float,
+    ty_px: float,
+) -> np.ndarray:
+    affine3 = np.vstack([affine, np.array([0.0, 0.0, 1.0], dtype=np.float32)]).astype(np.float32)
+    matrix = affine3
+    if perspective is not None:
+        matrix = perspective.astype(np.float32) @ matrix
+    return _translation_matrix(tx_px, ty_px) @ matrix
+
+
 def transform_matrix(transform: GeometricTransform | None) -> np.ndarray | None:
     """Return the composed 3x3 forward transform matrix."""
     if transform is None:
         return None
-    affine3 = np.vstack([transform.affine, np.array([0.0, 0.0, 1.0], dtype=np.float32)])
-    if transform.perspective is None:
-        return affine3.astype(np.float32)
-    return (transform.perspective @ affine3).astype(np.float32)
+    return _compose_transform_matrix(
+        transform.affine,
+        transform.perspective,
+        tx_px=float(transform.tx_px),
+        ty_px=float(transform.ty_px),
+    )
 
 
 def transform_points(points: np.ndarray, transform: GeometricTransform | None) -> np.ndarray:
@@ -111,6 +216,7 @@ def sample_geometric_transform(
     x_squeeze_force_scale: float | None = None,
     content_mask: np.ndarray | None = None,
     min_margin_px: int = _DEFAULT_MIN_MARGIN_PX,
+    max_centroid_shift_fraction: float = _DEFAULT_MAX_CENTROID_SHIFT_FRACTION,
 ) -> GeometricTransform | None:
     """Sample a scanner-like transform while preserving the output size."""
     height, width = image_shape
@@ -143,18 +249,8 @@ def sample_geometric_transform(
     if x_squeeze_force_scale is None and rng.random() >= 0.85:
         return None
 
+    base_bbox = _content_bbox_from_mask(content_mask)
     scale = float(np.exp(rng.uniform(np.log(scale_range[0]), np.log(scale_range[1]))))
-    if x_squeeze_force_scale is not None:
-        tx = 0.0
-        ty = 0.0
-    else:
-        tx_min, tx_max, ty_min, ty_max = _translation_interval_from_bbox(
-            _content_bbox_from_mask(content_mask),
-            image_shape,
-            min_margin_px=min_margin_px,
-        )
-        tx = float(rng.uniform(tx_min, tx_max))
-        ty = float(rng.uniform(ty_min, ty_max))
     angle = float(rng.uniform(-rotation_deg, rotation_deg))
 
     sx = 1.0
@@ -184,8 +280,6 @@ def sample_geometric_transform(
     affine[0, 1] *= sx
     affine[1, 0] *= sy
     affine[1, 1] *= sy
-    affine[0, 2] += tx
-    affine[1, 2] += ty
 
     perspective = None
     if perspective_prob > 0 and rng.random() < perspective_prob:
@@ -206,6 +300,43 @@ def sample_geometric_transform(
             size=src.shape,
         ).astype(np.float32)
         perspective = cv2.getPerspectiveTransform(src, dst)
+
+    tx = 0.0
+    ty = 0.0
+    bbox_corners = _bbox_corners(base_bbox)
+    transformed_bbox = _bbox_from_points(
+        transform_points(
+            bbox_corners,
+            GeometricTransform(
+                affine=affine.astype(np.float32),
+                perspective=perspective,
+                tx_px=0.0,
+                ty_px=0.0,
+                angle_deg=angle,
+                scale=scale,
+                x_scale=sx,
+                y_scale=sy,
+                conservative=conservative,
+            ),
+        )
+        if bbox_corners is not None
+        else None
+    )
+    translation_interval = _translation_interval_from_transformed_bbox(
+        base_bbox,
+        transformed_bbox,
+        image_shape,
+        min_margin_px=min_margin_px,
+        max_centroid_shift_fraction=max_centroid_shift_fraction,
+    )
+    if translation_interval is None:
+        return None
+    tx_min, tx_max, ty_min, ty_max = translation_interval
+    if x_squeeze_force_scale is None:
+        tx = float(rng.uniform(tx_min, tx_max))
+        ty = float(rng.uniform(ty_min, ty_max))
+    elif not (tx_min <= 0.0 <= tx_max and ty_min <= 0.0 <= ty_max):
+        return None
 
     return GeometricTransform(
         affine=affine.astype(np.float32),
@@ -235,6 +366,20 @@ def apply_geometric_transform(
         return np.ascontiguousarray(image)
 
     height, width = image.shape[:2]
+    if transform.perspective is None:
+        affine = transform.affine.astype(np.float32).copy()
+        affine[0, 2] += float(transform.tx_px)
+        affine[1, 2] += float(transform.ty_px)
+        warped = cv2.warpAffine(
+            image,
+            affine,
+            (width, height),
+            flags=interpolation,
+            borderMode=border_mode,
+            borderValue=border_value,
+        )
+        return np.ascontiguousarray(warped)
+
     warped = cv2.warpAffine(
         image,
         transform.affine,
@@ -252,6 +397,21 @@ def apply_geometric_transform(
             borderMode=border_mode,
             borderValue=border_value,
         )
+    translation_affine = np.array(
+        [
+            [1.0, 0.0, float(transform.tx_px)],
+            [0.0, 1.0, float(transform.ty_px)],
+        ],
+        dtype=np.float32,
+    )
+    warped = cv2.warpAffine(
+        warped,
+        translation_affine,
+        (width, height),
+        flags=interpolation,
+        borderMode=border_mode,
+        borderValue=border_value,
+    )
     return np.ascontiguousarray(warped)
 
 
