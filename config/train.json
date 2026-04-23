@@ -20,7 +20,7 @@
     "freeze_encoder_stages": 0,
     "max_image_height": 1485,
     "max_image_width": 1050,
-    "max_seq_len": 2048,
+    "max_seq_len": 3000,
     "positional_encoding": "rope"
   },
   "optimizer": {
