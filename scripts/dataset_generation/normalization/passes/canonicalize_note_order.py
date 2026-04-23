@@ -147,7 +147,7 @@ def _parse_note_components(
 
     # Check for groupetto pattern (qq before pitch) anywhere in token
     # Groupetto: duration "qq" pitch accidental? beam?
-    groupetto_match = re.search(r"(\d+\.*)qq([a-gA-G]+)", remaining)
+    groupetto_match = re.search(r"(\d+(?:%\d+)?\.*)qq([a-gA-G]+)", remaining)
     if groupetto_match:
         components["duration"] = groupetto_match.group(1)
         components["pitch"] = groupetto_match.group(2)
@@ -206,7 +206,7 @@ def _parse_note_components(
     remaining = remaining[i:]
 
     # Step 2: Parse duration (digits + dots)
-    duration_match = re.match(r"^(\d+\.*)", remaining)
+    duration_match = re.match(r"^(\d+(?:%\d+)?\.*)", remaining)
     if duration_match:
         components["duration"] = duration_match.group(1)
         remaining = remaining[len(components["duration"]) :]

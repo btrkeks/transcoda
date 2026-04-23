@@ -137,6 +137,40 @@ def test_standard_pipeline_accepts_consecutive_valid_manipulator_rows():
     assert "4c\t4g" in normalized
 
 
+def test_standard_pipeline_normalizes_rscale_excerpt_from_test_000008():
+    transcription = """*clefF4\t*clefG2
+*k[f#c#]\t*k[f#c#]
+*M4/4\t*M4/4
+.\t32ff#)J
+*\t*rscale:2
+*\t*Xtuplet
+4r\t76aa(L
+.\t76gg
+.\t76fff#
+.\t76r
+.\t76ee#)J
+=\t=
+*ped\t*rscale:1
+16DD(L\t32gg(KL
+"""
+
+    normalized = normalize_kern_transcription(transcription)
+
+    expected = """*clefF4\t*clefG2
+*k[f#c#]\t*k[f#c#]
+*M4/4\t*M4/4
+.\t32ff#)J
+4r\t38aa(L
+.\t38gg
+.\t38fff#
+.\t38r
+.\t38ee#)J
+=\t=
+16DD(L\t32gg(KL""".strip()
+
+    assert normalized == expected
+
+
 def test_standard_pipeline_preserves_valid_triple_merge_excerpt_from_grandstaff_003867():
     transcription = """**kern\t**kern
 *clefF4\t*clefG2

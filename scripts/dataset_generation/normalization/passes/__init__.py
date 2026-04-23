@@ -12,6 +12,7 @@ from .merge_header_clef_lines import MergeHeaderClefLines
 from .merge_split_normalizer import MergeSplitNormalizer
 from .normalize_final_barline import NormalizeFinalBarline
 from .normalize_null_keysig import NormalizeNullKeysig
+from .normalize_rscale import NormalizeRScale
 from .order_notes import OrderNotes
 from .remove_conflicting_bowings import RemoveConflictingBowings
 from .remove_grace_rests import RemoveGraceRests
@@ -42,6 +43,7 @@ PASS_REGISTRY: dict[str, type] = {
     "merge_split_normalizer": MergeSplitNormalizer,
     "normalize_final_barline": NormalizeFinalBarline,
     "normalize_null_keysig": NormalizeNullKeysig,
+    "normalize_rscale": NormalizeRScale,
     "order_notes": OrderNotes,
     "remove_conflicting_bowings": RemoveConflictingBowings,
     "remove_grace_rests": RemoveGraceRests,
@@ -71,6 +73,7 @@ __all__ = [
     "MergeSplitNormalizer",
     "NormalizeFinalBarline",
     "NormalizeNullKeysig",
+    "NormalizeRScale",
     "OrderNotes",
     "RemoveConflictingBowings",
     "RemoveGraceRests",

@@ -177,3 +177,16 @@ class TestTupletAndUnsupportedSymbolCleanup:
         result = pass_obj.transform(input_text, ctx)
 
         assert result == expected
+
+    def test_preserves_rscale_tokens_for_dedicated_normalizer(self):
+        """Should leave *rscale tokens untouched for NormalizeRScale to handle."""
+        pass_obj = CleanupKern()
+        ctx = NormalizationContext()
+
+        input_text = "*\t*rscale:2\n4C\t76aa(L\n*\t*rscale:1"
+        expected = "*\t*rscale:2\n4C\t76aa(L\n*\t*rscale:1"
+
+        pass_obj.prepare(input_text, ctx)
+        result = pass_obj.transform(input_text, ctx)
+
+        assert result == expected

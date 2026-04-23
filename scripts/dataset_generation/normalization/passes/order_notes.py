@@ -161,7 +161,7 @@ def parse_kern_note(note_token: str) -> dict:
     remaining = note_token
 
     # Parse duration (digits followed by optional dots)
-    duration_match = re.match(r"^(\d+\.*)", remaining)
+    duration_match = re.match(r"^(\d+(?:%\d+)?\.*)", remaining)
     if duration_match:
         result["duration"] = duration_match.group(1)
         remaining = remaining[len(result["duration"]) :]

@@ -21,6 +21,7 @@ from .passes import (
     MergeHeaderClefLines,
     MergeSplitNormalizer,
     NormalizeNullKeysig,
+    NormalizeRScale,
     OrderNotes,
     RemoveConflictingBowings,
     RemoveContradictoryAccidentals,
@@ -46,6 +47,7 @@ _FULL_PIPELINE = Pipeline(
         # the **kern header line to identify which columns to keep
         RemoveNonKernSpines(),  # Remove **mxhm, **dynam, **text and other non-kern spines
         CleanupKern(),  # Remove comments, **kern headers, unwanted tokens, etc.
+        NormalizeRScale(),  # Rewrite *rscale regions into visible durations before token reordering
         RemoveGraceRests(),  # Replace grace rests (qr) with null tokens - must be before CanonicalizeNoteOrder
         RemoveRedundantStria(),  # Remove redundant mid-piece stria lines
         RemoveLeadingBarlines(),

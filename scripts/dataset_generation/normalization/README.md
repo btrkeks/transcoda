@@ -26,25 +26,26 @@ The full pipeline is defined in `presets.py`. Current pass order:
 
 1. `RemoveNonKernSpines` — must run before `CleanupKern` (needs `**kern` header)
 2. `CleanupKern`
-3. `RemoveGraceRests` — must run before `CanonicalizeNoteOrder`
-4. `RemoveRedundantStria`
-5. `RemoveLeadingBarlines`
-6. `RemoveNullLines`
-7. `CanonicalizeBarlines`
-8. `MergeSplitNormalizer`
-9. `StripTerminalTerminator`
-10. `CapSlurs`
-11. `RemoveRedundantTimeSignatures`
-12. `CanonicalizeHeaderOrder`
-13. `MergeHeaderClefLines` — after reordering brings clef lines together
-14. `NormalizeNullKeysig`
-15. `CanonicalizeNoteOrder`
-16. `OrderNotes(ascending=True)`
-17. `SymbolsBeforeSplit`
-18. `RemoveContradictoryAccidentals` — must run after `CanonicalizeNoteOrder`
-19. `RemoveConflictingBowings`
-20. `RemoveNullTies` — canonicalizes repeated ties (`[[`, `]]`, `__`) and removes null ties/slurs; must run after `CanonicalizeNoteOrder`
-21. `ValidateSpineOperations` — final semantic check for spine width consistency and valid `*v` merge grouping
+3. `NormalizeRScale` — rewrites active `*rscale` regions into visible durations
+4. `RemoveGraceRests` — must run before `CanonicalizeNoteOrder`
+5. `RemoveRedundantStria`
+6. `RemoveLeadingBarlines`
+7. `RemoveNullLines`
+8. `CanonicalizeBarlines`
+9. `MergeSplitNormalizer`
+10. `StripTerminalTerminator`
+11. `CapSlurs`
+12. `RemoveRedundantTimeSignatures`
+13. `CanonicalizeHeaderOrder`
+14. `MergeHeaderClefLines` — after reordering brings clef lines together
+15. `NormalizeNullKeysig`
+16. `CanonicalizeNoteOrder`
+17. `OrderNotes(ascending=True)`
+18. `SymbolsBeforeSplit`
+19. `RemoveContradictoryAccidentals` — must run after `CanonicalizeNoteOrder`
+20. `RemoveConflictingBowings`
+21. `RemoveNullTies` — canonicalizes repeated ties (`[[`, `]]`, `__`) and removes null ties/slurs; must run after `CanonicalizeNoteOrder`
+22. `ValidateSpineOperations` — final semantic check for spine width consistency and valid `*v` merge grouping
 
 ## Implementing a New Pass
 

@@ -10,8 +10,6 @@ from ..base import NormalizationContext
 DEFAULT_AVOID_TOKENS: tuple[str, ...] = (
     "*cue",
     "*Xcue",
-    "*rscale:1/2",
-    "*rscale:1",
     "*kcancel",
     "*below",
     "*ped",
@@ -261,7 +259,7 @@ class CleanupKern:
 
     Operations performed in order:
     1. Remove comment lines (lines starting with !)
-    2. Remove unwanted tokens (*cue, *rscale, etc.)
+    2. Remove unwanted tokens (*cue, *ped, etc.)
     3. Remove key interpretation tokens (*A:, *f#:, etc.)
     4. Remove instrument designation tokens (*Ioboe, *Ipiano, etc.)
     5. Remove metronome/tempo markings (*MM88, *MM120, etc.)
