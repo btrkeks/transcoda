@@ -4,6 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="${SCRIPT_DIR}"
 LOG_DIR="${ROOT_DIR}/logs"
+LAST_RUN_STATE_FILE="${LOG_DIR}/train.sh-last-run.env"
 
 COMMAND="submit"
 if [ $# -gt 0 ]; then
@@ -26,6 +27,7 @@ TIME_LIMIT="24:00:00"
 JOB_NAME=""
 SEED=42
 CHECKPOINT_PATH=""
+CHECKPOINT_DIR=""
 FRESH_RUN=false
 GPU_ID=0
 NO_SYNC=false
@@ -35,6 +37,11 @@ DOCTOR_WARN_ONLY=false
 DOCTOR_JSON=false
 SLURM_EXTRA_ARGS=()
 FORWARDED_ARGS=()
+AUTO_FORWARDED_ARGS=()
+RESOLVED_RUN_ID=""
+RESOLVED_RUN_NAME=""
+CHECKPOINT_SAVE_LAST=""
+VALIDATE_DEPENDENCY_JOB_ID=""
 
 require_cmd() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -109,32 +116,159 @@ for part in key_path.split("."):
 if value is None or isinstance(value, (dict, list)):
     raise SystemExit(3)
 
-print(value, end="")
+if isinstance(value, bool):
+    print("true" if value else "false", end="")
+else:
+    print(value, end="")
 PY
 }
 
+slugify_identifier() {
+  local s="$1"
+  s="$(printf '%s' "${s}" | tr '[:upper:]' '[:lower:]')"
+  s="$(printf '%s' "${s}" | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//; s/-+/-/g')"
+  if [ -z "${s}" ]; then
+    s="run"
+  fi
+  printf '%s' "${s}"
+}
+
+normalize_path_to_root() {
+  local path="$1"
+  if [[ "${path}" != /* ]]; then
+    path="${ROOT_DIR}/${path#./}"
+  fi
+  printf '%s' "${path}"
+}
+
+resolve_effective_config_value() {
+  local key="$1"
+  local value=""
+  if value="$(get_forwarded_override_value "${key}")"; then
+    printf '%s' "${value}"
+    return 0
+  fi
+  resolve_config_value "${CONFIG}" "${key}"
+}
+
+write_last_run_state() {
+  mkdir -p "${LOG_DIR}"
+  {
+    printf 'LAST_RUN_ID=%q\n' "${RESOLVED_RUN_ID}"
+    printf 'LAST_RUN_NAME=%q\n' "${RESOLVED_RUN_NAME}"
+    printf 'LAST_RUN_CHECKPOINT_DIR=%q\n' "${CHECKPOINT_DIR}"
+    printf 'LAST_RUN_CONFIG=%q\n' "${CONFIG}"
+    printf 'LAST_RUN_SAVE_LAST=%q\n' "${CHECKPOINT_SAVE_LAST}"
+    printf 'LAST_RUN_JOB_ID=%q\n' "${1:-}"
+  } >"${LAST_RUN_STATE_FILE}"
+}
+
+load_last_run_state() {
+  if [ ! -f "${LAST_RUN_STATE_FILE}" ]; then
+    return 1
+  fi
+
+  # shellcheck disable=SC1090
+  source "${LAST_RUN_STATE_FILE}"
+
+  if [ -z "${LAST_RUN_CHECKPOINT_DIR:-}" ]; then
+    return 1
+  fi
+  return 0
+}
+
 CHECKPOINT_RESOLUTION="explicit"
+
+prepare_submit_run_identity() {
+  local configured_checkpoint_dir=""
+  local configured_run_name=""
+  local checkpoint_basename=""
+  local checkpoint_parent=""
+  local run_seed=""
+  local timestamp=""
+
+  if [ "${COMMAND}" != "submit" ]; then
+    return 0
+  fi
+
+  configured_checkpoint_dir="$(resolve_effective_config_value "checkpoint.dirpath")"
+  CHECKPOINT_DIR="$(normalize_path_to_root "${configured_checkpoint_dir}")"
+
+  if CHECKPOINT_SAVE_LAST="$(resolve_effective_config_value "checkpoint.save_last")"; then
+    :
+  else
+    CHECKPOINT_SAVE_LAST="true"
+  fi
+
+  if configured_run_name="$(resolve_effective_config_value "checkpoint.run_name")"; then
+    RESOLVED_RUN_NAME="${configured_run_name}"
+  else
+    RESOLVED_RUN_NAME=""
+  fi
+
+  if has_forwarded_override "checkpoint.dirpath"; then
+    if [ -z "${RESOLVED_RUN_NAME}" ]; then
+      RESOLVED_RUN_NAME="${CHECKPOINT_DIR##*/}"
+    fi
+    RESOLVED_RUN_ID="${CHECKPOINT_DIR##*/}"
+    return 0
+  fi
+
+  checkpoint_basename="${CHECKPOINT_DIR##*/}"
+  checkpoint_parent="${CHECKPOINT_DIR%/*}"
+  if [ -z "${checkpoint_parent}" ] || [ "${checkpoint_parent}" = "${CHECKPOINT_DIR}" ]; then
+    checkpoint_parent="${ROOT_DIR}"
+  fi
+
+  if [ -n "${RESOLVED_RUN_NAME}" ]; then
+    run_seed="$(slugify_identifier "${RESOLVED_RUN_NAME}")"
+  else
+    run_seed="$(slugify_identifier "${checkpoint_basename}")"
+  fi
+  timestamp="$(date +%Y%m%d-%H%M%S)"
+  RESOLVED_RUN_ID="${run_seed}-${timestamp}"
+  CHECKPOINT_DIR="${checkpoint_parent}/${RESOLVED_RUN_ID}"
+  AUTO_FORWARDED_ARGS+=("--checkpoint.dirpath=${CHECKPOINT_DIR}")
+  if ! has_forwarded_override "checkpoint.run_name"; then
+    RESOLVED_RUN_NAME="${RESOLVED_RUN_ID}"
+    AUTO_FORWARDED_ARGS+=("--checkpoint.run_name=${RESOLVED_RUN_NAME}")
+  fi
+}
 
 resolve_validate_checkpoint_path() {
   local checkpoint_dir=""
   local last_ckpt=""
   local newest_ckpt=""
+  local checkpoint_source="config_checkpoint_dir"
 
   if [ "${COMMAND}" != "validate" ] || [ -n "${CHECKPOINT_PATH}" ]; then
     return 0
   fi
 
   if checkpoint_dir="$(get_forwarded_override_value "checkpoint.dirpath")"; then
-    :
+    checkpoint_source="explicit_checkpoint_dir"
   else
-    if ! checkpoint_dir="$(resolve_config_value "${CONFIG}" "checkpoint.dirpath")"; then
-      echo "validate mode could not read checkpoint.dirpath from ${CONFIG}. Pass --checkpoint_path PATH explicitly." >&2
-      return 1
+    if load_last_run_state; then
+      checkpoint_dir="${LAST_RUN_CHECKPOINT_DIR}"
+      RESOLVED_RUN_ID="${LAST_RUN_ID:-${checkpoint_dir##*/}}"
+      RESOLVED_RUN_NAME="${LAST_RUN_NAME:-${RESOLVED_RUN_ID}}"
+      CHECKPOINT_SAVE_LAST="${LAST_RUN_SAVE_LAST:-true}"
+      checkpoint_source="last_submitted_run"
+    else
+      if ! checkpoint_dir="$(resolve_config_value "${CONFIG}" "checkpoint.dirpath")"; then
+        echo "validate mode could not read checkpoint.dirpath from ${CONFIG}. Pass --checkpoint_path PATH explicitly." >&2
+        return 1
+      fi
     fi
   fi
 
-  if [[ "${checkpoint_dir}" != /* ]]; then
-    checkpoint_dir="${ROOT_DIR}/${checkpoint_dir#./}"
+  checkpoint_dir="$(normalize_path_to_root "${checkpoint_dir}")"
+  CHECKPOINT_DIR="${checkpoint_dir}"
+  if [ -z "${RESOLVED_RUN_ID}" ]; then
+    RESOLVED_RUN_ID="${checkpoint_dir##*/}"
+  fi
+  if [ -z "${RESOLVED_RUN_NAME}" ]; then
+    RESOLVED_RUN_NAME="${RESOLVED_RUN_ID}"
   fi
 
   if [ ! -d "${checkpoint_dir}" ]; then
@@ -159,6 +293,13 @@ resolve_validate_checkpoint_path() {
   if [ -n "${newest_ckpt}" ]; then
     CHECKPOINT_PATH="${newest_ckpt}"
     CHECKPOINT_RESOLUTION="auto_validate_newest_ckpt"
+    return 0
+  fi
+
+  if [ "${checkpoint_source}" = "last_submitted_run" ] && [ "${CHECKPOINT_SAVE_LAST}" = "true" ]; then
+    CHECKPOINT_PATH="${last_ckpt}"
+    CHECKPOINT_RESOLUTION="auto_validate_pending_last_ckpt"
+    VALIDATE_DEPENDENCY_JOB_ID="${LAST_RUN_JOB_ID:-}"
     return 0
   fi
 
@@ -316,7 +457,9 @@ run_doctor() {
 
   if [ "${COMMAND}" = "validate" ] || [ -n "${CHECKPOINT_PATH}" ]; then
     if [ -n "${CHECKPOINT_PATH}" ]; then
-      if [ -f "${CHECKPOINT_PATH}" ]; then
+      if [ "${CHECKPOINT_RESOLUTION}" = "auto_validate_pending_last_ckpt" ] && [ -n "${VALIDATE_DEPENDENCY_JOB_ID}" ]; then
+        doctor_add "PASS" "checkpoint" "waiting for ${CHECKPOINT_PATH} after job ${VALIDATE_DEPENDENCY_JOB_ID}"
+      elif [ -f "${CHECKPOINT_PATH}" ]; then
         doctor_add "PASS" "checkpoint" "${CHECKPOINT_PATH}"
       else
         doctor_add "FAIL" "checkpoint" "missing file: ${CHECKPOINT_PATH}"
@@ -616,8 +759,8 @@ Usage:
   ./train.sh resources [--partition NAME]
 
 Commands:
-  submit      Submit a training job with sbatch (default).
-  validate    Submit a validate-only job (auto-resolves a checkpoint from checkpoint.dirpath when omitted).
+  submit      Submit a training job with sbatch (default; auto-assigns and remembers a run id when dirpath is omitted).
+  validate    Submit a validate-only job (prefers the last submitted run when checkpoint selection is omitted).
   shell       Open an interactive Slurm shell (srun --pty bash).
   local       Run train.py directly on this machine.
   queue       Show your queued/running jobs.
@@ -916,6 +1059,8 @@ if [ -n "${CHECKPOINT_PATH}" ] && [[ "${CHECKPOINT_PATH}" != /* ]]; then
   CHECKPOINT_PATH="${ROOT_DIR}/${CHECKPOINT_PATH#./}"
 fi
 
+prepare_submit_run_identity
+
 if ! resolve_validate_checkpoint_path; then
   exit 2
 fi
@@ -942,6 +1087,10 @@ fi
 if [ ! -f "${CONFIG}" ]; then
   echo "Config not found: ${CONFIG}" >&2
   exit 2
+fi
+
+if [ "${COMMAND}" = "submit" ] && [ -n "${CHECKPOINT_DIR}" ]; then
+  mkdir -p "${CHECKPOINT_DIR}"
 fi
 
 mkdir -p "${LOG_DIR}"
@@ -988,6 +1137,9 @@ if [ "${COMMAND}" = "validate" ]; then
     PY_CMD+=("--training.log_example_images=true")
   fi
 fi
+if [ ${#AUTO_FORWARDED_ARGS[@]} -gt 0 ]; then
+  PY_CMD+=("${AUTO_FORWARDED_ARGS[@]}")
+fi
 if [ ${#FORWARDED_ARGS[@]} -gt 0 ]; then
   PY_CMD+=("${FORWARDED_ARGS[@]}")
 fi
@@ -1007,7 +1159,11 @@ if [ "${COMMAND}" = "local" ]; then
 fi
 
 if [ "${COMMAND}" = "validate" ] && [ "${CHECKPOINT_RESOLUTION}" != "explicit" ]; then
+  echo "Selected validation run: ${RESOLVED_RUN_ID} (${CHECKPOINT_DIR})"
   echo "Auto-selected validation checkpoint (${CHECKPOINT_RESOLUTION}): ${CHECKPOINT_PATH}"
+  if [ -n "${VALIDATE_DEPENDENCY_JOB_ID}" ]; then
+    echo "Validation will wait for training job ${VALIDATE_DEPENDENCY_JOB_ID} before starting."
+  fi
 fi
 
 if [ -z "${JOB_NAME}" ]; then
@@ -1040,6 +1196,10 @@ if [ ${#SLURM_EXTRA_ARGS[@]} -gt 0 ]; then
   SBATCH_CMD+=("${SLURM_EXTRA_ARGS[@]}")
 fi
 
+if [ "${COMMAND}" = "validate" ] && [ -n "${VALIDATE_DEPENDENCY_JOB_ID}" ]; then
+  SBATCH_CMD+=("--dependency=afterok:${VALIDATE_DEPENDENCY_JOB_ID}")
+fi
+
 WRAP_SEGMENTS=("set -eu")
 WRAP_SEGMENTS+=("cd $(printf '%q' "${ROOT_DIR}")")
 WRAP_SEGMENTS+=("if [ -f .venv/bin/activate ]; then . .venv/bin/activate; fi")
@@ -1063,10 +1223,22 @@ printf -v WRAP_CMD_BASH 'bash -lc %q' "${WRAP_CMD}"
 SBATCH_CMD+=("--wrap=${WRAP_CMD_BASH}")
 
 if [ "${DRY_RUN}" = true ]; then
+  if [ "${COMMAND}" = "submit" ] && [ -n "${RESOLVED_RUN_ID}" ]; then
+    echo "Assigned run id: ${RESOLVED_RUN_ID}"
+    echo "Checkpoint dir: ${CHECKPOINT_DIR}"
+  fi
   printf 'Dry run: '
   printf '%q ' "${SBATCH_CMD[@]}"
   echo
   exit 0
 fi
 
-"${SBATCH_CMD[@]}"
+SBATCH_OUTPUT="$("${SBATCH_CMD[@]}")"
+printf '%s\n' "${SBATCH_OUTPUT}"
+
+if [ "${COMMAND}" = "submit" ] && [ -n "${RESOLVED_RUN_ID}" ]; then
+  echo "Assigned run id: ${RESOLVED_RUN_ID}"
+  echo "Checkpoint dir: ${CHECKPOINT_DIR}"
+  SBATCH_JOB_ID="$(printf '%s\n' "${SBATCH_OUTPUT}" | sed -n 's/^Submitted batch job \([0-9][0-9]*\)$/\1/p' | tail -n1)"
+  write_last_run_state "${SBATCH_JOB_ID}"
+fi
