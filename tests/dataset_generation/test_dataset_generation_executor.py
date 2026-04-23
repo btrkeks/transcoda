@@ -881,8 +881,14 @@ def test_executor_tracks_new_augmentation_summary_counters(tmp_path, monkeypatch
         "min_margin": 2,
     }
     assert progress["outer_gate_failure_reason_counts"] == {"quality:min_margin": 1}
+    assert progress["augmentation_geom_ms_histogram"] == {"1": 3}
+    assert progress["augmentation_gates_ms_histogram"] == {"0": 3}
+    assert progress["augmentation_augraphy_ms_histogram"] == {"2": 3}
+    assert progress["augmentation_texture_ms_histogram"] == {"0": 3}
     assert info["snapshot"]["final_geometry_counts"]["geometry_survived"] == 1
+    assert info["snapshot"]["augmentation_geom_ms_histogram"]["1"] == 3
     assert info["finalization"]["snapshot"]["final_geometry_counts"]["geometry_discarded"] == 1
+    assert info["finalization"]["snapshot"]["augmentation_augraphy_ms_histogram"]["2"] == 3
 
 
 def test_executor_skips_invalid_sources_and_records_auto_quarantine(tmp_path, monkeypatch):
@@ -1500,9 +1506,58 @@ def test_executor_tracks_requested_target_buckets_and_candidate_hits(tmp_path, m
     assert info["snapshot"]["requested_target_bucket_histogram"]["3"] == 1
     assert info["snapshot"]["candidate_hit_counts"]["inside_target_bucket"] == 1
     assert info["snapshot"]["full_render_system_histogram"]["4"] == 1
+    assert info["snapshot"]["target_full_render_system_histogram"] == {"3": {"4": 1}}
+    assert info["snapshot"]["target_accepted_system_histogram"] == {"3": {"4": 1}}
     assert progress["requested_target_bucket_histogram"]["3"] == 1
     assert progress["candidate_hit_counts"]["inside_target_bucket"] == 1
     assert progress["full_render_system_histogram"]["4"] == 1
+    assert progress["target_full_render_system_histogram"] == {"3": {"4": 1}}
+    assert progress["target_accepted_system_histogram"] == {"3": {"4": 1}}
+
+
+def test_executor_tracks_target_failure_counts_without_discarded_after_target(
+    tmp_path,
+    monkeypatch,
+):
+    input_dir = _make_simple_input_dir(tmp_path, ("a", "b"))
+    output_dir = tmp_path / "output"
+    _install_fake_pool(
+        monkeypatch,
+        outcomes_by_sample_idx={
+            0: [_make_worker_success],
+            1: [
+                WorkerFailure(
+                    sample_id="sample_00000001",
+                    failure_reason="timeout",
+                    truncation_attempted=False,
+                    full_render_system_count=5,
+                )
+            ],
+            2: [_make_worker_success],
+        },
+        serial_wait=True,
+    )
+    _install_fake_balanced_planner(monkeypatch, {0: [0], 1: [1], 2: [0]})
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=1,
+        num_workers=2,
+        max_attempts=3,
+        quiet=True,
+    )
+
+    info = _read_json(summary.run_artifacts_dir / "info.json")
+    progress = _read_json(summary.run_artifacts_dir / "progress.json")
+
+    assert summary.accepted_samples == 1
+    assert summary.attempted_samples == 3
+    assert info["snapshot"]["failure_reason_counts"]["discarded_after_target"] == 1
+    assert info["snapshot"]["target_failure_reason_counts"] == {"1": {"timeout": 1}}
+    assert progress["target_failure_reason_counts"] == {"1": {"timeout": 1}}
+    assert info["snapshot"]["target_accepted_system_histogram"] == {"1": {"4": 1}}
+    assert info["snapshot"]["target_full_render_system_histogram"] == {"1": {"4": 2, "5": 1}}
 
 
 def test_executor_fails_when_bundled_spec_is_missing(tmp_path, monkeypatch):
@@ -1688,6 +1743,7 @@ def test_executor_resume_preserves_retry_counters_after_interrupted_finalize(
     assert summary.accepted_samples == 1
     assert len(ds) == 1
     assert info["snapshot"]["retry_counts"]["timeout"] == 1
+    assert info["snapshot"]["target_full_render_system_histogram"] == {"1": {"4": 1}}
 
 
 def test_executor_final_snapshot_preserves_counters_without_pending_rows(tmp_path, monkeypatch):

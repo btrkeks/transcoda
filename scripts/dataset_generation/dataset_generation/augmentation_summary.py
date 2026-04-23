@@ -38,8 +38,29 @@ def update_summary_counters(
     aug_outcome_counts[trace.final_outcome] += 1
     aug_band_counts[trace.band] += 1
     aug_branch_counts[trace.branch] += 1
+    _record_timing_histogram(counters, "augmentation_geom_ms_histogram", trace.offline_geom_ms)
+    _record_timing_histogram(counters, "augmentation_gates_ms_histogram", trace.offline_gates_ms)
+    _record_timing_histogram(
+        counters,
+        "augmentation_augraphy_ms_histogram",
+        trace.offline_augraphy_ms,
+    )
+    _record_timing_histogram(
+        counters,
+        "augmentation_texture_ms_histogram",
+        trace.offline_texture_ms,
+    )
 
     _update_geometry_and_gate_counters(counters=counters, trace=trace)
+
+
+def _record_timing_histogram(
+    counters: dict[str, object],
+    key: str,
+    value_ms: float,
+) -> None:
+    histogram: Counter = counters[key]  # type: ignore[assignment]
+    histogram[max(0, int(round(float(value_ms))))] += 1
 
 
 def _update_geometry_and_gate_counters(

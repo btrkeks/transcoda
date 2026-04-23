@@ -19,6 +19,16 @@ HISTOGRAM_BUCKET_WIDTHS = {
     "content_height_px_histogram": 25,
 }
 
+DEFAULT_HISTOGRAM_KEYS = {
+    "accepted_system_histogram",
+    "bottom_whitespace_px_histogram",
+    "content_height_px_histogram",
+    "full_render_system_histogram",
+    "requested_target_bucket_histogram",
+    "top_whitespace_px_histogram",
+    "truncated_output_system_histogram",
+}
+
 
 def _extract_snapshot(info: dict) -> dict:
     snapshot = info.get("snapshot")
@@ -61,7 +71,7 @@ def collect_histograms(info: dict) -> dict[str, dict[int, int]]:
 
     histograms: dict[str, dict[int, int]] = {}
     for key, value in snapshot.items():
-        if not key.endswith("_histogram") or not isinstance(value, dict) or not value:
+        if key not in DEFAULT_HISTOGRAM_KEYS or not isinstance(value, dict) or not value:
             continue
         # Nested histograms (e.g. accepted_system_histogram is keyed by
         # spine class → system count → count) can't be parsed as flat
@@ -82,27 +92,47 @@ def _bucket_histogram(histogram: dict[int, int], bucket_width: int) -> dict[int,
     return dict(sorted(bucketed.items()))
 
 
-def _plot_spine_system_heatmap(ax, dataset) -> None:
-    pair_counts = Counter(
-        (int(row["initial_kern_spine_count"]), int(row["svg_system_count"]))
-        for row in dataset
-    )
+def _build_spine_system_heatmap_payload(info: dict) -> dict | None:
+    snapshot = _extract_snapshot(info)
+    raw_histogram = snapshot.get("accepted_system_histogram")
+    if not isinstance(raw_histogram, dict) or not raw_histogram:
+        return None
 
-    spine_values = list(range(1, 5))
+    spine_labels = ["1", "2", "3_plus"]
     system_values = list(range(1, 8))
     grid = np.array(
         [
-            [pair_counts.get((spine, system), 0) for spine in spine_values]
+            [
+                int(
+                    raw_histogram.get(spine_label, {}).get(str(system), 0)
+                    if isinstance(raw_histogram.get(spine_label), dict)
+                    else 0
+                )
+                for spine_label in spine_labels
+            ]
             for system in system_values
         ]
     )
+    if not int(grid.sum()):
+        return None
+    return {
+        "spine_labels": spine_labels,
+        "system_values": system_values,
+        "grid": grid,
+    }
+
+
+def _plot_spine_system_heatmap(ax, payload: dict) -> None:
+    spine_labels = payload["spine_labels"]
+    system_values = payload["system_values"]
+    grid = payload["grid"]
 
     image = ax.imshow(grid, origin="lower", cmap="Blues", aspect="auto")
-    ax.set_xticks(range(len(spine_values)), labels=spine_values)
+    ax.set_xticks(range(len(spine_labels)), labels=spine_labels)
     ax.set_yticks(range(len(system_values)), labels=system_values)
-    ax.set_xlabel("initial_kern_spine_count")
+    ax.set_xlabel("spine_class")
     ax.set_ylabel("svg_system_count")
-    ax.set_title("Initial kern spine count vs SVG system count")
+    ax.set_title("Accepted spine class vs SVG system count")
 
     max_count = int(grid.max()) if grid.size else 0
     for y in range(grid.shape[0]):
@@ -177,6 +207,105 @@ def _collect_rejection_summary(info: dict) -> dict | None:
     }
 
 
+def _collect_planner_vs_realized_summary(info: dict) -> dict | None:
+    snapshot = _extract_snapshot(info)
+    bucket_values = list(range(1, 8))
+
+    def _read_flat_histogram(key: str) -> dict[int, int]:
+        value = snapshot.get(key, {})
+        if not isinstance(value, dict):
+            return {}
+        return {int(raw_key): int(count) for raw_key, count in value.items()}
+
+    raw_accepted_histogram = snapshot.get("accepted_system_histogram", {})
+    accepted_counts = Counter()
+    if isinstance(raw_accepted_histogram, dict):
+        for system_counts in raw_accepted_histogram.values():
+            if not isinstance(system_counts, dict):
+                continue
+            for system_count, count in system_counts.items():
+                accepted_counts[int(system_count)] += int(count)
+
+    series = {
+        "requested": _read_flat_histogram("requested_target_bucket_histogram"),
+        "full_render": _read_flat_histogram("full_render_system_histogram"),
+        "accepted": dict(accepted_counts),
+        "truncated": _read_flat_histogram("truncated_output_system_histogram"),
+    }
+    if not any(series_map for series_map in series.values()):
+        return None
+
+    return {
+        "bucket_values": bucket_values,
+        "series": {
+            label: [int(series_map.get(bucket, 0)) for bucket in bucket_values]
+            for label, series_map in series.items()
+        },
+    }
+
+
+def _collect_augmentation_diagnostics(info: dict) -> dict | None:
+    snapshot = _extract_snapshot(info)
+
+    def _read_string_count_map(key: str) -> dict[str, int]:
+        value = snapshot.get(key, {})
+        if not isinstance(value, dict):
+            return {}
+        return {str(name): int(count) for name, count in value.items()}
+
+    outcomes = _read_string_count_map("augmentation_outcome_counts")
+    bands = _read_string_count_map("augmentation_band_counts")
+    branches = _read_string_count_map("augmentation_branch_counts")
+    geometry = _read_string_count_map("final_geometry_counts")
+    oob = _read_string_count_map("oob_failure_reason_counts")
+    outer = _read_string_count_map("outer_gate_failure_reason_counts")
+
+    if not any((outcomes, bands, branches, geometry, oob, outer)):
+        return None
+
+    return {
+        "outcomes": outcomes,
+        "routing": {
+            "band_counts": bands,
+            "branch_counts": branches,
+        },
+        "gates": {
+            "geometry_counts": geometry,
+            "oob_failure_reason_counts": oob,
+            "outer_gate_failure_reason_counts": outer,
+        },
+    }
+
+
+def _collect_plot_panels(
+    *,
+    histograms: dict[str, dict[int, int]],
+    info: dict,
+) -> list[tuple[str, str, dict]]:
+    panels: list[tuple[str, str, dict]] = [
+        ("histogram", name, histogram) for name, histogram in sorted(histograms.items())
+    ]
+
+    rejection_summary = _collect_rejection_summary(info)
+    if rejection_summary is not None:
+        panels.append(("summary", "rejection_rate_summary", rejection_summary))
+
+    planner_summary = _collect_planner_vs_realized_summary(info)
+    if planner_summary is not None:
+        panels.append(("summary", "planner_vs_realized_systems", planner_summary))
+
+    augmentation_diagnostics = _collect_augmentation_diagnostics(info)
+    if augmentation_diagnostics is not None:
+        if augmentation_diagnostics["outcomes"]:
+            panels.append(("summary", "augmentation_outcomes", augmentation_diagnostics))
+        if any(augmentation_diagnostics["routing"].values()):
+            panels.append(("summary", "augmentation_routing", augmentation_diagnostics))
+        if any(augmentation_diagnostics["gates"].values()):
+            panels.append(("summary", "augmentation_gates", augmentation_diagnostics))
+
+    return panels
+
+
 def _plot_rejection_summary(ax, summary: dict) -> None:
     rates = summary.get("rates", [])
     labels = [str(item["label"]) for item in rates]
@@ -219,6 +348,105 @@ def _plot_rejection_summary(ax, summary: dict) -> None:
         )
 
 
+def _plot_planner_vs_realized_summary(ax, summary: dict) -> None:
+    bucket_values = summary["bucket_values"]
+    series = summary["series"]
+    labels = [
+        ("requested", "Requested"),
+        ("full_render", "Full render"),
+        ("accepted", "Accepted"),
+        ("truncated", "Truncated"),
+    ]
+    positions = np.arange(len(bucket_values))
+    width = 0.2
+    colors = {
+        "requested": "#1d4ed8",
+        "full_render": "#475569",
+        "accepted": "#16a34a",
+        "truncated": "#d97706",
+    }
+    offsets = np.linspace(-1.5 * width, 1.5 * width, num=len(labels))
+
+    for offset, (series_key, display_name) in zip(offsets, labels):
+        values = series.get(series_key, [0] * len(bucket_values))
+        ax.bar(
+            positions + offset,
+            values,
+            width=width,
+            label=display_name,
+            color=colors[series_key],
+        )
+
+    ax.set_xticks(positions, labels=[str(bucket) for bucket in bucket_values])
+    ax.set_xlabel("System bucket")
+    ax.set_ylabel("Count")
+    ax.set_title("Planner vs realized system counts")
+    ax.legend(fontsize=9)
+    ax.grid(axis="y", alpha=0.25)
+
+
+def _plot_augmentation_outcomes(ax, diagnostics: dict) -> None:
+    outcomes = diagnostics["outcomes"]
+    items = sorted(outcomes.items(), key=lambda item: (-int(item[1]), item[0]))
+    labels = [name for name, _ in items]
+    values = [int(count) for _, count in items]
+    ax.barh(labels, values, color="#2563eb")
+    ax.invert_yaxis()
+    ax.set_xlabel("Count")
+    ax.set_title("Augmentation outcomes")
+    ax.grid(axis="x", alpha=0.25)
+
+
+def _plot_augmentation_routing(ax, diagnostics: dict) -> None:
+    band_counts = diagnostics["routing"]["band_counts"]
+    branch_counts = diagnostics["routing"]["branch_counts"]
+    labels = list(band_counts.keys()) + list(branch_counts.keys())
+    values = [int(count) for count in band_counts.values()] + [
+        int(count) for count in branch_counts.values()
+    ]
+    colors = ["#0f766e"] * len(band_counts) + ["#7c3aed"] * len(branch_counts)
+    if not labels:
+        ax.axis("off")
+        return
+    positions = np.arange(len(labels))
+    ax.bar(positions, values, color=colors)
+    ax.set_xticks(positions, labels=labels, rotation=30, ha="right")
+    ax.set_ylabel("Count")
+    ax.set_title("Augmentation routing")
+    ax.grid(axis="y", alpha=0.25)
+
+
+def _plot_augmentation_gates(ax, diagnostics: dict) -> None:
+    geometry = diagnostics["gates"]["geometry_counts"]
+    oob = diagnostics["gates"]["oob_failure_reason_counts"]
+    outer = diagnostics["gates"]["outer_gate_failure_reason_counts"]
+    labels: list[str] = []
+    values: list[int] = []
+    colors: list[str] = []
+
+    for name, count in sorted(geometry.items(), key=lambda item: (-int(item[1]), item[0])):
+        labels.append(f"geometry:{name}")
+        values.append(int(count))
+        colors.append("#16a34a")
+    for name, count in sorted(oob.items(), key=lambda item: (-int(item[1]), item[0]))[:4]:
+        labels.append(f"oob:{name}")
+        values.append(int(count))
+        colors.append("#dc2626")
+    for name, count in sorted(outer.items(), key=lambda item: (-int(item[1]), item[0]))[:4]:
+        labels.append(f"outer:{name}")
+        values.append(int(count))
+        colors.append("#ea580c")
+
+    if not labels:
+        ax.axis("off")
+        return
+    ax.barh(labels, values, color=colors)
+    ax.invert_yaxis()
+    ax.set_xlabel("Count")
+    ax.set_title("Augmentation gate and geometry diagnostics")
+    ax.grid(axis="x", alpha=0.25)
+
+
 def plot_histograms(
     histograms: dict[str, dict[int, int]],
     *,
@@ -227,14 +455,9 @@ def plot_histograms(
     dataset=None,
 ) -> None:
     info = json.loads(info_path.read_text(encoding="utf-8"))
-    rejection_summary = _collect_rejection_summary(info)
+    del dataset
 
-    panels: list[tuple[str, str, dict]] = [
-        ("histogram", name, histogram) for name, histogram in sorted(histograms.items())
-    ]
-    if rejection_summary is not None:
-        panels.append(("summary", "rejection_rate_summary", rejection_summary))
-
+    panels = _collect_plot_panels(histograms=histograms, info=info)
     if not panels:
         print(f"No histograms found in {info_path}")
         return
@@ -246,12 +469,27 @@ def plot_histograms(
 
     for ax, (panel_type, name, payload) in zip(axes, panels):
         if panel_type == "summary":
-            _plot_rejection_summary(ax, payload)
+            if name == "rejection_rate_summary":
+                _plot_rejection_summary(ax, payload)
+            elif name == "planner_vs_realized_systems":
+                _plot_planner_vs_realized_summary(ax, payload)
+            elif name == "augmentation_outcomes":
+                _plot_augmentation_outcomes(ax, payload)
+            elif name == "augmentation_routing":
+                _plot_augmentation_routing(ax, payload)
+            elif name == "augmentation_gates":
+                _plot_augmentation_gates(ax, payload)
+            else:
+                ax.axis("off")
             continue
 
         histogram = payload
-        if name == "accepted_system_histogram" and dataset is not None:
-            _plot_spine_system_heatmap(ax, dataset)
+        if name == "accepted_system_histogram":
+            heatmap_payload = _build_spine_system_heatmap_payload(info)
+            if heatmap_payload is None:
+                ax.axis("off")
+            else:
+                _plot_spine_system_heatmap(ax, heatmap_payload)
             continue
         bucket_width = HISTOGRAM_BUCKET_WIDTHS.get(name)
         plot_histogram = _bucket_histogram(histogram, bucket_width) if bucket_width else histogram

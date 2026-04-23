@@ -22,6 +22,9 @@ class ResumeSnapshot:
     terminal_timeout_crash_artifacts: int
     terminal_process_expired_crash_artifacts: int
     requested_target_bucket_histogram: dict[str, int]
+    target_full_render_system_histogram: dict[str, dict[str, int]]
+    target_accepted_system_histogram: dict[str, dict[str, int]]
+    target_failure_reason_counts: dict[str, dict[str, int]]
     candidate_hit_counts: dict[str, int]
     retry_counts: dict[str, int]
     quarantined_sources: tuple[str, ...]
@@ -31,3 +34,7 @@ class ResumeSnapshot:
     final_geometry_counts: dict[str, int]
     oob_failure_reason_counts: dict[str, int]
     outer_gate_failure_reason_counts: dict[str, int]
+    augmentation_geom_ms_histogram: dict[str, int]
+    augmentation_gates_ms_histogram: dict[str, int]
+    augmentation_augraphy_ms_histogram: dict[str, int]
+    augmentation_texture_ms_histogram: dict[str, int]

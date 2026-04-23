@@ -55,6 +55,9 @@ class RuntimeSnapshot:
     terminal_timeout_crash_artifacts: int
     terminal_process_expired_crash_artifacts: int
     requested_target_bucket_histogram: dict[str, int]
+    target_full_render_system_histogram: dict[str, dict[str, int]]
+    target_accepted_system_histogram: dict[str, dict[str, int]]
+    target_failure_reason_counts: dict[str, dict[str, int]]
     candidate_hit_counts: dict[str, int]
     retry_counts: dict[str, int]
     quarantined_sources: tuple[str, ...]
@@ -64,6 +67,10 @@ class RuntimeSnapshot:
     final_geometry_counts: dict[str, int]
     oob_failure_reason_counts: dict[str, int]
     outer_gate_failure_reason_counts: dict[str, int]
+    augmentation_geom_ms_histogram: dict[str, int]
+    augmentation_gates_ms_histogram: dict[str, int]
+    augmentation_augraphy_ms_histogram: dict[str, int]
+    augmentation_texture_ms_histogram: dict[str, int]
 
 
 class ResumableShardStore:
@@ -208,6 +215,21 @@ class ResumableShardStore:
                 "requested_target_bucket_histogram",
                 snapshot.requested_target_bucket_histogram,
             )
+            self._set_meta(
+                conn,
+                "target_full_render_system_histogram",
+                snapshot.target_full_render_system_histogram,
+            )
+            self._set_meta(
+                conn,
+                "target_accepted_system_histogram",
+                snapshot.target_accepted_system_histogram,
+            )
+            self._set_meta(
+                conn,
+                "target_failure_reason_counts",
+                snapshot.target_failure_reason_counts,
+            )
             self._set_meta(conn, "candidate_hit_counts", snapshot.candidate_hit_counts)
             self._set_meta(conn, "retry_counts", snapshot.retry_counts)
             self._set_meta(conn, "quarantined_sources", list(snapshot.quarantined_sources))
@@ -217,6 +239,26 @@ class ResumableShardStore:
             self._set_meta(conn, "final_geometry_counts", snapshot.final_geometry_counts)
             self._set_meta(conn, "oob_failure_reason_counts", snapshot.oob_failure_reason_counts)
             self._set_meta(conn, "outer_gate_failure_reason_counts", snapshot.outer_gate_failure_reason_counts)
+            self._set_meta(
+                conn,
+                "augmentation_geom_ms_histogram",
+                snapshot.augmentation_geom_ms_histogram,
+            )
+            self._set_meta(
+                conn,
+                "augmentation_gates_ms_histogram",
+                snapshot.augmentation_gates_ms_histogram,
+            )
+            self._set_meta(
+                conn,
+                "augmentation_augraphy_ms_histogram",
+                snapshot.augmentation_augraphy_ms_histogram,
+            )
+            self._set_meta(
+                conn,
+                "augmentation_texture_ms_histogram",
+                snapshot.augmentation_texture_ms_histogram,
+            )
             self._set_meta(conn, "terminal_status", "running")
             self._set_meta(conn, "last_flush_at", time.time())
 
@@ -266,6 +308,15 @@ class ResumableShardStore:
                 requested_target_bucket_histogram=dict(
                     self._get_meta(conn, "requested_target_bucket_histogram", {})
                 ),
+                target_full_render_system_histogram=dict(
+                    self._get_meta(conn, "target_full_render_system_histogram", {})
+                ),
+                target_accepted_system_histogram=dict(
+                    self._get_meta(conn, "target_accepted_system_histogram", {})
+                ),
+                target_failure_reason_counts=dict(
+                    self._get_meta(conn, "target_failure_reason_counts", {})
+                ),
                 candidate_hit_counts=dict(self._get_meta(conn, "candidate_hit_counts", {})),
                 retry_counts=dict(self._get_meta(conn, "retry_counts", {})),
                 quarantined_sources=tuple(self._get_meta(conn, "quarantined_sources", [])),
@@ -284,6 +335,18 @@ class ResumableShardStore:
                 ),
                 outer_gate_failure_reason_counts=dict(
                     self._get_meta(conn, "outer_gate_failure_reason_counts", {})
+                ),
+                augmentation_geom_ms_histogram=dict(
+                    self._get_meta(conn, "augmentation_geom_ms_histogram", {})
+                ),
+                augmentation_gates_ms_histogram=dict(
+                    self._get_meta(conn, "augmentation_gates_ms_histogram", {})
+                ),
+                augmentation_augraphy_ms_histogram=dict(
+                    self._get_meta(conn, "augmentation_augraphy_ms_histogram", {})
+                ),
+                augmentation_texture_ms_histogram=dict(
+                    self._get_meta(conn, "augmentation_texture_ms_histogram", {})
                 ),
             )
 
@@ -406,6 +469,9 @@ class ResumableShardStore:
             self._set_meta(conn, "terminal_timeout_crash_artifacts", 0)
             self._set_meta(conn, "terminal_process_expired_crash_artifacts", 0)
             self._set_meta(conn, "requested_target_bucket_histogram", {})
+            self._set_meta(conn, "target_full_render_system_histogram", {})
+            self._set_meta(conn, "target_accepted_system_histogram", {})
+            self._set_meta(conn, "target_failure_reason_counts", {})
             self._set_meta(conn, "candidate_hit_counts", {})
             self._set_meta(conn, "retry_counts", {})
             self._set_meta(conn, "quarantined_sources", [])
@@ -415,6 +481,10 @@ class ResumableShardStore:
             self._set_meta(conn, "final_geometry_counts", {})
             self._set_meta(conn, "oob_failure_reason_counts", {})
             self._set_meta(conn, "outer_gate_failure_reason_counts", {})
+            self._set_meta(conn, "augmentation_geom_ms_histogram", {})
+            self._set_meta(conn, "augmentation_gates_ms_histogram", {})
+            self._set_meta(conn, "augmentation_augraphy_ms_histogram", {})
+            self._set_meta(conn, "augmentation_texture_ms_histogram", {})
             self._set_meta(conn, "completed", False)
             self._set_meta(conn, "terminal_status", "running")
 
@@ -461,6 +531,15 @@ class ResumableShardStore:
                 requested_target_bucket_histogram=dict(
                     self._get_meta(conn, "requested_target_bucket_histogram", {})
                 ),
+                target_full_render_system_histogram=dict(
+                    self._get_meta(conn, "target_full_render_system_histogram", {})
+                ),
+                target_accepted_system_histogram=dict(
+                    self._get_meta(conn, "target_accepted_system_histogram", {})
+                ),
+                target_failure_reason_counts=dict(
+                    self._get_meta(conn, "target_failure_reason_counts", {})
+                ),
                 candidate_hit_counts=dict(self._get_meta(conn, "candidate_hit_counts", {})),
                 retry_counts=dict(self._get_meta(conn, "retry_counts", {})),
                 quarantined_sources=tuple(self._get_meta(conn, "quarantined_sources", [])),
@@ -479,6 +558,18 @@ class ResumableShardStore:
                 ),
                 outer_gate_failure_reason_counts=dict(
                     self._get_meta(conn, "outer_gate_failure_reason_counts", {})
+                ),
+                augmentation_geom_ms_histogram=dict(
+                    self._get_meta(conn, "augmentation_geom_ms_histogram", {})
+                ),
+                augmentation_gates_ms_histogram=dict(
+                    self._get_meta(conn, "augmentation_gates_ms_histogram", {})
+                ),
+                augmentation_augraphy_ms_histogram=dict(
+                    self._get_meta(conn, "augmentation_augraphy_ms_histogram", {})
+                ),
+                augmentation_texture_ms_histogram=dict(
+                    self._get_meta(conn, "augmentation_texture_ms_histogram", {})
                 ),
             )
 

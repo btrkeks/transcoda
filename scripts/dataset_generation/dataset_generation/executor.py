@@ -1031,10 +1031,20 @@ def _commit_contiguous_results(
         full_render_histogram: Counter = counters["full_render_system_histogram"]  # type: ignore[assignment]
         system_histogram: defaultdict[str, Counter] = counters["accepted_system_histogram"]  # type: ignore[assignment]
         truncated_output_histogram: Counter = counters["truncated_output_system_histogram"]  # type: ignore[assignment]
+        target_full_render_histogram: defaultdict[int, Counter] = counters[  # type: ignore[assignment]
+            "target_full_render_system_histogram"
+        ]
+        target_accepted_histogram: defaultdict[int, Counter] = counters[  # type: ignore[assignment]
+            "target_accepted_system_histogram"
+        ]
+        target_failure_reason_counts: defaultdict[int, Counter] = counters[  # type: ignore[assignment]
+            "target_failure_reason_counts"
+        ]
         preferred_5_6_counts: Counter = counters["preferred_5_6_counts"]  # type: ignore[assignment]
         bottom_whitespace_px_histogram: Counter = counters["bottom_whitespace_px_histogram"]  # type: ignore[assignment]
         top_whitespace_px_histogram: Counter = counters["top_whitespace_px_histogram"]  # type: ignore[assignment]
         content_height_px_histogram: Counter = counters["content_height_px_histogram"]  # type: ignore[assignment]
+        target_bucket = task.target_bucket if task is not None else None
         if outcome.truncation_attempted:
             truncation_counts["attempted"] += 1
         if outcome.truncation_rescued:
@@ -1043,6 +1053,10 @@ def _commit_contiguous_results(
             truncation_counts["failed"] += 1
         if outcome.full_render_system_count is not None:
             full_render_histogram[int(outcome.full_render_system_count)] += 1
+            if target_bucket is not None:
+                target_full_render_histogram[int(target_bucket)][
+                    int(outcome.full_render_system_count)
+                ] += 1
         if outcome.preferred_5_6_status is not None:
             preferred_5_6_counts[str(outcome.preferred_5_6_status)] += 1
 
@@ -1062,12 +1076,19 @@ def _commit_contiguous_results(
                     content_height_px_histogram[int(outcome.sample.content_height_px)] += 1
                 if outcome.sample.truncation_applied:
                     truncated_output_histogram[int(outcome.sample.system_count)] += 1
+                if target_bucket is not None:
+                    accepted_system_count = outcome.accepted_render_system_count
+                    if accepted_system_count is None:
+                        accepted_system_count = outcome.sample.system_count
+                    target_accepted_histogram[int(target_bucket)][int(accepted_system_count)] += 1
                 update_summary_counters(counters=counters, outcome=outcome)
             else:
                 failure_counts["discarded_after_target"] += 1
         else:
             counters["rejected_samples"] = int(counters["rejected_samples"]) + 1
             failure_counts[str(outcome.failure_reason)] += 1
+            if target_bucket is not None and outcome.failure_reason != "discarded_after_target":
+                target_failure_reason_counts[int(target_bucket)][str(outcome.failure_reason)] += 1
         next_to_commit += 1
 
     counters["next_sample_idx"] = next_to_commit

@@ -47,6 +47,9 @@ def build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object]
             "terminal_timeout_crash_artifacts": 0,
             "terminal_process_expired_crash_artifacts": 0,
             "requested_target_bucket_histogram": Counter(),
+            "target_full_render_system_histogram": defaultdict(Counter),
+            "target_accepted_system_histogram": defaultdict(Counter),
+            "target_failure_reason_counts": defaultdict(Counter),
             "candidate_hit_counts": Counter(),
             "retry_counts": Counter(),
             "quarantined_sources": set(),
@@ -57,6 +60,10 @@ def build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object]
             "final_geometry_counts": Counter(),
             "oob_failure_reason_counts": Counter(),
             "outer_gate_failure_reason_counts": Counter(),
+            "augmentation_geom_ms_histogram": Counter(),
+            "augmentation_gates_ms_histogram": Counter(),
+            "augmentation_augraphy_ms_histogram": Counter(),
+            "augmentation_texture_ms_histogram": Counter(),
             "augmentation_preview_geometry_discarded": 0,
             "augmentation_preview_outer_gate_rejected": 0,
         }
@@ -113,6 +120,33 @@ def build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object]
                 for key, value in snapshot.requested_target_bucket_histogram.items()
             }
         ),
+        "target_full_render_system_histogram": defaultdict(
+            Counter,
+            {
+                int(target_bucket): Counter(
+                    {int(system_count): int(count) for system_count, count in bucket_counts.items()}
+                )
+                for target_bucket, bucket_counts in snapshot.target_full_render_system_histogram.items()
+            },
+        ),
+        "target_accepted_system_histogram": defaultdict(
+            Counter,
+            {
+                int(target_bucket): Counter(
+                    {int(system_count): int(count) for system_count, count in bucket_counts.items()}
+                )
+                for target_bucket, bucket_counts in snapshot.target_accepted_system_histogram.items()
+            },
+        ),
+        "target_failure_reason_counts": defaultdict(
+            Counter,
+            {
+                int(target_bucket): Counter(
+                    {str(reason): int(count) for reason, count in bucket_counts.items()}
+                )
+                for target_bucket, bucket_counts in snapshot.target_failure_reason_counts.items()
+            },
+        ),
         "candidate_hit_counts": Counter(snapshot.candidate_hit_counts),
         "retry_counts": Counter(snapshot.retry_counts),
         "quarantined_sources": {Path(path).expanduser().resolve() for path in snapshot.quarantined_sources},
@@ -123,6 +157,10 @@ def build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object]
         "final_geometry_counts": Counter(snapshot.final_geometry_counts),
         "oob_failure_reason_counts": Counter(snapshot.oob_failure_reason_counts),
         "outer_gate_failure_reason_counts": Counter(snapshot.outer_gate_failure_reason_counts),
+        "augmentation_geom_ms_histogram": Counter(snapshot.augmentation_geom_ms_histogram),
+        "augmentation_gates_ms_histogram": Counter(snapshot.augmentation_gates_ms_histogram),
+        "augmentation_augraphy_ms_histogram": Counter(snapshot.augmentation_augraphy_ms_histogram),
+        "augmentation_texture_ms_histogram": Counter(snapshot.augmentation_texture_ms_histogram),
         "augmentation_preview_geometry_discarded": 0,
         "augmentation_preview_outer_gate_rejected": 0,
     }
@@ -171,6 +209,27 @@ def snapshot_from_counters(counters: dict[str, object]) -> RuntimeSnapshot:
             str(key): int(value)
             for key, value in dict(counters["requested_target_bucket_histogram"]).items()
         },
+        target_full_render_system_histogram={
+            str(target_bucket): {
+                str(system_count): int(count)
+                for system_count, count in dict(system_counts).items()
+            }
+            for target_bucket, system_counts in dict(counters["target_full_render_system_histogram"]).items()
+        },
+        target_accepted_system_histogram={
+            str(target_bucket): {
+                str(system_count): int(count)
+                for system_count, count in dict(system_counts).items()
+            }
+            for target_bucket, system_counts in dict(counters["target_accepted_system_histogram"]).items()
+        },
+        target_failure_reason_counts={
+            str(target_bucket): {
+                str(reason): int(count)
+                for reason, count in dict(reason_counts).items()
+            }
+            for target_bucket, reason_counts in dict(counters["target_failure_reason_counts"]).items()
+        },
         candidate_hit_counts=dict(counters["candidate_hit_counts"]),
         retry_counts=dict(counters["retry_counts"]),
         quarantined_sources=tuple(
@@ -182,6 +241,22 @@ def snapshot_from_counters(counters: dict[str, object]) -> RuntimeSnapshot:
         final_geometry_counts=dict(counters["final_geometry_counts"]),
         oob_failure_reason_counts=dict(counters["oob_failure_reason_counts"]),
         outer_gate_failure_reason_counts=dict(counters["outer_gate_failure_reason_counts"]),
+        augmentation_geom_ms_histogram={
+            str(key): int(value)
+            for key, value in dict(counters["augmentation_geom_ms_histogram"]).items()
+        },
+        augmentation_gates_ms_histogram={
+            str(key): int(value)
+            for key, value in dict(counters["augmentation_gates_ms_histogram"]).items()
+        },
+        augmentation_augraphy_ms_histogram={
+            str(key): int(value)
+            for key, value in dict(counters["augmentation_augraphy_ms_histogram"]).items()
+        },
+        augmentation_texture_ms_histogram={
+            str(key): int(value)
+            for key, value in dict(counters["augmentation_texture_ms_histogram"]).items()
+        },
     )
 
 
@@ -262,6 +337,33 @@ def maybe_flush_and_report(
                 str(key): int(value)
                 for key, value in dict(counters["requested_target_bucket_histogram"]).items()
             },
+            "target_full_render_system_histogram": {
+                str(target_bucket): {
+                    str(system_count): int(count)
+                    for system_count, count in dict(system_counts).items()
+                }
+                for target_bucket, system_counts in dict(
+                    counters["target_full_render_system_histogram"]
+                ).items()
+            },
+            "target_accepted_system_histogram": {
+                str(target_bucket): {
+                    str(system_count): int(count)
+                    for system_count, count in dict(system_counts).items()
+                }
+                for target_bucket, system_counts in dict(
+                    counters["target_accepted_system_histogram"]
+                ).items()
+            },
+            "target_failure_reason_counts": {
+                str(target_bucket): {
+                    str(reason): int(count)
+                    for reason, count in dict(reason_counts).items()
+                }
+                for target_bucket, reason_counts in dict(
+                    counters["target_failure_reason_counts"]
+                ).items()
+            },
             "candidate_hit_counts": dict(counters["candidate_hit_counts"]),
             "retry_counts": dict(counters["retry_counts"]),
             "quarantined_source_count": len(counters["quarantined_sources"]),
@@ -275,6 +377,22 @@ def maybe_flush_and_report(
             "final_geometry_counts": dict(counters["final_geometry_counts"]),
             "oob_failure_reason_counts": dict(counters["oob_failure_reason_counts"]),
             "outer_gate_failure_reason_counts": dict(counters["outer_gate_failure_reason_counts"]),
+            "augmentation_geom_ms_histogram": {
+                str(key): int(value)
+                for key, value in dict(counters["augmentation_geom_ms_histogram"]).items()
+            },
+            "augmentation_gates_ms_histogram": {
+                str(key): int(value)
+                for key, value in dict(counters["augmentation_gates_ms_histogram"]).items()
+            },
+            "augmentation_augraphy_ms_histogram": {
+                str(key): int(value)
+                for key, value in dict(counters["augmentation_augraphy_ms_histogram"]).items()
+            },
+            "augmentation_texture_ms_histogram": {
+                str(key): int(value)
+                for key, value in dict(counters["augmentation_texture_ms_histogram"]).items()
+            },
         }
         progress_payload.update(build_layout_summary(counters))
         progress_payload.update(
