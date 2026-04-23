@@ -9,6 +9,9 @@ from scripts.dataset_generation.dataset_generation.types_events import Augmentat
 from tests.dataset_generation.factories import (
     make_bounds_gate_trace,
     make_geometry_trace,
+    make_margin_trace,
+    make_outer_gate_trace,
+    make_quality_gate_trace,
     make_render_result,
     make_sample_plan,
 )
@@ -52,6 +55,7 @@ def _make_offline_trace(**overrides):
             margins_px=None,  # defaults to make_margin_trace()
         ),
         retry_oob_gate=None,
+        outer_gate=make_outer_gate_trace(),
         augraphy_outcome="applied",
         augraphy_normalize_accepted=True,
         augraphy_fallback_attempted=False,
@@ -72,7 +76,23 @@ def test_augment_accepted_render_falls_back_to_base_image_when_candidate_is_inva
 
     monkeypatch.setattr(
         "scripts.dataset_generation.dataset_generation.augmentation.offline_augment",
-        lambda *args, **kwargs: (invalid, invalid, _make_offline_trace()),
+        lambda *args, **kwargs: (
+            invalid,
+            invalid,
+            _make_offline_trace(
+                outer_gate=make_outer_gate_trace(
+                    passed=False,
+                    failure_reason="quality:min_margin",
+                    quality_gate=make_quality_gate_trace(
+                        passed=False,
+                        failure_reason="min_margin",
+                        mean_luma=200.0,
+                        content_ratio=0.1,
+                        margins_px=make_margin_trace(left_px=0),
+                    ),
+                ),
+            ),
+        ),
     )
 
     augmented = augment_accepted_render(plan, render_result, ProductionRecipe())

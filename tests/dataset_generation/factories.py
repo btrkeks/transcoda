@@ -354,7 +354,7 @@ def make_quality_gate_trace(
     passed: bool = True,
     failure_reason: str | None = None,
     mean_luma: float | None = 200.0,
-    black_ratio: float | None = 0.1,
+    content_ratio: float | None = 0.1,
     margins_px: MarginTrace | None = None,
     border_touch_count: int | None = 0,
 ) -> QualityGateTrace:
@@ -364,7 +364,7 @@ def make_quality_gate_trace(
         passed=passed,
         failure_reason=failure_reason,
         mean_luma=mean_luma,
-        black_ratio=black_ratio,
+        content_ratio=content_ratio,
         margins_px=margins_px,
         border_touch_count=border_touch_count,
     )

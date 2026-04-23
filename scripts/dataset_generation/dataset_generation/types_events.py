@@ -79,7 +79,7 @@ class QualityGateTrace:
     passed: bool
     failure_reason: str | None
     mean_luma: float | None
-    black_ratio: float | None
+    content_ratio: float | None
     margins_px: MarginTrace | None
     border_touch_count: int | None
 
@@ -103,6 +103,7 @@ class OfflineAugmentTrace:
     final_geometry_applied: bool
     initial_oob_gate: BoundsGateTrace
     retry_oob_gate: BoundsGateTrace | None
+    outer_gate: OuterGateTrace
     augraphy_outcome: str  # "applied" | "noop" | "error" | "invalid_input"
     augraphy_normalize_accepted: bool
     augraphy_fallback_attempted: bool

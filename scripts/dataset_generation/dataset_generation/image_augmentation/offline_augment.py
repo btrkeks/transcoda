@@ -227,6 +227,12 @@ def offline_augment(
     offline_texture_ms = _elapsed_ms(texture_start_ns)
 
     pre_augraphy_candidate = np.ascontiguousarray(result)
+    outer_gate = evaluate_outer_gate(
+        base_image,
+        pre_augraphy_candidate,
+        base_mask=base_mask.astype(np.uint8) * 255,
+        candidate_mask=selected_candidate.mask,
+    )
 
     # --- Primary Augraphy pass ---
     branch_choice = "geometric"
@@ -247,6 +253,7 @@ def offline_augment(
             final_geometry_applied=selected_geometry.sampled,
             initial_oob_gate=initial_oob_gate,
             retry_oob_gate=retry_oob_gate,
+            outer_gate=outer_gate,
             augraphy_outcome=augraphy_outcome,
             augraphy_normalize_accepted=True,
             augraphy_fallback_attempted=False,
@@ -277,6 +284,7 @@ def offline_augment(
             final_geometry_applied=selected_geometry.sampled,
             initial_oob_gate=initial_oob_gate,
             retry_oob_gate=retry_oob_gate,
+            outer_gate=outer_gate,
             augraphy_outcome=augraphy_outcome,
             augraphy_normalize_accepted=False,
             augraphy_fallback_attempted=True,
@@ -298,6 +306,7 @@ def offline_augment(
         final_geometry_applied=selected_geometry.sampled,
         initial_oob_gate=initial_oob_gate,
         retry_oob_gate=retry_oob_gate,
+        outer_gate=outer_gate,
         augraphy_outcome=augraphy_outcome,
         augraphy_normalize_accepted=False,
         augraphy_fallback_attempted=True,
@@ -313,7 +322,11 @@ def offline_augment(
 
 def passes_quality_gate(image: ImageU8, *, min_margin_px: int = _MIN_MARGIN_PX) -> bool:
     """Balanced quality gate to reject obvious corruption failures."""
-    return evaluate_quality_gate(image, min_margin_px=min_margin_px).passed
+    return evaluate_quality_gate(
+        image,
+        candidate_mask=_visible_notation_mask(image).astype(np.uint8) * 255,
+        min_margin_px=min_margin_px,
+    ).passed
 
 
 def passes_transform_consistency(
@@ -335,6 +348,7 @@ def passes_transform_consistency(
 def evaluate_quality_gate(
     image: ImageU8,
     *,
+    candidate_mask: np.ndarray | None = None,
     min_margin_px: int = _MIN_MARGIN_PX,
 ) -> QualityGateTrace:
     if image.dtype != np.uint8 or image.ndim != 3 or image.shape[2] not in (3, 4):
@@ -342,7 +356,7 @@ def evaluate_quality_gate(
             passed=False,
             failure_reason="invalid_input",
             mean_luma=None,
-            black_ratio=None,
+            content_ratio=None,
             margins_px=None,
             border_touch_count=None,
         )
@@ -350,27 +364,39 @@ def evaluate_quality_gate(
     rgb = image[:, :, :3]
     gray = rgb.mean(axis=2)
     mean_luma = float(gray.mean())
-    black_mask = gray <= 120.0
-    black_ratio = float(black_mask.mean())
-    bbox = _content_bbox_from_mask(black_mask)
-    margins = _margins_from_bbox(bbox, black_mask.shape) if bbox is not None else None
-    border_touch_count = _border_touch_count(black_mask) if bbox is not None else None
+    if candidate_mask is None:
+        notation_mask = _visible_notation_mask(image)
+    else:
+        if candidate_mask.shape[:2] != image.shape[:2]:
+            return QualityGateTrace(
+                passed=False,
+                failure_reason="shape_mismatch",
+                mean_luma=mean_luma,
+                content_ratio=None,
+                margins_px=None,
+                border_touch_count=None,
+            )
+        notation_mask = np.asarray(candidate_mask > 0)
+    content_ratio = float(notation_mask.mean())
+    bbox = _content_bbox_from_mask(notation_mask)
+    margins = _margins_from_bbox(bbox, notation_mask.shape) if bbox is not None else None
+    border_touch_count = _border_touch_count(notation_mask) if bbox is not None else None
 
     if mean_luma < 120.0 or mean_luma > 252.0:
         return QualityGateTrace(
             passed=False,
             failure_reason="mean_luma",
             mean_luma=mean_luma,
-            black_ratio=black_ratio,
+            content_ratio=content_ratio,
             margins_px=margins,
             border_touch_count=border_touch_count,
         )
-    if black_ratio < 0.005 or black_ratio > 0.35:
+    if content_ratio < 0.005 or content_ratio > 0.35:
         return QualityGateTrace(
             passed=False,
-            failure_reason="black_ratio",
+            failure_reason="content_ratio",
             mean_luma=mean_luma,
-            black_ratio=black_ratio,
+            content_ratio=content_ratio,
             margins_px=margins,
             border_touch_count=border_touch_count,
         )
@@ -379,16 +405,16 @@ def evaluate_quality_gate(
             passed=False,
             failure_reason="empty_content",
             mean_luma=mean_luma,
-            black_ratio=black_ratio,
+            content_ratio=content_ratio,
             margins_px=None,
             border_touch_count=None,
         )
-    if not _has_minimum_margins(bbox, black_mask.shape, min_margin_px=min_margin_px):
+    if not _has_minimum_margins(bbox, notation_mask.shape, min_margin_px=min_margin_px):
         return QualityGateTrace(
             passed=False,
             failure_reason="min_margin",
             mean_luma=mean_luma,
-            black_ratio=black_ratio,
+            content_ratio=content_ratio,
             margins_px=margins,
             border_touch_count=border_touch_count,
         )
@@ -397,7 +423,7 @@ def evaluate_quality_gate(
             passed=False,
             failure_reason="border_touches",
             mean_luma=mean_luma,
-            black_ratio=black_ratio,
+            content_ratio=content_ratio,
             margins_px=margins,
             border_touch_count=border_touch_count,
         )
@@ -405,7 +431,7 @@ def evaluate_quality_gate(
         passed=True,
         failure_reason=None,
         mean_luma=mean_luma,
-        black_ratio=black_ratio,
+        content_ratio=content_ratio,
         margins_px=margins,
         border_touch_count=border_touch_count,
     )
@@ -458,9 +484,21 @@ def evaluate_transform_consistency(
 def evaluate_outer_gate(
     base_image: ImageU8,
     candidate: ImageU8,
+    *,
+    base_mask: np.ndarray | None = None,
+    candidate_mask: np.ndarray | None = None,
 ) -> OuterGateTrace:
-    quality_gate = evaluate_quality_gate(candidate)
-    transform_consistency = evaluate_transform_consistency(base_image, candidate)
+    quality_gate = evaluate_quality_gate(candidate, candidate_mask=candidate_mask)
+    if base_mask is None:
+        base_mask = _visible_notation_mask(base_image).astype(np.uint8) * 255
+    if candidate_mask is None:
+        candidate_mask = _visible_notation_mask(candidate).astype(np.uint8) * 255
+    transform_consistency = evaluate_oob_gate_from_masks(
+        base_mask,
+        candidate_mask,
+        max_centroid_shift_fraction=_MAX_CENTROID_SHIFT_FRACTION,
+        min_area_retention=_MIN_AREA_RETENTION,
+    )
     failure_reason = None
     if not quality_gate.passed:
         failure_reason = f"quality:{quality_gate.failure_reason}"
@@ -824,6 +862,27 @@ def _early_exit_trace() -> OfflineAugmentTrace:
             area_retention=None,
         ),
         retry_oob_gate=None,
+        outer_gate=OuterGateTrace(
+            passed=False,
+            failure_reason="quality:invalid_input",
+            quality_gate=QualityGateTrace(
+                passed=False,
+                failure_reason="invalid_input",
+                mean_luma=None,
+                content_ratio=None,
+                margins_px=None,
+                border_touch_count=None,
+            ),
+            transform_consistency=BoundsGateTrace(
+                passed=False,
+                failure_reason="invalid_input",
+                margins_px=None,
+                border_touch_count=None,
+                dx_frac=None,
+                dy_frac=None,
+                area_retention=None,
+            ),
+        ),
         augraphy_outcome="invalid_input",
         augraphy_normalize_accepted=False,
         augraphy_fallback_attempted=False,

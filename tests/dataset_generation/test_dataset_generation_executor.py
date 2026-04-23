@@ -218,7 +218,7 @@ def _make_augmented_worker_success(
                 passed=outer_gate_passed,
                 failure_reason=None if outer_gate_passed else "min_margin",
                 mean_luma=200.0,
-                black_ratio=0.1,
+                content_ratio=0.1,
                 margins_px=MarginTrace(top_px=20, bottom_px=1200, left_px=20, right_px=500),
                 border_touch_count=0,
             ),

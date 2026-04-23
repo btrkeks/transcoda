@@ -7,6 +7,7 @@ from scripts.dataset_generation.dataset_generation.image_augmentation.geometric_
 from scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment import (
     OfflineAugmentTrace,
     _passes_out_of_bounds_gate_from_masks,
+    evaluate_quality_gate,
     offline_augment,
     passes_quality_gate,
     passes_transform_consistency,
@@ -119,8 +120,36 @@ def test_passes_quality_gate_rejects_three_border_touch():
 
 def test_passes_quality_gate_rejects_small_margin_translation():
     img = np.full((100, 100, 3), 255, dtype=np.uint8)
-    img[40:60, 2:22] = 0
+    img[40:60, 1:21] = 0
     assert not passes_quality_gate(img)
+
+
+def test_quality_gate_uses_candidate_mask_for_margins_not_textured_border():
+    img = np.full((64, 64, 3), 255, dtype=np.uint8)
+    img[20:44, 20:44] = 0
+    img[0, :, :] = 110
+    img[-1, :, :] = 110
+    img[:, 0, :] = 110
+    img[:, -1, :] = 110
+    mask = np.zeros((64, 64), dtype=np.uint8)
+    mask[20:44, 20:44] = 255
+
+    trace = evaluate_quality_gate(img, candidate_mask=mask)
+
+    assert trace.passed
+    assert trace.failure_reason is None
+
+
+def test_quality_gate_rejects_sparse_content_from_mask_even_with_dark_background():
+    img = np.full((64, 64, 3), 255, dtype=np.uint8)
+    img[24:40, 24:40] = 110
+    mask = np.zeros((64, 64), dtype=np.uint8)
+    mask[30:34, 30:34] = 255
+
+    trace = evaluate_quality_gate(img, candidate_mask=mask)
+
+    assert not trace.passed
+    assert trace.failure_reason == "content_ratio"
 
 
 def test_passes_transform_consistency_rejects_large_shift():
@@ -237,6 +266,65 @@ def test_offline_augment_returns_trace_with_timings(monkeypatch):
     assert trace.offline_augraphy_ms >= 0.0
     assert trace.offline_texture_ms >= 0.0
     assert trace.branch == "geometric"
+
+
+def test_offline_augment_outer_gate_ignores_dark_background_border(monkeypatch):
+    base = np.full((64, 64, 3), 255, dtype=np.uint8)
+    base[20:44, 20:44] = 0
+
+    def _border_background(width, height, **kwargs):
+        bg = np.full((height, width, 3), 245, dtype=np.uint8)
+        bg[0, :, :] = 110
+        bg[-1, :, :] = 110
+        bg[:, 0, :] = 110
+        bg[:, -1, :] = 110
+        return bg
+
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment._build_augmented_candidate",
+        lambda **kwargs: _make_good_candidate(base),
+    )
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment.synthesize_background",
+        _border_background,
+    )
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment.augraphy_augment",
+        lambda image, seed=None: (image, "applied"),
+    )
+
+    _, pre, trace = offline_augment(base, filename="x.krn", variant_idx=0, augment_seed=7)
+    assert np.all(pre[0, :, :] == 110)
+    assert trace.outer_gate.passed
+    assert trace.outer_gate.failure_reason is None
+
+
+def test_offline_augment_outer_gate_rejects_sparse_mask_even_with_dark_composite(monkeypatch):
+    base = np.full((64, 64, 3), 255, dtype=np.uint8)
+    base[30:34, 30:34] = 0
+
+    def _dark_patch_background(width, height, **kwargs):
+        bg = np.full((height, width, 3), 245, dtype=np.uint8)
+        bg[20:44, 20:44] = 110
+        return bg
+
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment._build_augmented_candidate",
+        lambda **kwargs: _make_good_candidate(base),
+    )
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment.synthesize_background",
+        _dark_patch_background,
+    )
+    monkeypatch.setattr(
+        "scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment.augraphy_augment",
+        lambda image, seed=None: (image, "applied"),
+    )
+
+    _, pre, trace = offline_augment(base, filename="x.krn", variant_idx=0, augment_seed=8)
+    assert np.any(pre[20:44, 20:44] == 110)
+    assert not trace.outer_gate.passed
+    assert trace.outer_gate.failure_reason == "quality:content_ratio"
 
 
 def test_offline_augment_trace_records_augraphy_fallback(monkeypatch):

@@ -6,7 +6,6 @@ import numpy as np
 
 from scripts.dataset_generation.dataset_generation.image_augmentation.offline_augment import (
     OfflineAugmentTrace,
-    evaluate_outer_gate,
     offline_augment,
 )
 from scripts.dataset_generation.dataset_generation.recipe import (
@@ -15,7 +14,6 @@ from scripts.dataset_generation.dataset_generation.recipe import (
 from scripts.dataset_generation.dataset_generation.types_domain import AugmentationBand, SamplePlan
 from scripts.dataset_generation.dataset_generation.types_events import (
     AugmentationTraceEvent,
-    OuterGateTrace,
 )
 from scripts.dataset_generation.dataset_generation.types_render import (
     AugmentedRenderResult,
@@ -75,13 +73,13 @@ def augment_accepted_render(
         geom_x_squeeze_apply_in_conservative=band_policy.geom_x_squeeze_apply_in_conservative,
     )
 
-    outer_gate = evaluate_outer_gate(base_image, pre_augraphy_candidate)
+    outer_gate = offline_trace.outer_gate
     if not outer_gate.passed:
         result_image = base_image
     else:
         result_image = np.ascontiguousarray(augmented_image)
 
-    final_outcome = _classify_final_outcome(offline_trace, outer_gate)
+    final_outcome = _classify_final_outcome(offline_trace)
 
     sample_idx = int(plan.sample_id.split("_")[-1])
     trace_event = AugmentationTraceEvent(
@@ -123,11 +121,11 @@ def augment_accepted_render(
     )
 
 
-def _classify_final_outcome(trace: OfflineAugmentTrace, outer_gate: OuterGateTrace) -> str:
+def _classify_final_outcome(trace: OfflineAugmentTrace) -> str:
     """Derive a single outcome label from the trace and outer gate result."""
     if trace.branch == "none":
         return "clean_early_exit"
-    if not outer_gate.passed:
+    if not trace.outer_gate.passed:
         return "clean_gate_rejected"
     if trace.augraphy_normalize_accepted:
         return "fully_augmented"
