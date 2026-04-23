@@ -371,72 +371,40 @@ def _sample_render_options(
     image_width = recipe.image_width
     layout_profile = recipe.render_only_aug.render_layout_profile
 
-    if layout_profile == "target_5_6_systems":
-        # Keep a mild single-page bias for the preferred 5-6-system path, but
-        # avoid the ultra-compact look caused by very wide pages and tiny scale.
-        page_width_factor = rng.uniform(2.08, 2.34)
-        page_width = int(round(image_width * page_width_factor))
+    if layout_profile not in {"default", "target_5_6_systems"}:
+        raise ValueError(f"Unsupported render_layout_profile: {layout_profile}")
 
-        def margin() -> int:
-            return max(0, min(500, int(round(page_width * rng.uniform(0.015, 0.040)))))
+    page_width_factor = rng.uniform(1.80, 2.40)
+    page_width = int(round(image_width * page_width_factor))
 
-        options: VerovioRenderOptions = {
-            "scale": rng.randint(56, 74),
-            "barLineWidth": rng.uniform(0.16, 0.70),
-            "beamMaxSlope": rng.randint(4, 16),
-            "staffLineWidth": rng.uniform(0.10, 0.24),
-            "stemWidth": rng.uniform(0.10, 0.36),
-            "ledgerLineThickness": rng.uniform(0.10, 0.38),
-            "thickBarlineThickness": rng.uniform(0.60, 1.60),
-            "spacingLinear": rng.uniform(0.15, 0.27),
-            "spacingNonLinear": rng.uniform(0.24, 0.46),
-            "spacingStaff": rng.randint(5, 18),
-            "spacingSystem": rng.randint(4, 11),
-            "measureMinWidth": rng.randint(5, 14),
-            "pageMarginLeft": margin(),
-            "pageMarginRight": margin(),
-            "pageMarginTop": margin(),
-            "pageMarginBottom": margin(),
-            "pageWidth": page_width,
-            "font": rng.choice(VEROVIO_FONTS),
-            "breaksNoWidow": False,
-            "justifyVertically": False,
-            "noJustification": False,
-            "footer": "none",
-            "breaks": "auto",
-        }
-    else:
-        page_width_factor = rng.uniform(1.80, 2.40)
-        page_width = int(round(image_width * page_width_factor))
+    def margin() -> int:
+        return max(0, min(500, int(round(page_width * rng.uniform(0.015, 0.05)))))
 
-        def margin() -> int:
-            return max(0, min(500, int(round(page_width * rng.uniform(0.015, 0.05)))))
-
-        options = {
-            "scale": rng.randint(52, 84),
-            "barLineWidth": rng.uniform(0.16, 0.72),
-            "beamMaxSlope": rng.randint(4, 16),
-            "staffLineWidth": rng.uniform(0.10, 0.26),
-            "stemWidth": rng.uniform(0.10, 0.36),
-            "ledgerLineThickness": rng.uniform(0.10, 0.40),
-            "thickBarlineThickness": rng.uniform(0.60, 1.80),
-            "spacingLinear": rng.uniform(0.16, 0.32),
-            "spacingNonLinear": rng.uniform(0.24, 0.56),
-            "spacingStaff": rng.randint(4, 20),
-            "spacingSystem": rng.randint(3, 10),
-            "measureMinWidth": rng.randint(6, 18),
-            "pageMarginLeft": margin(),
-            "pageMarginRight": margin(),
-            "pageMarginTop": margin(),
-            "pageMarginBottom": margin(),
-            "pageWidth": page_width,
-            "font": rng.choice(VEROVIO_FONTS),
-            "breaksNoWidow": False,
-            "justifyVertically": False,
-            "noJustification": False,
-            "footer": "none",
-            "breaks": "auto",
-        }
+    options = {
+        "scale": rng.randint(52, 84),
+        "barLineWidth": rng.uniform(0.16, 0.72),
+        "beamMaxSlope": rng.randint(4, 16),
+        "staffLineWidth": rng.uniform(0.10, 0.26),
+        "stemWidth": rng.uniform(0.10, 0.36),
+        "ledgerLineThickness": rng.uniform(0.10, 0.40),
+        "thickBarlineThickness": rng.uniform(0.60, 1.80),
+        "spacingLinear": rng.uniform(0.16, 0.32),
+        "spacingNonLinear": rng.uniform(0.24, 0.56),
+        "spacingStaff": rng.randint(4, 20),
+        "spacingSystem": rng.randint(3, 10),
+        "measureMinWidth": rng.randint(6, 18),
+        "pageMarginLeft": margin(),
+        "pageMarginRight": margin(),
+        "pageMarginTop": margin(),
+        "pageMarginBottom": margin(),
+        "pageWidth": page_width,
+        "font": rng.choice(VEROVIO_FONTS),
+        "breaksNoWidow": False,
+        "justifyVertically": False,
+        "noJustification": False,
+        "footer": "none",
+        "breaks": "auto",
+    }
     return options
 
 
