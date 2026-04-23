@@ -9,7 +9,7 @@ import numpy.typing as npt
 ImageU8 = npt.NDArray[np.uint8]
 
 _WHITE_RGB = (255, 255, 255)
-_DEFAULT_MIN_MARGIN_PX = 12
+_DEFAULT_MIN_MARGIN_PX = 2
 
 
 @dataclass(frozen=True)

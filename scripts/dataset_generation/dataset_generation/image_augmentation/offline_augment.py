@@ -30,7 +30,7 @@ from .geometric_augment import (
 )
 
 ImageU8 = npt.NDArray[np.uint8]
-_MIN_MARGIN_PX = 12
+_MIN_MARGIN_PX = 2
 _MAX_CENTROID_SHIFT_FRACTION = 0.08
 _MIN_AREA_RETENTION = 0.70
 _VISIBLE_MASK_THRESHOLD = 160
