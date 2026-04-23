@@ -54,6 +54,120 @@ has_forwarded_override() {
   return 1
 }
 
+get_forwarded_override_value() {
+  local key="$1"
+  local idx=0
+  local arg=""
+
+  while [ ${idx} -lt ${#FORWARDED_ARGS[@]} ]; do
+    arg="${FORWARDED_ARGS[${idx}]}"
+    if [[ "${arg}" == "--${key}="* ]]; then
+      printf '%s' "${arg#--${key}=}"
+      return 0
+    fi
+    if [[ "${arg}" == "--${key}" ]]; then
+      idx=$((idx + 1))
+      if [ ${idx} -lt ${#FORWARDED_ARGS[@]} ]; then
+        printf '%s' "${FORWARDED_ARGS[${idx}]}"
+        return 0
+      fi
+      return 1
+    fi
+    idx=$((idx + 1))
+  done
+  return 1
+}
+
+resolve_config_value() {
+  local config_path="$1"
+  local key_path="$2"
+  local py_bin=""
+
+  if command -v python3 >/dev/null 2>&1; then
+    py_bin="python3"
+  elif command -v python >/dev/null 2>&1; then
+    py_bin="python"
+  else
+    echo "Unable to inspect ${config_path}: python3/python is not available." >&2
+    return 1
+  fi
+
+  "${py_bin}" - "${config_path}" "${key_path}" <<'PY'
+import json
+import sys
+
+config_path, key_path = sys.argv[1], sys.argv[2]
+
+with open(config_path) as fh:
+    value = json.load(fh)
+
+for part in key_path.split("."):
+    if not isinstance(value, dict) or part not in value:
+        raise SystemExit(2)
+    value = value[part]
+
+if value is None or isinstance(value, (dict, list)):
+    raise SystemExit(3)
+
+print(value, end="")
+PY
+}
+
+CHECKPOINT_RESOLUTION="explicit"
+
+resolve_validate_checkpoint_path() {
+  local checkpoint_dir=""
+  local last_ckpt=""
+  local newest_ckpt=""
+
+  if [ "${COMMAND}" != "validate" ] || [ -n "${CHECKPOINT_PATH}" ]; then
+    return 0
+  fi
+
+  if checkpoint_dir="$(get_forwarded_override_value "checkpoint.dirpath")"; then
+    :
+  else
+    if ! checkpoint_dir="$(resolve_config_value "${CONFIG}" "checkpoint.dirpath")"; then
+      echo "validate mode could not read checkpoint.dirpath from ${CONFIG}. Pass --checkpoint_path PATH explicitly." >&2
+      return 1
+    fi
+  fi
+
+  if [[ "${checkpoint_dir}" != /* ]]; then
+    checkpoint_dir="${ROOT_DIR}/${checkpoint_dir#./}"
+  fi
+
+  if [ ! -d "${checkpoint_dir}" ]; then
+    echo "validate mode could not auto-resolve a checkpoint: checkpoint dir does not exist: ${checkpoint_dir}" >&2
+    echo "Pass --checkpoint_path PATH explicitly or override --checkpoint.dirpath=DIR after --." >&2
+    return 1
+  fi
+
+  last_ckpt="${checkpoint_dir}/last.ckpt"
+  if [ -f "${last_ckpt}" ]; then
+    CHECKPOINT_PATH="${last_ckpt}"
+    CHECKPOINT_RESOLUTION="auto_validate_last_ckpt"
+    return 0
+  fi
+
+  newest_ckpt="$(
+    find "${checkpoint_dir}" -maxdepth 1 -type f -name '*.ckpt' -printf '%T@\t%p\n' \
+      | sort -nr \
+      | head -n1 \
+      | cut -f2-
+  )"
+  if [ -n "${newest_ckpt}" ]; then
+    CHECKPOINT_PATH="${newest_ckpt}"
+    CHECKPOINT_RESOLUTION="auto_validate_newest_ckpt"
+    return 0
+  fi
+
+  echo "validate mode could not auto-resolve a checkpoint from ${checkpoint_dir}." >&2
+  echo "Expected ${checkpoint_dir}/last.ckpt or at least one *.ckpt file." >&2
+  echo "Pass --checkpoint_path PATH explicitly if you want a different file." >&2
+  return 1
+}
+
 json_escape() {
   local s="$1"
   s=${s//\\/\\\\}
@@ -492,7 +606,7 @@ usage() {
   cat <<'EOF'
 Usage:
   ./train.sh [submit] [options] -- [train.py overrides]
-  ./train.sh validate --checkpoint_path PATH [options] -- [train.py overrides]
+  ./train.sh validate [options] -- [train.py overrides]
   ./train.sh shell [options]
   ./train.sh local [--gpu-id N] [options] -- [train.py overrides]
   ./train.sh queue
@@ -503,7 +617,7 @@ Usage:
 
 Commands:
   submit      Submit a training job with sbatch (default).
-  validate    Submit a validate-only job (requires checkpoint, enables example-image logging by default).
+  validate    Submit a validate-only job (auto-resolves a checkpoint from checkpoint.dirpath when omitted).
   shell       Open an interactive Slurm shell (srun --pty bash).
   local       Run train.py directly on this machine.
   queue       Show your queued/running jobs.
@@ -524,7 +638,7 @@ Common options:
   --time HH:MM:SS          Time limit (default: 24:00:00)
   --job-name NAME          Slurm job name
   --seed N                 Seed passed to train.py (default: 42)
-  --checkpoint_path PATH   Checkpoint path
+  --checkpoint_path PATH   Checkpoint path (optional for validate; explicit value overrides auto-detection)
   --fresh-run              Disable auto-resume and force fresh training
   --no-sync                Skip 'uv sync --group omr-ned' in job command
   --no-doctor              Skip auto preflight checks for submit/validate
@@ -542,6 +656,7 @@ Local-only options:
 Examples:
   ./train.sh submit --gpu-type rtx5090 --gpus 2 --time 16:00:00 -- --training.max_epochs=40
   ./train.sh submit --fresh-run -- --checkpoint.run_name=fresh-ablation
+  ./train.sh validate --gpu-type rtx4090
   ./train.sh validate --checkpoint_path weights/GrandStaff/smt-model.ckpt --gpu-type rtx4090
   ./train.sh shell --gpu-type rtx5090 --gpus 1
   ./train.sh queue
@@ -801,6 +916,10 @@ if [ -n "${CHECKPOINT_PATH}" ] && [[ "${CHECKPOINT_PATH}" != /* ]]; then
   CHECKPOINT_PATH="${ROOT_DIR}/${CHECKPOINT_PATH#./}"
 fi
 
+if ! resolve_validate_checkpoint_path; then
+  exit 2
+fi
+
 if [ "${COMMAND}" = "doctor" ]; then
   if run_doctor; then
     exit 0
@@ -887,9 +1006,8 @@ if [ "${COMMAND}" = "local" ]; then
   exit 0
 fi
 
-if [ "${COMMAND}" = "validate" ] && [ -z "${CHECKPOINT_PATH}" ]; then
-  echo "validate mode requires --checkpoint_path PATH" >&2
-  exit 2
+if [ "${COMMAND}" = "validate" ] && [ "${CHECKPOINT_RESOLUTION}" != "explicit" ]; then
+  echo "Auto-selected validation checkpoint (${CHECKPOINT_RESOLUTION}): ${CHECKPOINT_PATH}"
 fi
 
 if [ -z "${JOB_NAME}" ]; then
