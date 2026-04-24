@@ -111,6 +111,58 @@ def _verify_checkpoint_tokenizer_compatibility(
     )
 
 
+def _load_checkpoint_experiment_config(checkpoint_path: str) -> dict[str, Any] | None:
+    """Return the experiment config embedded in a checkpoint artifact, if present."""
+    ckpt_path = Path(checkpoint_path)
+    if not ckpt_path.exists():
+        return None
+
+    checkpoint = torch.load(ckpt_path, map_location="cpu", weights_only=False)
+    hyper_parameters = checkpoint.get("hyper_parameters", {})
+    run_artifact_json = hyper_parameters.get("run_artifact_json")
+    if not isinstance(run_artifact_json, str):
+        return None
+
+    artifact = json.loads(run_artifact_json)
+    experiment_config = artifact.get("experiment_config")
+    if not isinstance(experiment_config, dict):
+        return None
+
+    return experiment_config
+
+
+def _apply_validate_checkpoint_defaults(
+    config_dict: dict[str, Any],
+    checkpoint_path: str,
+    overrides: dict[str, Any],
+) -> dict[str, Any]:
+    """
+    For validate-only runs, prefer checkpoint-time limits unless explicitly overridden.
+
+    This keeps the validation datamodule aligned with the checkpoint's trained sequence
+    length even if the local repo config has since changed.
+    """
+    checkpoint_config = _load_checkpoint_experiment_config(checkpoint_path)
+    if checkpoint_config is None:
+        return config_dict
+
+    checkpoint_model_cfg = checkpoint_config.get("model", {})
+    checkpoint_max_seq_len = checkpoint_model_cfg.get("max_seq_len")
+    if checkpoint_max_seq_len is None or "model.max_seq_len" in overrides:
+        return config_dict
+
+    config_dict.setdefault("model", {})
+    current_max_seq_len = config_dict["model"].get("max_seq_len")
+    if current_max_seq_len != checkpoint_max_seq_len:
+        console.print(
+            "[yellow]validate_only=True: using checkpoint artifact "
+            f"model.max_seq_len={checkpoint_max_seq_len} "
+            f"(config has {current_max_seq_len})[/yellow]"
+        )
+    config_dict["model"]["max_seq_len"] = checkpoint_max_seq_len
+    return config_dict
+
+
 def _infer_total_steps(
     dm, max_epochs: int, accumulate_grad_batches: int | None, explicit_max_steps: int | None
 ):
@@ -246,6 +298,9 @@ def main(
 
     if validate_only and checkpoint_path is None:
         raise ValueError("checkpoint_path must be provided when validate_only=True")
+
+    if validate_only and checkpoint_path is not None:
+        config_dict = _apply_validate_checkpoint_defaults(config_dict, checkpoint_path, overrides)
 
     config = experiment_config_from_dict(config_dict)
     if not validate_only:

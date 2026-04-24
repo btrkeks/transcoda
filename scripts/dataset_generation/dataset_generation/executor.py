@@ -246,8 +246,7 @@ def run_dataset_generation(
         invalid_source_examples=auto_quarantined_source_examples,
     )
 
-    next_to_commit = counters["next_sample_idx"]
-    next_to_schedule = next_to_commit
+    next_to_schedule = int(counters["next_sample_idx"])
     pending_terminal: dict[int, WorkerSuccess | WorkerFailure] = {}
     pending_terminal_tasks: dict[int, ScheduledTask] = {}
     pending_rows: list[dict[str, object]] = []
@@ -326,18 +325,19 @@ def run_dataset_generation(
                     candidate_in_target_range=plan.candidate_in_target_range,
                 )
                 next_to_schedule += 1
-                next_to_commit_ref = [next_to_commit]
-                pending_rows = _commit_contiguous_results(
+                counters["next_sample_idx"] = max(
+                    int(counters["next_sample_idx"]), next_to_schedule
+                )
+                pending_rows = _commit_ready_results(
                     pending_terminal=pending_terminal,
                     pending_terminal_tasks=pending_terminal_tasks,
                     pending_rows=pending_rows,
                     counters=counters,
-                    next_to_commit_ref=next_to_commit_ref,
+                    scheduled_watermark=next_to_schedule,
                     recipe=active_recipe,
                     target_samples=target_samples,
                     run_context=run_context,
                 )
-                next_to_commit = next_to_commit_ref[0]
                 last_progress_at_ref = [last_progress_at]
                 maybe_flush_and_report(
                     resume_store=resume_store,
@@ -398,6 +398,9 @@ def run_dataset_generation(
                         tasks_by_sample_idx[task.sample_idx] = task
                         next_to_schedule += 1
 
+                    counters["next_sample_idx"] = max(
+                        int(counters["next_sample_idx"]), next_to_schedule
+                    )
                     if not futures_by_handle:
                         break
 
@@ -590,18 +593,16 @@ def run_dataset_generation(
                             pending_terminal[task.sample_idx] = outcome
                             pending_terminal_tasks[task.sample_idx] = task
 
-                    next_to_commit_ref = [next_to_commit]
-                    pending_rows = _commit_contiguous_results(
+                    pending_rows = _commit_ready_results(
                         pending_terminal=pending_terminal,
                         pending_terminal_tasks=pending_terminal_tasks,
                         pending_rows=pending_rows,
                         counters=counters,
-                        next_to_commit_ref=next_to_commit_ref,
+                        scheduled_watermark=next_to_schedule,
                         recipe=active_recipe,
                         target_samples=target_samples,
                         run_context=run_context,
                     )
-                    next_to_commit = next_to_commit_ref[0]
 
                     last_progress_at_ref = [last_progress_at]
                     maybe_flush_and_report(
@@ -1001,21 +1002,20 @@ def hashlib_sha256(raw_bytes: bytes) -> str:
 
 
 
-def _commit_contiguous_results(
+def _commit_ready_results(
     *,
     pending_terminal: dict[int, WorkerSuccess | WorkerFailure],
     pending_terminal_tasks: dict[int, ScheduledTask],
     pending_rows: list[dict[str, object]],
     counters: dict[str, object],
-    next_to_commit_ref: list[int],
+    scheduled_watermark: int,
     recipe: ProductionRecipe,
     target_samples: int,
     run_context: RunContext,
 ) -> list[dict[str, object]]:
-    next_to_commit = next_to_commit_ref[0]
-    while next_to_commit in pending_terminal:
-        outcome = pending_terminal.pop(next_to_commit)
-        task = pending_terminal_tasks.pop(next_to_commit, None)
+    for sample_idx in sorted(pending_terminal):
+        outcome = pending_terminal.pop(sample_idx)
+        task = pending_terminal_tasks.pop(sample_idx, None)
         committed_to_dataset = isinstance(outcome, WorkerSuccess) and int(
             counters["accepted_samples"]
         ) < target_samples
@@ -1089,10 +1089,8 @@ def _commit_contiguous_results(
             failure_counts[str(outcome.failure_reason)] += 1
             if target_bucket is not None and outcome.failure_reason != "discarded_after_target":
                 target_failure_reason_counts[int(target_bucket)][str(outcome.failure_reason)] += 1
-        next_to_commit += 1
 
-    counters["next_sample_idx"] = next_to_commit
-    next_to_commit_ref[0] = next_to_commit
+    counters["next_sample_idx"] = max(int(counters["next_sample_idx"]), scheduled_watermark)
     return pending_rows
 
 
@@ -1218,7 +1216,12 @@ def _read_latest_worker_stage_event(
     for raw_line in path.read_text(encoding="utf-8").splitlines():
         if not raw_line.strip():
             continue
-        payload = json.loads(raw_line)
+        try:
+            payload = json.loads(raw_line)
+        except json.JSONDecodeError:
+            # Workers append concurrently; tolerate a partial/corrupt diagnostic
+            # line rather than failing timeout handling for the whole run.
+            continue
         if payload.get("event") != "worker_stage":
             continue
         if payload.get("sample_id") != sample_id:

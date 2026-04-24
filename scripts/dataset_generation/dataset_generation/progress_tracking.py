@@ -27,6 +27,7 @@ def build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object]
         return {
             "next_sample_idx": 0,
             "accepted_samples": 0,
+            "run_start_accepted_samples": 0,
             "rejected_samples": 0,
             "failure_reason_counts": Counter(),
             "truncation_counts": Counter({"attempted": 0, "rescued": 0, "failed": 0}),
@@ -70,6 +71,7 @@ def build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object]
     return {
         "next_sample_idx": snapshot.next_sample_idx,
         "accepted_samples": snapshot.accepted_samples,
+        "run_start_accepted_samples": snapshot.accepted_samples,
         "rejected_samples": snapshot.rejected_samples,
         "failure_reason_counts": Counter(snapshot.failure_reason_counts),
         "truncation_counts": Counter(snapshot.truncation_counts),
@@ -427,9 +429,13 @@ def _build_timing_summary(
     now: float,
 ) -> dict[str, float | int | None]:
     accepted_samples = int(counters["accepted_samples"])
+    run_start_accepted_samples = int(counters.get("run_start_accepted_samples", 0))
+    accepted_samples_this_run = max(0, accepted_samples - run_start_accepted_samples)
     remaining_samples = max(0, int(target_samples) - accepted_samples)
     accepted_samples_per_second = (
-        float(accepted_samples) / elapsed_seconds if accepted_samples > 0 and elapsed_seconds > 0 else 0.0
+        float(accepted_samples_this_run) / elapsed_seconds
+        if accepted_samples_this_run > 0 and elapsed_seconds > 0
+        else 0.0
     )
     eta_seconds: float | None = None
     estimated_completion_at: float | None = None
@@ -439,6 +445,9 @@ def _build_timing_summary(
     return {
         "elapsed_seconds": elapsed_seconds,
         "accepted_samples_per_second": accepted_samples_per_second,
+        "accepted_samples_at_run_start": run_start_accepted_samples,
+        "accepted_samples_this_run": accepted_samples_this_run,
+        "accepted_samples_total": accepted_samples,
         "remaining_samples": remaining_samples,
         "eta_seconds": eta_seconds,
         "estimated_completion_at": estimated_completion_at,

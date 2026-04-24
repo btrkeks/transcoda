@@ -37,6 +37,7 @@ def write_json(path: str | Path, payload: object) -> None:
 def append_jsonl(path: str | Path, rows: list[object]) -> None:
     import json
     import os
+    import fcntl
 
     if not rows:
         return
@@ -45,6 +46,10 @@ def append_jsonl(path: str | Path, rows: list[object]) -> None:
     payload = "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows).encode("utf-8")
     fd = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o666)
     try:
-        os.write(fd, payload)
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        written = 0
+        while written < len(payload):
+            written += os.write(fd, payload[written:])
     finally:
+        fcntl.flock(fd, fcntl.LOCK_UN)
         os.close(fd)

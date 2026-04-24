@@ -264,6 +264,7 @@ def inference(
         bos_token_id=getattr(model.config, "bos_token_id", None),
         eos_token_id=getattr(model.config, "eos_token_id", None),
         pad_token_id=pad_token_id,
+        use_interpretation_transition_constraints=True,
         use_spine_structure_constraints=True,
         # Preserve RhythmRule in code, but keep it out of live inference.
         use_rhythm_constraints=False,

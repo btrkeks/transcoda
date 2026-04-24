@@ -58,10 +58,12 @@ class _DummyPretrainedTokenizerFast:
 
 class _DummyDataModule:
     last_instance = None
+    last_init_kwargs = None
     train_dataloader_calls = 0
 
-    def __init__(self, **_kwargs):
+    def __init__(self, **kwargs):
         _DummyDataModule.last_instance = self
+        _DummyDataModule.last_init_kwargs = kwargs
         self.train_set = [0, 1, 2, 3]
         self.val_sets = {"synth": [0, 1], "polish": [2]}
 
@@ -154,6 +156,7 @@ class _DummyLogger:
 
 def _patch_entrypoint(monkeypatch: pytest.MonkeyPatch, trainer: _DummyTrainer) -> None:
     _DummyDataModule.last_instance = None
+    _DummyDataModule.last_init_kwargs = None
     _DummyDataModule.train_dataloader_calls = 0
     _DummyLogger.last_instance = None
     _DummyModelWrapper.last_kwargs = None
@@ -298,6 +301,59 @@ def test_validate_only_forces_log_example_images_true(
     assert _DummyModelWrapper.last_kwargs is not None
     training_cfg = _DummyModelWrapper.last_kwargs["training"]
     assert training_cfg.log_example_images is True
+
+
+def test_validate_only_uses_checkpoint_max_seq_len_for_datamodule(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    config_path = _write_min_config(tmp_path)
+    trainer = _DummyTrainer()
+    _patch_entrypoint(monkeypatch, trainer)
+    checkpoint_path = str(tmp_path / "best.ckpt")
+
+    monkeypatch.setattr(
+        train_entry,
+        "_load_checkpoint_experiment_config",
+        lambda _checkpoint_path: {"model": {"max_seq_len": 3000}},
+    )
+
+    train_entry.main(
+        config_path=str(config_path),
+        checkpoint_path=checkpoint_path,
+        validate_only=True,
+    )
+
+    assert _DummyDataModule.last_init_kwargs is not None
+    assert _DummyDataModule.last_init_kwargs["max_decoder_len"] == 3000
+    assert _DummyModelWrapper.last_kwargs is not None
+    assert _DummyModelWrapper.last_kwargs["maxlen"] == 3000
+
+
+def test_validate_only_explicit_max_seq_len_override_wins_over_checkpoint(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    config_path = _write_min_config(tmp_path)
+    trainer = _DummyTrainer()
+    _patch_entrypoint(monkeypatch, trainer)
+    checkpoint_path = str(tmp_path / "best.ckpt")
+
+    monkeypatch.setattr(
+        train_entry,
+        "_load_checkpoint_experiment_config",
+        lambda _checkpoint_path: {"model": {"max_seq_len": 3000}},
+    )
+
+    train_entry.main(
+        config_path=str(config_path),
+        checkpoint_path=checkpoint_path,
+        validate_only=True,
+        **{"model.max_seq_len": 4096},
+    )
+
+    assert _DummyDataModule.last_init_kwargs is not None
+    assert _DummyDataModule.last_init_kwargs["max_decoder_len"] == 4096
+    assert _DummyModelWrapper.last_kwargs is not None
+    assert _DummyModelWrapper.last_kwargs["maxlen"] == 4096
 
 
 def test_main_auto_resume_uses_last_ckpt(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):

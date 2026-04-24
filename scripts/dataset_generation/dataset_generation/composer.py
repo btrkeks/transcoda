@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import random
 import re
+from collections import defaultdict
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
@@ -20,6 +21,7 @@ from src.core.kern_utils import is_spinemerge_line, is_spinesplit_line, is_termi
 _CLEF_RE = re.compile(r"^\*clef[A-Ga-gvX]v?\d?$")
 _KEYSIG_RE = re.compile(r"^\*k\[.*\]$")
 _METER_RE = re.compile(r"^\*M\d+/\d+$")
+_MEASURE_INDEX_CACHE: dict[tuple[int, int], dict[int, tuple[int, ...]]] = {}
 
 
 @dataclass(frozen=True)
@@ -165,31 +167,28 @@ def _choose_entries(
         if excluded_entry_ids is not None
         else frozenset()
     )
-    allowed_entry_ids = tuple(
-        entry.entry_idx for entry in source_index.entries if entry.entry_idx not in excluded_ids
-    )
-    if not allowed_entry_ids:
+    if not source_index.entries:
         raise ValueError("Cannot compose from an empty source index")
 
     target_segments = _weighted_choice(recipe.composition.segment_count_weights, rng)
-    target_segments = max(1, min(target_segments, len(allowed_entry_ids)))
+    target_segments = max(1, min(target_segments, len(source_index.entries)))
     target_total_measures = rng.randint(
         recipe.composition.min_total_measures,
         recipe.composition.max_total_measures,
     )
 
-    anchor_entry_idx = allowed_entry_ids[rng.randrange(len(allowed_entry_ids))]
+    anchor_entry_idx = _pick_anchor_entry_idx(source_index, excluded_ids, rng)
     anchor = source_index.entries[anchor_entry_idx]
     chosen_entry_ids: list[int] = [anchor_entry_idx]
-    remaining_entry_ids = set(allowed_entry_ids)
-    remaining_entry_ids.remove(anchor_entry_idx)
+    unavailable_entry_ids = set(excluded_ids)
+    unavailable_entry_ids.add(anchor_entry_idx)
     current_total = anchor.measure_count
     current_boundary_spine_count = anchor.restored_terminal_spine_count
 
-    while len(chosen_entry_ids) < target_segments and remaining_entry_ids:
+    while len(chosen_entry_ids) < target_segments:
         candidate_entry_idx = _pick_next_entry(
             source_index=source_index,
-            remaining_entry_ids=remaining_entry_ids,
+            unavailable_entry_ids=unavailable_entry_ids,
             current_total=current_total,
             current_boundary_spine_count=current_boundary_spine_count,
             target_total_measures=target_total_measures,
@@ -200,7 +199,7 @@ def _choose_entries(
             break
         candidate = source_index.entries[candidate_entry_idx]
         chosen_entry_ids.append(candidate_entry_idx)
-        remaining_entry_ids.remove(candidate_entry_idx)
+        unavailable_entry_ids.add(candidate_entry_idx)
         current_total += candidate.measure_count
         current_boundary_spine_count = candidate.restored_terminal_spine_count
 
@@ -208,7 +207,7 @@ def _choose_entries(
         for _ in range(recipe.composition.max_selection_attempts):
             candidate_entry_idx = _pick_next_entry(
                 source_index=source_index,
-                remaining_entry_ids=remaining_entry_ids,
+                unavailable_entry_ids=unavailable_entry_ids,
                 current_total=current_total,
                 current_boundary_spine_count=current_boundary_spine_count,
                 target_total_measures=recipe.composition.min_total_measures,
@@ -219,7 +218,7 @@ def _choose_entries(
                 break
             candidate = source_index.entries[candidate_entry_idx]
             chosen_entry_ids.append(candidate_entry_idx)
-            remaining_entry_ids.remove(candidate_entry_idx)
+            unavailable_entry_ids.add(candidate_entry_idx)
             current_total += candidate.measure_count
             current_boundary_spine_count = candidate.restored_terminal_spine_count
             if (
@@ -229,6 +228,22 @@ def _choose_entries(
                 break
 
     return tuple(chosen_entry_ids)
+
+
+def _pick_anchor_entry_idx(
+    source_index: SourceIndex,
+    excluded_entry_ids: frozenset[int],
+    rng: random.Random,
+) -> int:
+    entry_count = len(source_index.entries)
+    for _ in range(min(32, max(1, entry_count))):
+        entry_idx = source_index.entries[rng.randrange(entry_count)].entry_idx
+        if entry_idx not in excluded_entry_ids:
+            return entry_idx
+    for entry in source_index.entries:
+        if entry.entry_idx not in excluded_entry_ids:
+            return entry.entry_idx
+    raise ValueError("Cannot compose from an empty source index")
 
 
 def _weighted_choice(
@@ -250,31 +265,42 @@ def _weighted_choice(
 def _pick_next_entry(
     *,
     source_index: SourceIndex,
-    remaining_entry_ids: set[int],
+    unavailable_entry_ids: set[int],
     current_total: int,
     current_boundary_spine_count: int,
     target_total_measures: int,
     max_total_measures: int,
     rng: random.Random,
 ) -> int | None:
-    if not remaining_entry_ids:
+    compatible_by_measure = _compatible_entry_ids_by_measure_count(
+        source_index=source_index,
+        initial_spine_count=current_boundary_spine_count,
+    )
+    if not compatible_by_measure:
         return None
 
-    compatible_entry_ids = source_index.entry_indices_by_initial_spine_count.get(
-        current_boundary_spine_count,
-        (),
-    )
     scored: list[tuple[float, int]] = []
-    for entry_idx in compatible_entry_ids:
-        if entry_idx not in remaining_entry_ids:
-            continue
-        entry = source_index.entries[entry_idx]
-        projected_total = current_total + entry.measure_count
+    target_remaining = target_total_measures - current_total
+    measure_counts_by_distance: dict[int, list[int]] = defaultdict(list)
+    for measure_count in compatible_by_measure:
+        projected_total = current_total + measure_count
         if projected_total > max_total_measures and current_total >= target_total_measures:
             continue
-        distance = abs(target_total_measures - projected_total)
-        jitter = rng.random() * 0.25
-        scored.append((distance + jitter, entry_idx))
+        distance = abs(target_remaining - measure_count)
+        measure_counts_by_distance[distance].append(measure_count)
+
+    for distance in sorted(measure_counts_by_distance):
+        for measure_count in measure_counts_by_distance[distance]:
+            for entry_idx in _sample_available_entry_ids(
+                compatible_by_measure[measure_count],
+                unavailable_entry_ids=unavailable_entry_ids,
+                rng=rng,
+                limit=max(4, 8 - len(scored)),
+            ):
+                jitter = rng.random() * 0.25
+                scored.append((distance + jitter, entry_idx))
+        if len(scored) >= 4:
+            break
 
     if not scored:
         return None
@@ -282,6 +308,53 @@ def _pick_next_entry(
     scored.sort(key=lambda item: item[0])
     shortlist = [entry_idx for _, entry_idx in scored[: min(4, len(scored))]]
     return shortlist[rng.randrange(len(shortlist))]
+
+
+def _compatible_entry_ids_by_measure_count(
+    *,
+    source_index: SourceIndex,
+    initial_spine_count: int,
+) -> dict[int, tuple[int, ...]]:
+    cache_key = (id(source_index), int(initial_spine_count))
+    cached = _MEASURE_INDEX_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+
+    grouped: dict[int, list[int]] = defaultdict(list)
+    for entry_idx in source_index.entry_indices_by_initial_spine_count.get(
+        initial_spine_count,
+        (),
+    ):
+        entry = source_index.entries[entry_idx]
+        grouped[int(entry.measure_count)].append(entry_idx)
+    indexed = {
+        measure_count: tuple(entry_ids)
+        for measure_count, entry_ids in sorted(grouped.items())
+    }
+    _MEASURE_INDEX_CACHE[cache_key] = indexed
+    return indexed
+
+
+def _sample_available_entry_ids(
+    entry_ids: tuple[int, ...],
+    *,
+    unavailable_entry_ids: set[int],
+    rng: random.Random,
+    limit: int,
+) -> list[int]:
+    if not entry_ids or limit <= 0:
+        return []
+
+    selected: list[int] = []
+    start = rng.randrange(len(entry_ids))
+    for offset in range(len(entry_ids)):
+        entry_idx = entry_ids[(start + offset) % len(entry_ids)]
+        if entry_idx in unavailable_entry_ids:
+            continue
+        selected.append(entry_idx)
+        if len(selected) >= limit:
+            break
+    return selected
 
 
 def _normalize_segment_text(

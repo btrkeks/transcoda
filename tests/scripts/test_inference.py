@@ -75,6 +75,8 @@ def test_inference_uses_shared_constraint_factory(monkeypatch, tmp_path: Path) -
     inference_script.inference(weights="unused.ckpt", image="unused.png", output=str(output_path))
 
     assert captured["factory_kwargs"]["use_rhythm_constraints"] is False
+    assert captured["factory_kwargs"]["use_interpretation_transition_constraints"] is True
+    assert captured["factory_kwargs"]["use_spine_structure_constraints"] is True
     assert captured["generate_kwargs"]["logits_processor"] == ["lp"]
     assert captured["generate_kwargs"]["stopping_criteria"] == ["stop"]
     assert captured["generate_kwargs"]["repetition_penalty"] == 1.1

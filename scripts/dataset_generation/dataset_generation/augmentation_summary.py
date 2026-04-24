@@ -1,7 +1,7 @@
 """Augmentation summary counters and preview artifacts.
 
 Consolidates all augmentation-specific bookkeeping that was previously
-scattered between ``executor._commit_contiguous_results`` (inline counter
+scattered between ``executor._commit_ready_results`` (inline counter
 updates), ``executor._maybe_write_augmentation_preview`` (preview I/O),
 and ``outcome_events.update_augmentation_summary_counters``
 (final-geometry / OOB / outer-gate breakdowns).

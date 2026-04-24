@@ -10,6 +10,7 @@ from datasets import load_from_disk
 from pebble import ProcessExpired
 
 import scripts.dataset_generation.dataset_generation.executor as executor_module
+import scripts.dataset_generation.dataset_generation.progress_tracking as progress_tracking_module
 from scripts.dataset_generation.dataset_generation.executor import run_dataset_generation
 from scripts.dataset_generation.dataset_generation.io import encode_jpeg_image
 from scripts.dataset_generation.dataset_generation.recipe import (
@@ -610,6 +611,51 @@ def test_executor_writes_verovio_events_for_rejected_outcomes(tmp_path, monkeypa
     assert events[0]["truncation_ratio"] == 0.5
 
 
+def test_executor_commits_completed_samples_out_of_order(tmp_path, monkeypatch):
+    input_dir = _make_simple_input_dir(tmp_path, ("a", "b"))
+    output_dir = tmp_path / "output"
+    _install_fake_pool(
+        monkeypatch,
+        outcomes_by_sample_idx={
+            0: [_make_worker_success],
+            1: [_make_worker_success],
+        },
+    )
+    _install_fake_balanced_planner(monkeypatch, {0: [0], 1: [1]})
+
+    def wait_highest_sample_first(futures, timeout=None, return_when=None):
+        del timeout, return_when
+        future_list = list(futures)
+        if not future_list:
+            return set(), set()
+
+        def sample_idx_for(future):
+            return int(future.result().sample.sample_id.split("_")[-1])
+
+        selected = max(future_list, key=sample_idx_for)
+        return {selected}, set(future for future in future_list if future is not selected)
+
+    monkeypatch.setattr(executor_module, "wait", wait_highest_sample_first)
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=1,
+        num_workers=2,
+        max_attempts=2,
+        quiet=True,
+    )
+
+    ds = load_from_disk(str(output_dir))
+    info = _read_json(summary.run_artifacts_dir / "info.json")
+
+    assert summary.accepted_samples == 1
+    assert len(ds) == 1
+    assert ds[0]["sample_id"] == "sample_00000001"
+    assert info["snapshot"]["next_sample_idx"] == 2
+    assert info["snapshot"]["failure_reason_counts"]["discarded_after_target"] == 1
+
+
 def test_executor_writes_failure_events_jsonl_for_rejected_outcomes(tmp_path, monkeypatch):
     input_dir = _make_simple_input_dir(tmp_path, ("a", "b"))
     output_dir = tmp_path / "output"
@@ -1064,9 +1110,15 @@ def test_executor_resume_recovers_after_failure_without_duplicates(tmp_path, mon
     )
 
     ds = load_from_disk(str(output_dir))
+    progress = _read_json(summary.run_artifacts_dir / "progress.json")
     assert summary.accepted_samples == 2
     assert len(ds) == 2
     assert len(set(ds["sample_id"])) == 2
+    assert progress["accepted_samples_total"] == 2
+    assert progress["accepted_samples_at_run_start"] == 1
+    assert progress["accepted_samples_this_run"] == 1
+    assert progress["remaining_samples"] == 0
+    assert progress["eta_seconds"] == pytest.approx(0.0)
 
 
 def test_executor_resume_mode_require_fails_without_state(tmp_path):
@@ -1692,9 +1744,34 @@ def test_executor_writes_basic_eta_fields_to_progress(tmp_path):
 
     assert progress["elapsed_seconds"] >= 0.0
     assert progress["accepted_samples_per_second"] > 0.0
+    assert progress["accepted_samples_at_run_start"] == 0
+    assert progress["accepted_samples_this_run"] == 1
+    assert progress["accepted_samples_total"] == 1
     assert progress["remaining_samples"] == 0
     assert progress["eta_seconds"] == pytest.approx(0.0)
     assert isinstance(progress["estimated_completion_at"], float)
+
+
+def test_progress_timing_uses_this_run_accepts_for_resumed_runs():
+    counters = {
+        "accepted_samples": 120,
+        "run_start_accepted_samples": 100,
+    }
+
+    timing = progress_tracking_module._build_timing_summary(
+        counters=counters,
+        target_samples=200,
+        elapsed_seconds=10.0,
+        now=1_000.0,
+    )
+
+    assert timing["accepted_samples_total"] == 120
+    assert timing["accepted_samples_at_run_start"] == 100
+    assert timing["accepted_samples_this_run"] == 20
+    assert timing["accepted_samples_per_second"] == pytest.approx(2.0)
+    assert timing["remaining_samples"] == 80
+    assert timing["eta_seconds"] == pytest.approx(40.0)
+    assert timing["estimated_completion_at"] == pytest.approx(1_040.0)
 
 
 def test_executor_resume_preserves_retry_counters_after_interrupted_finalize(
