@@ -1,0 +1,35 @@
+{
+  "data": {
+    "image_dir": "data/fcmae_images",
+    "manifest_path": null,
+    "image_height": 768,
+    "image_width": 544,
+    "extensions": [".png", ".jpg", ".jpeg", ".webp"]
+  },
+  "model": {
+    "encoder_model_name_or_path": "facebook/convnextv2-base-22k-224",
+    "patch_size": 32,
+    "mask_ratio": 0.6,
+    "decoder_dim": 512,
+    "decoder_depth": 2,
+    "norm_pix_loss": true
+  },
+  "training": {
+    "batch_size": 2,
+    "num_workers": 4,
+    "max_steps": 1000,
+    "accumulate_grad_batches": 4,
+    "base_learning_rate": 0.00015,
+    "weight_decay": 0.05,
+    "warmup_steps": 100,
+    "precision": "bf16-mixed",
+    "seed": 0
+  },
+  "checkpoint": {
+    "dirpath": "weights/fcmae",
+    "filename": "fcmae-{step:06d}",
+    "save_last": true,
+    "save_top_k": 0
+  }
+}
+
