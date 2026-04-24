@@ -38,6 +38,7 @@ class FCMAETrainingConfig(BaseModel):
     warmup_steps: int = 100
     precision: str = "bf16-mixed"
     seed: int = 0
+    resume_from_checkpoint: str | None = None
 
 
 class FCMAECheckpointConfig(BaseModel):
@@ -49,6 +50,30 @@ class FCMAECheckpointConfig(BaseModel):
     save_top_k: int = 0
 
 
+class FCMAELoggingConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    wandb_enabled: bool = False
+    project: str = "SMT-FCMAE"
+    run_name: str | None = None
+    group: str | None = None
+    tags: list[str] = Field(default_factory=list)
+    log_model: bool = False
+    log_reconstructions: bool = True
+    log_reconstruction_every_n_steps: int = 500
+    log_reconstruction_max_batches: int | None = 20
+    log_reconstruction_max_images: int = 4
+
+
+class FCMAEExportConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    output_dir: str | None = None
+    export_on_train_end: bool = False
+    overwrite: bool = False
+    validate_export: bool = True
+
+
 class FCMAEConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -56,6 +81,8 @@ class FCMAEConfig(BaseModel):
     model: FCMAEModelConfig = Field(default_factory=FCMAEModelConfig)
     training: FCMAETrainingConfig = Field(default_factory=FCMAETrainingConfig)
     checkpoint: FCMAECheckpointConfig = Field(default_factory=FCMAECheckpointConfig)
+    logging: FCMAELoggingConfig = Field(default_factory=FCMAELoggingConfig)
+    export: FCMAEExportConfig = Field(default_factory=FCMAEExportConfig)
 
     @model_validator(mode="after")
     def validate_config(self) -> FCMAEConfig:
@@ -87,6 +114,17 @@ class FCMAEConfig(BaseModel):
             raise ValueError("training.weight_decay must be >= 0")
         if self.training.warmup_steps < 0:
             raise ValueError("training.warmup_steps must be >= 0")
+        if self.logging.log_reconstruction_every_n_steps < 1:
+            raise ValueError("logging.log_reconstruction_every_n_steps must be >= 1")
+        if (
+            self.logging.log_reconstruction_max_batches is not None
+            and self.logging.log_reconstruction_max_batches < 1
+        ):
+            raise ValueError("logging.log_reconstruction_max_batches must be null or >= 1")
+        if self.logging.log_reconstruction_max_images < 1:
+            raise ValueError("logging.log_reconstruction_max_images must be >= 1")
+        if self.export.export_on_train_end and self.export.output_dir is None:
+            raise ValueError("export.output_dir must be set when export.export_on_train_end=true")
 
         normalized_extensions = []
         for extension in self.data.extensions:
@@ -100,4 +138,3 @@ class FCMAEConfig(BaseModel):
 
 def load_fcmae_config(path: str | Path) -> FCMAEConfig:
     return FCMAEConfig.model_validate_json(Path(path).read_text())
-

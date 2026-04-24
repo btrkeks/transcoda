@@ -18,6 +18,7 @@ class FCMAEPretrainer(L.LightningModule):
         training_config: FCMAETrainingConfig | dict[str, Any],
         *,
         model: DenseMaskedImageModelingConvNeXtV2 | None = None,
+        full_config: dict[str, Any] | None = None,
     ) -> None:
         super().__init__()
         model_config = FCMAEModelConfig.model_validate(model_config)
@@ -25,10 +26,13 @@ class FCMAEPretrainer(L.LightningModule):
         self.model_config = model_config
         self.training_config = training_config
         self.model = model or DenseMaskedImageModelingConvNeXtV2(model_config)
+        self._latest_preview: dict[str, Any] | None = None
+        self.full_config = full_config
         self.save_hyperparameters(
             {
                 "model_config": model_config.model_dump(),
                 "training_config": training_config.model_dump(),
+                "full_config": full_config,
             },
             ignore=["model"],
         )
@@ -59,6 +63,19 @@ class FCMAEPretrainer(L.LightningModule):
             "train/samples_skipped_no_valid_patches",
             output.samples_skipped_no_valid_patches.float(),
         )
+        valid_patch_mask = batch.get("valid_patch_mask")
+        if valid_patch_mask is None:
+            valid_patch_ratio = torch.ones((), device=output.loss.device)
+        else:
+            valid_patch_ratio = valid_patch_mask.to(device=output.loss.device).float().mean()
+        self._log_if_attached("train/valid_patch_ratio", valid_patch_ratio)
+        self._latest_preview = {
+            "pixel_values": batch["pixel_values"].detach(),
+            "mask": output.mask.detach(),
+            "valid_patch_mask": (
+                None if output.valid_patch_mask is None else output.valid_patch_mask.detach()
+            ),
+        }
         optimizer = None
         if self._trainer is not None:
             optimizer = self.optimizers(use_pl_optimizer=False)

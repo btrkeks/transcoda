@@ -122,6 +122,60 @@ See [`config/README.md`](config/README.md) for full config documentation and all
 ./train.sh cancel            # Cancel running job
 ```
 
+## FCMAE Encoder Pretraining
+
+FCMAE-style masked image pretraining uses `config/pretrain_fcmae_base.json` and writes regular
+Lightning checkpoints. Local smoke runs keep W&B disabled by default:
+
+```bash
+source .venv/bin/activate
+python scripts/pretrain_fcmae.py config/pretrain_fcmae_base.json training.max_steps=10
+```
+
+On Slurm, use the dedicated wrapper and put config overrides after `--` as `key=value` tokens:
+
+```bash
+./pretrain_fcmae.sh submit \
+  --job-name fcmae-real-scans \
+  --time 48:00:00 \
+  --mem 64G \
+  -- \
+  data.manifest_path=data/fcmae_real_scans_manifest.txt \
+  data.image_dir=null \
+  checkpoint.dirpath=weights/fcmae-real-scans \
+  logging.wandb_enabled=true
+```
+
+Resume with either `--resume weights/fcmae-real-scans/last.ckpt` or the equivalent
+`training.resume_from_checkpoint=...` override. `./pretrain_fcmae.sh logs` tails the most recent
+remembered FCMAE job.
+
+### Exporting a Pretrained Encoder
+
+Export the ConvNeXtV2 encoder as a Hugging Face directory:
+
+```bash
+python scripts/export_fcmae_encoder.py \
+  weights/fcmae-real-scans/last.ckpt \
+  weights/fcmae-real-scans/exported_encoder \
+  --validate
+```
+
+The exporter refuses to write into a non-empty directory unless `--overwrite` is passed and writes
+`fcmae_export_metadata.json` next to the exported `config.json`.
+
+### Supervised Handoff
+
+The exported encoder is consumed through the existing Transformers encoder provider:
+
+```bash
+./train.sh submit -- \
+  model.encoder_provider=transformers \
+  model.encoder_model_name_or_path=weights/fcmae-real-scans/exported_encoder \
+  checkpoint.dirpath=weights/smt-fcmae-real-scans-finetune \
+  checkpoint.run_name=smt-fcmae-real-scans-finetune
+```
+
 ## Dataset Generation
 
 The pipeline converts raw music scores through several stages into training-ready image-kern pairs.
