@@ -1,3 +1,4 @@
+import math
 import time
 from collections.abc import Callable
 
@@ -14,6 +15,7 @@ from torchinfo import summary
 from torchmetrics import MetricCollection
 
 from src.config import Generation, ModelConfig, OptimizerConfig, Training
+from src.core.kern_utils import strip_tie_beam_markers_from_kern_text
 from src.core.metrics import (
     CharacterErrorRate,
     LineErrorRate,
@@ -27,12 +29,11 @@ from src.grammar.interpretation_transition_rule import (
     resolve_interpretation_transition_config,
 )
 from src.grammar.runaway_guard import resolve_runaway_guard_config
-from src.core.kern_utils import strip_tie_beam_markers_from_kern_text
 from src.metrics_schema import (
     FINAL_VAL_PREFIX,
-    VAL_PREFIX,
     TRAIN_LOSS,
     TRAIN_STAGE,
+    VAL_PREFIX,
     base_val_set_name,
     build_test_metric_key,
     final_val_aggregate_metric,
@@ -58,6 +59,18 @@ _ALLOWED_COMPILE_MODES = {
     "max-autotune",
     "max-autotune-no-cudagraphs",
 }
+
+
+def _finite_estimated_stepping_batches(trainer: L.Trainer) -> int | float:
+    total_steps = getattr(trainer, "estimated_stepping_batches", None)
+    if total_steps is None:
+        raise RuntimeError("Trainer not attached yet: cannot infer total steps.")
+    if not math.isfinite(float(total_steps)):
+        raise RuntimeError(
+            "Trainer estimated_stepping_batches must be finite to configure the "
+            f"cosine scheduler; got {total_steps!r}."
+        )
+    return total_steps
 
 
 def _is_polish_style_validation_set(set_name: str) -> bool:
@@ -485,9 +498,7 @@ class SMTTrainer(L.LightningModule):
         warmup_steps = self.hparams.optimizer_config.warmup_steps
         eta_min = decoder_lr * self.hparams.optimizer_config.cosine_eta_min_factor
 
-        total_steps = getattr(self.trainer, "estimated_stepping_batches", None)
-        if total_steps is None:
-            raise RuntimeError("Trainer not attached yet: cannot infer total steps.")
+        total_steps = _finite_estimated_stepping_batches(self.trainer)
 
         lr_scheduler_type = cfg.lr_scheduler
         if lr_scheduler_type == "cosine_warm_restarts":
@@ -540,10 +551,16 @@ class SMTTrainer(L.LightningModule):
             return
 
         gradient_clip_val = float(gradient_clip_val)
+        gradient_clip_algorithm = gradient_clip_algorithm or "norm"
         if gradient_clip_algorithm == "norm":
             torch.nn.utils.clip_grad_norm_(self.parameters(), gradient_clip_val)
         elif gradient_clip_algorithm == "value":
             torch.nn.utils.clip_grad_value_(self.parameters(), gradient_clip_val)
+        else:
+            raise ValueError(
+                "Unsupported gradient_clip_algorithm: "
+                f"{gradient_clip_algorithm!r}. Expected 'norm' or 'value'."
+            )
 
     def set_stage(self, stage):
         self.stage = stage
@@ -584,10 +601,17 @@ class SMTTrainer(L.LightningModule):
         # This avoids relying on internal model_kwargs propagation across
         # beam-search steps in newer transformers versions.
         encoder_outputs = self.model.forward_encoder(pixel_values, image_sizes=image_sizes)
-        expand_size = max(
-            int(getattr(generation_settings, "num_beams", 1)),
-            int(getattr(generation_settings, "num_return_sequences", 1)),
+        num_beams = max(1, int(getattr(generation_settings, "num_beams", 1)))
+        num_return_sequences = max(
+            1, int(getattr(generation_settings, "num_return_sequences", 1))
         )
+        do_sample = bool(getattr(generation_settings, "do_sample", False))
+        if num_beams > 1 and do_sample:
+            expand_size = num_beams * num_return_sequences
+        elif num_beams > 1:
+            expand_size = num_beams
+        else:
+            expand_size = num_return_sequences
         if expand_size > 1:
             encoder_outputs = VisionFrontendOutput(
                 encoder_tokens_raw=encoder_outputs.encoder_tokens_raw.repeat_interleave(
@@ -630,11 +654,15 @@ class SMTTrainer(L.LightningModule):
         max_length: int,
     ) -> torch.Tensor:
         """Backward-compatible alias for the shared constrained generation path."""
-        return SMTTrainer._generate_with_constraints(
+        generate_with_constraints = getattr(self, "_generate_with_constraints", None)
+        if generate_with_constraints is None:
+            generate_with_constraints = SMTTrainer._generate_with_constraints.__get__(
+                self, type(self)
+            )
+        return generate_with_constraints(
             pixel_values=pixel_values,
             image_sizes=image_sizes,
             max_length=max_length,
-            self=self,
         )
 
     def forward(self, inputs, last_preds):

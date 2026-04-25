@@ -7,7 +7,7 @@ import src.training.lightning_module as lightning_module
 from src.grammar.constraint_factory import ConstraintBundle
 from src.model import VisionFrontendOutput
 from src.model.generation_policy import GenerationSettings
-from src.training.lightning_module import SMTTrainer
+from src.training.lightning_module import SMTTrainer, _finite_estimated_stepping_batches
 
 
 class _ForwardModelStub:
@@ -70,6 +70,25 @@ def test_on_fit_start_compiles_when_enabled(monkeypatch):
     assert stub._compile_initialized is True
     assert stub._compiled_forward_model is compiled_sentinel
     assert compile_calls == [(stub.model, "default")]
+
+
+def test_finite_estimated_stepping_batches_rejects_infinity():
+    trainer = SimpleNamespace(estimated_stepping_batches=float("inf"))
+
+    with pytest.raises(RuntimeError, match="must be finite"):
+        _finite_estimated_stepping_batches(trainer)
+
+
+def test_configure_gradient_clipping_rejects_unknown_algorithm():
+    module = torch.nn.Linear(2, 1)
+
+    with pytest.raises(ValueError, match="Unsupported gradient_clip_algorithm"):
+        SMTTrainer.configure_gradient_clipping(
+            module,
+            optimizer=torch.optim.SGD(module.parameters(), lr=0.1),
+            gradient_clip_val=1.0,
+            gradient_clip_algorithm="typo",
+        )
 
 
 def test_on_fit_start_accepts_no_cudagraph_mode(monkeypatch):
@@ -244,6 +263,29 @@ def test_generate_path_stays_on_eager_model(monkeypatch):
     assert "pixel_values" not in eager_model.calls[0]
 
 
+def test_generate_with_grammar_dispatches_to_instance_method():
+    class _DispatchStub:
+        def __init__(self):
+            self.calls = []
+
+        def _generate_with_constraints(self, **kwargs):
+            self.calls.append(kwargs)
+            return torch.tensor([[4, 5, 6]])
+
+    stub = _DispatchStub()
+
+    preds = SMTTrainer._generate_with_grammar(
+        stub,
+        pixel_values=torch.randn(1, 3, 8, 8),
+        image_sizes=None,
+        max_length=32,
+    )
+
+    assert preds.tolist() == [[4, 5, 6]]
+    assert len(stub.calls) == 1
+    assert stub.calls[0]["max_length"] == 32
+
+
 def test_generate_path_expands_encoder_state_for_beam(monkeypatch):
     eager_model = _GenerateModelStub()
 
@@ -285,6 +327,50 @@ def test_generate_path_expands_encoder_state_for_beam(monkeypatch):
     assert call["encoder_outputs"].encoder_tokens_pos.shape[0] == 8
     assert call["encoder_outputs"].encoder_attention_mask.shape[0] == 8
     assert "encoder_attention_mask" not in call
+
+
+def test_generate_path_expands_encoder_state_for_beam_sampling(monkeypatch):
+    eager_model = _GenerateModelStub()
+
+    class _TrainerGenerateStub:
+        def __init__(self):
+            self.model = eager_model
+            self._compiled_forward_model = None
+            self._generation_max_length = None
+            self._constraint_factory = SimpleNamespace(
+                build=lambda settings: ConstraintBundle(
+                    logits_processors=None,
+                    stopping_criteria=None,
+                    generation_settings=settings,
+                    semantic_rule_factories=(),
+                )
+            )
+            self._generation_settings = SimpleNamespace(
+                num_beams=3,
+                num_return_sequences=2,
+                do_sample=True,
+            )
+
+    monkeypatch.setattr(
+        lightning_module,
+        "build_generate_kwargs",
+        lambda **kwargs: {"foo": "bar", "max_length": kwargs["max_length"]},
+    )
+
+    stub = _TrainerGenerateStub()
+    pixel_values = torch.randn(2, 3, 8, 8)
+    _ = SMTTrainer._generate_with_grammar(
+        stub,
+        pixel_values=pixel_values,
+        image_sizes=None,
+        max_length=32,
+    )
+
+    assert len(eager_model.calls) == 1
+    call = eager_model.calls[0]
+    assert call["encoder_outputs"].encoder_tokens_raw.shape[0] == 12
+    assert call["encoder_outputs"].encoder_tokens_pos.shape[0] == 12
+    assert call["encoder_outputs"].encoder_attention_mask.shape[0] == 12
 
 
 def test_generate_path_forces_greedy_when_constraints_enabled(monkeypatch):
