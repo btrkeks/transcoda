@@ -104,6 +104,17 @@ def _build_checkpoint_callback(config: FCMAEConfig) -> ModelCheckpoint:
     )
 
 
+def _log_dataset_size(datamodule: FCMAEDataModule, logger: WandbLogger | bool) -> int:
+    datamodule.setup("fit")
+    if datamodule.train_set is None:
+        raise RuntimeError("FCMAE datamodule did not initialize a train dataset")
+    image_count = len(datamodule.train_set)
+    print(f"FCMAE pretraining images used: {image_count}", flush=True)
+    if isinstance(logger, WandbLogger):
+        logger.experiment.config.update({"data/num_images_used": image_count}, allow_val_change=True)
+    return image_count
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Dense FCMAE-style ConvNeXtV2 pretraining")
     parser.add_argument("config_path")
@@ -135,6 +146,7 @@ def main() -> None:
         )
 
     logger = _setup_logger(config, config_dict)
+    _log_dataset_size(datamodule, logger)
     trainer = L.Trainer(
         max_steps=config.training.max_steps,
         accelerator="auto",

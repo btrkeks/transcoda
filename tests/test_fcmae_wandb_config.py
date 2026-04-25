@@ -1,8 +1,15 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
-from scripts.pretrain_fcmae import _apply_overrides, _build_checkpoint_callback, _derive_wandb_group
+from scripts.pretrain_fcmae import (
+    _apply_overrides,
+    _build_checkpoint_callback,
+    _derive_wandb_group,
+    _log_dataset_size,
+)
 from src.pretraining.fcmae.config import FCMAEConfig
 
 
@@ -51,6 +58,28 @@ def test_fcmae_checkpoint_validation_rejects_bad_step_interval() -> None:
     payload["checkpoint"] = {"every_n_train_steps": 0}
     with pytest.raises(ValueError, match="checkpoint.every_n_train_steps"):
         FCMAEConfig.model_validate(payload)
+
+
+def test_log_dataset_size_prints_count_and_updates_wandb_config(capsys, monkeypatch) -> None:
+    class FakeWandbLogger:
+        def __init__(self) -> None:
+            self.experiment = SimpleNamespace(updates=[])
+
+        def config_update(self, payload: dict[str, object], *, allow_val_change: bool) -> None:
+            self.experiment.updates.append((payload, allow_val_change))
+
+    logger = FakeWandbLogger()
+    logger.experiment.config = SimpleNamespace(update=logger.config_update)
+    monkeypatch.setattr("scripts.pretrain_fcmae.WandbLogger", FakeWandbLogger)
+
+    datamodule = SimpleNamespace(
+        train_set=[object(), object(), object()],
+        setup=lambda stage: None,
+    )
+
+    assert _log_dataset_size(datamodule, logger) == 3
+    assert "FCMAE pretraining images used: 3" in capsys.readouterr().out
+    assert logger.experiment.updates == [({"data/num_images_used": 3}, True)]
 
 
 def test_fcmae_export_on_train_end_requires_output_dir() -> None:
