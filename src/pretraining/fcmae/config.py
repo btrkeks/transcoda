@@ -24,6 +24,7 @@ class FCMAEModelConfig(BaseModel):
     decoder_dim: int = 512
     decoder_depth: int = 2
     norm_pix_loss: bool = True
+    ink_bias_strength: float = 0.0
 
 
 class FCMAETrainingConfig(BaseModel):
@@ -100,6 +101,8 @@ class FCMAEConfig(BaseModel):
             raise ValueError("data.image_width must be divisible by model.patch_size")
         if not 0 < self.model.mask_ratio < 1:
             raise ValueError("model.mask_ratio must satisfy 0 < mask_ratio < 1")
+        if self.model.ink_bias_strength < 0:
+            raise ValueError("model.ink_bias_strength must be >= 0")
 
         if self.training.batch_size <= 0:
             raise ValueError("training.batch_size must be positive")

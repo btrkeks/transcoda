@@ -29,6 +29,7 @@ class MaskedImageModelingOutput:
     valid_patch_mask: torch.Tensor | None
     masked_foreground_ratio: torch.Tensor
     samples_skipped_no_valid_patches: torch.Tensor
+    masked_ink_density: torch.Tensor | None
 
 
 def _detect_encoder_output_dim(encoder: nn.Module) -> int:
@@ -73,6 +74,7 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
         self.patch_size = int(config.patch_size)
         self.mask_ratio = float(config.mask_ratio)
         self.norm_pix_loss = bool(config.norm_pix_loss)
+        self.ink_bias_strength = float(config.ink_bias_strength)
 
         if encoder is None:
             self.encoder = AutoModel.from_pretrained(config.encoder_model_name_or_path)
@@ -169,6 +171,7 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
         self,
         pixel_values: torch.Tensor,
         valid_patch_mask: torch.Tensor | None = None,
+        ink_density: torch.Tensor | None = None,
     ) -> MaskedImageModelingOutput:
         if pixel_values.ndim != 4:
             raise ValueError("pixel_values must have shape (B, 3, H, W)")
@@ -185,6 +188,8 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             self.mask_ratio,
             pixel_values.device,
             valid_patch_mask=valid_patch_mask,
+            patch_weights=ink_density,
+            bias_strength=self.ink_bias_strength,
         )
         masked_pixels = self._apply_pixel_mask(pixel_values, mask)
         features = _extract_feature_map(
@@ -206,6 +211,14 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             valid_total = valid_patch_mask.to(device=mask.device).sum().clamp_min(1)
             masked_foreground_ratio = masked_valid.float() / valid_total.float()
 
+        if ink_density is None:
+            masked_ink_density: torch.Tensor | None = None
+        else:
+            ink = ink_density.to(device=mask.device, dtype=torch.float32)
+            mask_f = mask.float()
+            denom = mask_f.sum().clamp_min(1.0)
+            masked_ink_density = (ink * mask_f).sum() / denom
+
         return MaskedImageModelingOutput(
             loss=loss,
             pred_patches=pred,
@@ -214,4 +227,5 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             valid_patch_mask=valid_patch_mask,
             masked_foreground_ratio=masked_foreground_ratio,
             samples_skipped_no_valid_patches=skipped.to(device=loss.device),
+            masked_ink_density=masked_ink_density,
         )

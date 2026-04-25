@@ -52,6 +52,7 @@ class FCMAEPretrainer(L.LightningModule):
         output = self.model(
             batch["pixel_values"],
             valid_patch_mask=batch.get("valid_patch_mask"),
+            ink_density=batch.get("ink_density"),
         )
         self._log_if_attached("train/loss", output.loss, prog_bar=True)
         self._log_if_attached("train/mask_ratio", self.model_config.mask_ratio)
@@ -63,6 +64,8 @@ class FCMAEPretrainer(L.LightningModule):
             "train/samples_skipped_no_valid_patches",
             output.samples_skipped_no_valid_patches.float(),
         )
+        if output.masked_ink_density is not None:
+            self._log_if_attached("train/masked_ink_density", output.masked_ink_density)
         valid_patch_mask = batch.get("valid_patch_mask")
         if valid_patch_mask is None:
             valid_patch_ratio = torch.ones((), device=output.loss.device)

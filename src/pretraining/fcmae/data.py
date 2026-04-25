@@ -102,6 +102,24 @@ def valid_pixel_mask_to_patch_mask(valid_pixel_mask: torch.Tensor, patch_size: i
     return ~invalid_patch
 
 
+def compute_patch_ink_density(pixel_values: torch.Tensor, patch_size: int) -> torch.Tensor:
+    """Mean per-patch ink density in [0, 1], with 1 = fully black.
+
+    ``pixel_values`` is the normalized CHW tensor in ``[-1, 1]`` produced by
+    ``normalize_image``; intensity is recovered as ``(value + 1) / 2``.
+    """
+    if pixel_values.ndim != 3:
+        raise ValueError("pixel_values must have shape (C, H, W)")
+    height, width = pixel_values.shape[-2:]
+    if height % patch_size != 0 or width % patch_size != 0:
+        raise ValueError("pixel_values dimensions must be divisible by patch_size")
+    intensity = (pixel_values.float().mean(dim=0) + 1.0) / 2.0
+    ink = (1.0 - intensity).clamp_(0.0, 1.0)
+    grid_h = height // patch_size
+    grid_w = width // patch_size
+    return ink.reshape(grid_h, patch_size, grid_w, patch_size).mean(dim=(1, 3))
+
+
 class FCMAEImageDataset(Dataset[dict[str, Any]]):
     def __init__(self, config: FCMAEDataConfig, *, patch_size: int) -> None:
         self.config = config
@@ -123,10 +141,12 @@ class FCMAEImageDataset(Dataset[dict[str, Any]]):
                 image_width=self.config.image_width,
             )
         valid_patch_mask = valid_pixel_mask_to_patch_mask(valid_pixel_mask, self.patch_size)
+        ink_density = compute_patch_ink_density(pixel_values, self.patch_size)
         return {
             "pixel_values": pixel_values,
             "valid_pixel_mask": valid_pixel_mask,
             "valid_patch_mask": valid_patch_mask,
+            "ink_density": ink_density,
             "path": str(path),
         }
 

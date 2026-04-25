@@ -65,6 +65,51 @@ def test_random_patch_mask_masks_single_valid_patch_by_design() -> None:
     assert mask[0, 2, 3]
 
 
+def test_random_patch_mask_ignores_weights_when_bias_strength_zero() -> None:
+    weights = torch.zeros(1, 4, 5)
+    weights[0, 0, 0] = 1.0
+    torch.manual_seed(0)
+    biased = random_patch_mask(
+        1,
+        4,
+        5,
+        0.5,
+        torch.device("cpu"),
+        patch_weights=weights,
+        bias_strength=0.0,
+    )
+    torch.manual_seed(0)
+    uniform = random_patch_mask(1, 4, 5, 0.5, torch.device("cpu"))
+    assert torch.equal(biased, uniform)
+
+
+def test_random_patch_mask_prefers_high_weight_patches() -> None:
+    grid_h, grid_w = 8, 8
+    weights = torch.zeros(1, grid_h, grid_w)
+    high_weight = torch.zeros(grid_h, grid_w, dtype=torch.bool)
+    high_weight[:4, :4] = True
+    weights[0][high_weight] = 1.0
+
+    hits = 0
+    trials = 200
+    torch.manual_seed(0)
+    for _ in range(trials):
+        mask = random_patch_mask(
+            1,
+            grid_h,
+            grid_w,
+            0.25,
+            torch.device("cpu"),
+            patch_weights=weights,
+            bias_strength=4.0,
+        )
+        hits += int((mask[0] & high_weight).sum().item())
+    total_masked = trials * int(round(0.25 * grid_h * grid_w))
+    biased_share = hits / total_masked
+    uniform_share = high_weight.sum().item() / (grid_h * grid_w)
+    assert biased_share > uniform_share + 0.4
+
+
 def test_upsample_mask_rectangular_shape() -> None:
     mask = torch.zeros(2, 3, 5, dtype=torch.bool)
     upsampled = upsample_mask(mask, scale=4)
@@ -86,6 +131,9 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     batch = [dataset[0], dataset[1]]
     pixel_values = torch.stack([item["pixel_values"] for item in batch])
     valid_patch_mask = torch.stack([item["valid_patch_mask"] for item in batch])
+    ink_density = torch.stack([item["ink_density"] for item in batch])
+    assert ink_density.shape == (2, 128 // 32, 96 // 32)
+    assert ((ink_density >= 0) & (ink_density <= 1)).all()
 
     model_config = FCMAEModelConfig(
         patch_size=32,
@@ -93,6 +141,7 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
         decoder_dim=16,
         decoder_depth=1,
         norm_pix_loss=True,
+        ink_bias_strength=1.0,
     )
     model = DenseMaskedImageModelingConvNeXtV2(
         model_config,
@@ -100,13 +149,19 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
         encoder_output_dim=8,
         encoder_stride=32,
     )
-    output = model(pixel_values, valid_patch_mask=valid_patch_mask)
+    output = model(
+        pixel_values,
+        valid_patch_mask=valid_patch_mask,
+        ink_density=ink_density,
+    )
 
     assert torch.isfinite(output.loss)
     assert output.pred_patches.shape[-1] == 32 * 32 * 3
     assert output.target_patches.shape == output.pred_patches.shape
     assert output.mask.dtype == torch.bool
     assert output.valid_patch_mask is not None
+    assert output.masked_ink_density is not None
+    assert torch.isfinite(output.masked_ink_density)
 
     module = FCMAEPretrainer(
         model_config,
@@ -114,7 +169,11 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
         model=model,
     )
     loss = module.training_step(
-        {"pixel_values": pixel_values, "valid_patch_mask": valid_patch_mask},
+        {
+            "pixel_values": pixel_values,
+            "valid_patch_mask": valid_patch_mask,
+            "ink_density": ink_density,
+        },
         0,
     )
     loss.backward()

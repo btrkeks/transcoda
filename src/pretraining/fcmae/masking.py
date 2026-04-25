@@ -60,11 +60,18 @@ def random_patch_mask(
     mask_ratio: float,
     device: torch.device,
     valid_patch_mask: torch.Tensor | None = None,
+    patch_weights: torch.Tensor | None = None,
+    bias_strength: float = 0.0,
 ) -> torch.Tensor:
     """Return a boolean mask where True marks selected reconstruction patches.
 
+    With ``bias_strength > 0`` and ``patch_weights`` in ``[0, 1]``, sampling is
+    biased toward higher-weighted patches via ``noise = rand - bias * weight``
+    before argsort. ``bias_strength=0`` recovers the original uniform sampling.
+
     Ported from: docs/external/ConvNeXt-V2/models/fcmae.py:119-135.
-    Adapted for rectangular grids and optional valid-patch sampling.
+    Adapted for rectangular grids, optional valid-patch sampling, and weighted
+    sampling without replacement.
     # Ported from facebookresearch/ConvNeXt-V2, fcmae.py:119-135, commit
     # 2553895753323c6fe0b2bf390683f5ea358a42b9. Licensed under the upstream LICENSE.
     """
@@ -72,6 +79,8 @@ def random_patch_mask(
         raise ValueError("batch_size, grid_h, and grid_w must be positive")
     if not 0 < mask_ratio < 1:
         raise ValueError("mask_ratio must satisfy 0 < mask_ratio < 1")
+    if bias_strength < 0:
+        raise ValueError("bias_strength must be >= 0")
 
     num_patches = grid_h * grid_w
     if valid_patch_mask is None:
@@ -86,6 +95,14 @@ def random_patch_mask(
 
     mask = torch.zeros(batch_size, num_patches, dtype=torch.bool, device=device)
     noise = torch.rand(batch_size, num_patches, device=device)
+    if bias_strength > 0 and patch_weights is not None:
+        if patch_weights.shape != (batch_size, grid_h, grid_w):
+            raise ValueError(
+                "patch_weights must have shape "
+                f"{(batch_size, grid_h, grid_w)}, got {tuple(patch_weights.shape)}"
+            )
+        weights = patch_weights.to(device=device, dtype=noise.dtype).reshape(batch_size, num_patches)
+        noise = noise - bias_strength * weights
     noise = noise.masked_fill(~valid, float("inf"))
 
     for sample_idx in range(batch_size):
