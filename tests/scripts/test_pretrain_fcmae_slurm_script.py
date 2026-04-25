@@ -43,7 +43,7 @@ def test_pretrain_fcmae_submit_dry_run_renders_bash_lc_and_bare_overrides() -> N
     assert "--job-name=fcmae-test" in result.stdout
     assert "bash -lc" in result.stdout
     assert "source .venv/bin/activate" in result.stdout
-    assert "python scripts/pretrain_fcmae.py" in result.stdout
+    assert "python -m scripts.pretrain_fcmae" in result.stdout
     assert "training.max_steps=10" in result.stdout
     assert "logging.wandb_enabled=true" in result.stdout
     assert "training.resume_from_checkpoint=weights/fcmae/last.ckpt" in result.stdout

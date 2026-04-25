@@ -240,7 +240,7 @@ if [ "${COMMAND}" = "export" ]; then
         ;;
     esac
   done
-  python scripts/export_fcmae_encoder.py "${CHECKPOINT_PATH}" "${OUTPUT_DIR}" "${EXPORT_ARGS[@]}"
+  python -m scripts.export_fcmae_encoder "${CHECKPOINT_PATH}" "${OUTPUT_DIR}" "${EXPORT_ARGS[@]}"
   exit 0
 fi
 
@@ -334,7 +334,7 @@ if EXPORT_DIR="$(get_forwarded_override_value "export.output_dir")"; then
   EXPORT_DIR="$(normalize_path_to_root "${EXPORT_DIR}")"
 fi
 
-PY_CMD=(python scripts/pretrain_fcmae.py "${CONFIG}")
+PY_CMD=(python -m scripts.pretrain_fcmae "${CONFIG}")
 if [ ${#FORWARDED_ARGS[@]} -gt 0 ]; then
   PY_CMD+=("${FORWARDED_ARGS[@]}")
 fi
