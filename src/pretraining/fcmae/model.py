@@ -1,10 +1,11 @@
 """Dense masked image modeling inspired by ConvNeXt V2 FCMAE.
 
-This module uses a Hugging Face dense ConvNeXtV2 encoder with learned pixel
-mask tokens. It is therefore a SimMIM-style masked image modeling objective,
-not Meta's sparse FCMAE implementation. Small patch/mask/loss helpers are
-adapted from `docs/external/ConvNeXt-V2/models/fcmae.py`; sparse encoder
-modules, MinkowskiEngine, and upstream training code are intentionally replaced.
+This module uses a Hugging Face dense ConvNeXtV2 encoder with learned
+feature-space mask tokens after the patch embedding. It is therefore a
+SimMIM-style masked image modeling objective, not Meta's sparse FCMAE
+implementation. Small patch/mask/loss helpers are adapted from
+`docs/external/ConvNeXt-V2/models/fcmae.py`; sparse encoder modules,
+MinkowskiEngine, and upstream training code are intentionally replaced.
 """
 
 from __future__ import annotations
@@ -17,7 +18,7 @@ from transformers import AutoModel, ConvNextV2Config
 from transformers.models.convnextv2.modeling_convnextv2 import ConvNextV2Layer
 
 from src.pretraining.fcmae.config import FCMAEModelConfig
-from src.pretraining.fcmae.masking import patchify, random_patch_mask, upsample_mask
+from src.pretraining.fcmae.masking import patchify, random_patch_mask
 
 
 @dataclass
@@ -41,6 +42,21 @@ def _detect_encoder_output_dim(encoder: nn.Module) -> int:
     if hidden_size is not None:
         return int(hidden_size)
     raise ValueError("encoder_output_dim must be provided when it cannot be detected")
+
+
+def _detect_encoder_embedding_dim(encoder: nn.Module) -> int:
+    config = getattr(encoder, "config", None)
+    hidden_sizes = getattr(config, "hidden_sizes", None)
+    if hidden_sizes:
+        return int(hidden_sizes[0])
+    embeddings = getattr(encoder, "embeddings", None)
+    patch_embeddings = getattr(embeddings, "patch_embeddings", None)
+    out_channels = getattr(patch_embeddings, "out_channels", None)
+    if out_channels is None:
+        out_channels = getattr(embeddings, "out_channels", None)
+    if out_channels is not None:
+        return int(out_channels)
+    raise ValueError("encoder embedding dimension could not be detected")
 
 
 def _extract_feature_map(encoder_output: object, *, expected_channels: int) -> torch.Tensor:
@@ -92,7 +108,8 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
         if self.encoder_stride != self.patch_size:
             raise ValueError("v1 requires encoder_stride to equal patch_size")
 
-        self.mask_token = nn.Parameter(torch.empty(1, 3, self.patch_size, self.patch_size))
+        self.encoder_embedding_dim = _detect_encoder_embedding_dim(self.encoder)
+        self.mask_token = nn.Parameter(torch.empty(1, self.encoder_embedding_dim, 1, 1))
         nn.init.normal_(self.mask_token, std=0.02)
 
         self.proj = nn.Conv2d(self.encoder_output_dim, config.decoder_dim, kernel_size=1)
@@ -113,11 +130,32 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             kernel_size=1,
         )
 
-    def _apply_pixel_mask(self, pixel_values: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+    def _encode_with_feature_mask(self, pixel_values: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+        embeddings = getattr(self.encoder, "embeddings", None)
+        encoder = getattr(self.encoder, "encoder", None)
+        if embeddings is None or encoder is None:
+            raise TypeError("feature-space FCMAE masking requires ConvNeXtV2-style embeddings and encoder modules")
+
+        hidden_states = embeddings(pixel_values)
+        if hidden_states.ndim != 4:
+            raise ValueError(f"encoder embeddings must be 4D, got {tuple(hidden_states.shape)}")
         grid_h, grid_w = mask.shape[-2:]
-        tiled_token = self.mask_token.repeat(pixel_values.shape[0], 1, grid_h, grid_w)
-        pixel_mask = upsample_mask(mask, self.patch_size).unsqueeze(1)
-        return torch.where(pixel_mask, tiled_token.to(pixel_values.dtype), pixel_values)
+        embed_h, embed_w = hidden_states.shape[-2:]
+        if embed_h % grid_h != 0 or embed_w % grid_w != 0:
+            raise ValueError(
+                "embedding grid must be an integer multiple of reconstruction grid: "
+                f"{(embed_h, embed_w)} vs {(grid_h, grid_w)}"
+            )
+        scale_h = embed_h // grid_h
+        scale_w = embed_w // grid_w
+        feature_mask = mask.repeat_interleave(scale_h, dim=1).repeat_interleave(scale_w, dim=2)
+        feature_mask = feature_mask.unsqueeze(1)
+        mask_token = self.mask_token.to(dtype=hidden_states.dtype, device=hidden_states.device)
+        hidden_states = torch.where(feature_mask, mask_token, hidden_states)
+        return _extract_feature_map(
+            encoder(hidden_states),
+            expected_channels=self.encoder_output_dim,
+        )
 
     def _decode_features(self, features: torch.Tensor, grid_h: int, grid_w: int) -> torch.Tensor:
         if features.shape[-2:] != (grid_h, grid_w):
@@ -191,11 +229,7 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             patch_weights=ink_density,
             bias_strength=self.ink_bias_strength,
         )
-        masked_pixels = self._apply_pixel_mask(pixel_values, mask)
-        features = _extract_feature_map(
-            self.encoder(masked_pixels),
-            expected_channels=self.encoder_output_dim,
-        )
+        features = self._encode_with_feature_mask(pixel_values, mask)
         pred = self._decode_features(features, grid_h, grid_w)
         loss, target, _denominator, skipped = self._reconstruction_loss(
             pixel_values,

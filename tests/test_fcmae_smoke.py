@@ -21,12 +21,15 @@ from src.pretraining.fcmae.model import DenseMaskedImageModelingConvNeXtV2
 
 
 class TinyEncoder(torch.nn.Module):
-    def __init__(self, out_channels: int = 8) -> None:
+    def __init__(self, embed_channels: int = 4, out_channels: int = 8) -> None:
         super().__init__()
-        self.net = torch.nn.Conv2d(3, out_channels, kernel_size=32, stride=32)
+        self.embeddings = torch.nn.Conv2d(3, embed_channels, kernel_size=4, stride=4)
+        self.encoder = torch.nn.Sequential(
+            torch.nn.Conv2d(embed_channels, out_channels, kernel_size=8, stride=8),
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.net(x)
+        return self.encoder(self.embeddings(x))
 
 
 def _write_image(path: Path, size: tuple[int, int]) -> None:
@@ -124,15 +127,21 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
 
     data_config = FCMAEDataConfig(
         image_dir=str(image_dir),
-        image_height=128,
-        image_width=96,
+        image_height=130,
+        image_width=98,
     )
     dataset = FCMAEImageDataset(data_config, patch_size=32)
     batch = [dataset[0], dataset[1]]
     pixel_values = torch.stack([item["pixel_values"] for item in batch])
     valid_patch_mask = torch.stack([item["valid_patch_mask"] for item in batch])
     ink_density = torch.stack([item["ink_density"] for item in batch])
-    assert ink_density.shape == (2, 128 // 32, 96 // 32)
+    assert pixel_values.shape == (2, 3, 160, 128)
+    assert torch.all(pixel_values[:, :, 130:, :] == 1.0)
+    assert torch.all(pixel_values[:, :, :, 98:] == 1.0)
+    assert valid_patch_mask.shape == (2, 5, 4)
+    assert not valid_patch_mask[:, -1, :].any()
+    assert not valid_patch_mask[:, :, -1].any()
+    assert ink_density.shape == (2, 5, 4)
     assert ((ink_density >= 0) & (ink_density <= 1)).all()
 
     model_config = FCMAEModelConfig(
@@ -141,7 +150,7 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
         decoder_dim=16,
         decoder_depth=1,
         norm_pix_loss=True,
-        ink_bias_strength=1.0,
+        ink_bias_strength=0.3,
     )
     model = DenseMaskedImageModelingConvNeXtV2(
         model_config,
@@ -162,6 +171,7 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     assert output.valid_patch_mask is not None
     assert output.masked_ink_density is not None
     assert torch.isfinite(output.masked_ink_density)
+    assert model.mask_token.shape == (1, 4, 1, 1)
 
     module = FCMAEPretrainer(
         model_config,
@@ -177,6 +187,8 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
         0,
     )
     loss.backward()
+    assert model.mask_token.grad is not None
+    assert torch.isfinite(model.mask_token.grad).all()
     grads = [param.grad for param in module.parameters() if param.grad is not None]
     assert grads
     assert any(torch.isfinite(grad).all() for grad in grads)

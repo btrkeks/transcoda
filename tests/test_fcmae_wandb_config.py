@@ -18,18 +18,27 @@ def _base_config() -> dict:
         "data": {
             "image_dir": "data/fcmae_images",
             "manifest_path": None,
-            "image_height": 768,
-            "image_width": 544,
+            "image_height": 1485,
+            "image_width": 1050,
         }
     }
 
 
 def test_fcmae_logging_defaults_keep_wandb_off() -> None:
     config = FCMAEConfig.model_validate(_base_config())
+    assert config.data.image_height == 1485
+    assert config.data.image_width == 1050
+    assert config.model.ink_bias_strength == 0.3
     assert config.logging.wandb_enabled is False
     assert config.logging.project == "SMT-FCMAE"
     assert config.logging.log_model is False
     assert config.logging.log_reconstructions is True
+
+
+def test_fcmae_config_allows_downstream_non_divisible_canvas() -> None:
+    config = FCMAEConfig.model_validate(_base_config())
+    assert config.data.image_height % config.model.patch_size != 0
+    assert config.data.image_width % config.model.patch_size != 0
 
 
 def test_fcmae_logging_validation_rejects_bad_preview_cadence() -> None:

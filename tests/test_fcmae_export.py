@@ -58,3 +58,8 @@ def test_export_writes_encoder_and_metadata(
     assert metadata["pretraining_config"]["training"]["batch_size"] == 4
     assert metadata["git_commit"] == "abc123"
     assert metadata["v1_implementation_commit"] == "57b2b0e"
+
+
+def test_export_validation_defaults_match_downstream_canvas() -> None:
+    assert exporter.export_fcmae_encoder.__kwdefaults__["validation_image_height"] == 1485
+    assert exporter.export_fcmae_encoder.__kwdefaults__["validation_image_width"] == 1050

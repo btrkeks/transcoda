@@ -10,8 +10,8 @@ class FCMAEDataConfig(BaseModel):
 
     image_dir: str | None = None
     manifest_path: str | None = None
-    image_height: int = 768
-    image_width: int = 544
+    image_height: int = 1485
+    image_width: int = 1050
     extensions: list[str] = Field(default_factory=lambda: [".png", ".jpg", ".jpeg", ".webp"])
 
 
@@ -24,7 +24,7 @@ class FCMAEModelConfig(BaseModel):
     decoder_dim: int = 512
     decoder_depth: int = 2
     norm_pix_loss: bool = True
-    ink_bias_strength: float = 0.0
+    ink_bias_strength: float = 0.3
 
 
 class FCMAETrainingConfig(BaseModel):
@@ -95,10 +95,6 @@ class FCMAEConfig(BaseModel):
             raise ValueError("data.image_height and data.image_width must be positive")
         if self.model.patch_size <= 0:
             raise ValueError("model.patch_size must be positive")
-        if self.data.image_height % self.model.patch_size != 0:
-            raise ValueError("data.image_height must be divisible by model.patch_size")
-        if self.data.image_width % self.model.patch_size != 0:
-            raise ValueError("data.image_width must be divisible by model.patch_size")
         if not 0 < self.model.mask_ratio < 1:
             raise ValueError("model.mask_ratio must satisfy 0 < mask_ratio < 1")
         if self.model.ink_bias_strength < 0:

@@ -7,6 +7,7 @@ from typing import Any
 import lightning.pytorch as L
 import numpy as np
 import torch
+import torch.nn.functional as F
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
@@ -14,6 +15,7 @@ from src.data.preprocessing import normalize_image
 from src.pretraining.fcmae.config import FCMAEDataConfig
 
 log = logging.getLogger(__name__)
+NORMALIZED_WHITE_VALUE = 1.0
 
 
 def _drop_empty_files(paths: list[Path]) -> list[Path]:
@@ -102,6 +104,39 @@ def valid_pixel_mask_to_patch_mask(valid_pixel_mask: torch.Tensor, patch_size: i
     return ~invalid_patch
 
 
+def pad_to_patch_multiple(
+    pixel_values: torch.Tensor,
+    valid_pixel_mask: torch.Tensor,
+    patch_size: int,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Right/bottom pad pixels and validity mask to a patch-aligned canvas."""
+    if pixel_values.ndim != 3:
+        raise ValueError("pixel_values must have shape (C, H, W)")
+    if valid_pixel_mask.ndim != 2:
+        raise ValueError("valid_pixel_mask must have shape (H, W)")
+    if patch_size <= 0:
+        raise ValueError("patch_size must be positive")
+
+    height, width = pixel_values.shape[-2:]
+    if valid_pixel_mask.shape != (height, width):
+        raise ValueError("valid_pixel_mask shape must match pixel_values spatial dimensions")
+
+    padded_height = ((height + patch_size - 1) // patch_size) * patch_size
+    padded_width = ((width + patch_size - 1) // patch_size) * patch_size
+    pad_h = padded_height - height
+    pad_w = padded_width - width
+    if pad_h == 0 and pad_w == 0:
+        return pixel_values, valid_pixel_mask
+
+    pixel_values = F.pad(
+        pixel_values,
+        (0, pad_w, 0, pad_h),
+        value=NORMALIZED_WHITE_VALUE,
+    )
+    valid_pixel_mask = F.pad(valid_pixel_mask, (0, pad_w, 0, pad_h), value=False)
+    return pixel_values, valid_pixel_mask
+
+
 def compute_patch_ink_density(pixel_values: torch.Tensor, patch_size: int) -> torch.Tensor:
     """Mean per-patch ink density in [0, 1], with 1 = fully black.
 
@@ -140,6 +175,11 @@ class FCMAEImageDataset(Dataset[dict[str, Any]]):
                 image_height=self.config.image_height,
                 image_width=self.config.image_width,
             )
+        pixel_values, valid_pixel_mask = pad_to_patch_multiple(
+            pixel_values,
+            valid_pixel_mask,
+            self.patch_size,
+        )
         valid_patch_mask = valid_pixel_mask_to_patch_mask(valid_pixel_mask, self.patch_size)
         ink_density = compute_patch_ink_density(pixel_values, self.patch_size)
         return {
