@@ -55,6 +55,26 @@ def _get_equivalent_meter(mensuration: str) -> str | None:
     return _MENSURATION_TO_METER.get(mensuration)
 
 
+def _line_is_redundant_for_mensuration(
+    meter_fields: list[str],
+    mensuration_fields: list[str],
+) -> bool:
+    """Return True when a meter line is visually replaced by a mensuration line."""
+    if len(meter_fields) != len(mensuration_fields):
+        return False
+
+    has_redundant_meter = False
+    for meter, mensuration in zip(meter_fields, mensuration_fields, strict=True):
+        if meter == "*":
+            continue
+        expected = _get_equivalent_meter(mensuration)
+        if expected is None or meter != expected:
+            return False
+        has_redundant_meter = True
+
+    return has_redundant_meter
+
+
 class RemoveRedundantTimeSignatures:
     """
     Removes redundant meter lines when an equivalent mensuration sign is present.
@@ -88,10 +108,14 @@ class RemoveRedundantTimeSignatures:
         lines = text.split("\n")
         result_lines = []
         pending_meters: list[str | None] = []
+        previous_meter_line_index: int | None = None
+        previous_meter_fields: list[str] | None = None
 
         for line in lines:
             if not line:
                 result_lines.append(line)
+                previous_meter_line_index = None
+                previous_meter_fields = None
                 continue
 
             fields = line.split("\t")
@@ -99,12 +123,16 @@ class RemoveRedundantTimeSignatures:
             # Reset tracking on data lines, barlines, or spine operations
             if _is_data_or_barline(line):
                 pending_meters = []
+                previous_meter_line_index = None
+                previous_meter_fields = None
                 result_lines.append(line)
                 continue
 
             # Check for spine manipulation operators
             if any(_is_spine_op(f) for f in fields):
                 pending_meters = []
+                previous_meter_line_index = None
+                previous_meter_fields = None
                 result_lines.append(line)
                 continue
 
@@ -129,16 +157,25 @@ class RemoveRedundantTimeSignatures:
                 )
 
             if is_mensuration_line:
+                if (
+                    previous_meter_line_index is not None
+                    and previous_meter_fields is not None
+                    and _line_is_redundant_for_mensuration(previous_meter_fields, fields)
+                ):
+                    result_lines[previous_meter_line_index] = "\t".join(
+                        "*" for _ in previous_meter_fields
+                    )
                 pending_meters = new_pending
+                previous_meter_line_index = None
+                previous_meter_fields = None
                 result_lines.append(line)
                 continue
 
             # Check if this is a meter line with pending mensuration
+            is_current_meter_line = all(_is_meter_token(f) or f == "*" for f in fields)
+            has_current_meter = any(_is_meter_token(f) for f in fields)
             if pending_meters:
-                is_meter_line = all(_is_meter_token(f) or f == "*" for f in fields)
-                has_meter = any(_is_meter_token(f) for f in fields)
-
-                if is_meter_line and has_meter:
+                if is_current_meter_line and has_current_meter:
                     # Check if all spines match their expected meters (or both are null)
                     is_redundant = True
 
@@ -168,6 +205,12 @@ class RemoveRedundantTimeSignatures:
                         continue
 
             result_lines.append(line)
+            if is_current_meter_line and has_current_meter:
+                previous_meter_line_index = len(result_lines) - 1
+                previous_meter_fields = fields
+            else:
+                previous_meter_line_index = None
+                previous_meter_fields = None
 
         # Remove all-star lines created by our replacements
         result = "\n".join(result_lines)

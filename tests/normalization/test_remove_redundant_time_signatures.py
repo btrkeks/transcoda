@@ -54,6 +54,69 @@ class TestRemoveRedundantTimeSignatures:
 
         assert result == expected
 
+    def test_cut_time_m22_before_met_c_bar(self):
+        """Should remove *M2/2 when followed by equivalent *met(c|)."""
+        pass_obj = RemoveRedundantTimeSignatures()
+        ctx = NormalizationContext()
+
+        input_text = """*clefF4\t*clefG2
+*k[]\t*k[]
+*M2/2\t*M2/2
+*met(c|)\t*met(c|)
+2c\t2e"""
+
+        expected = """*clefF4\t*clefG2
+*k[]\t*k[]
+*met(c|)\t*met(c|)
+2c\t2e"""
+
+        pass_obj.prepare(input_text, ctx)
+        result = pass_obj.transform(input_text, ctx)
+        pass_obj.validate(result, ctx)
+
+        assert result == expected
+
+    def test_common_time_m44_before_met_c(self):
+        """Should remove *M4/4 when followed by equivalent *met(c)."""
+        pass_obj = RemoveRedundantTimeSignatures()
+        ctx = NormalizationContext()
+
+        input_text = """*clefF4\t*clefG2
+*k[]\t*k[]
+*M4/4\t*M4/4
+*met(c)\t*met(c)
+4c\t4e"""
+
+        expected = """*clefF4\t*clefG2
+*k[]\t*k[]
+*met(c)\t*met(c)
+4c\t4e"""
+
+        pass_obj.prepare(input_text, ctx)
+        result = pass_obj.transform(input_text, ctx)
+        pass_obj.validate(result, ctx)
+
+        assert result == expected
+
+    def test_non_equivalent_meter_before_mensuration_kept(self):
+        """Should keep meter when following mensuration is not equivalent."""
+        pass_obj = RemoveRedundantTimeSignatures()
+        ctx = NormalizationContext()
+
+        input_text = """*clefF4\t*clefG2
+*k[]\t*k[]
+*M3/4\t*M3/4
+*met(c|)\t*met(c|)
+4c\t4e"""
+
+        expected = input_text
+
+        pass_obj.prepare(input_text, ctx)
+        result = pass_obj.transform(input_text, ctx)
+        pass_obj.validate(result, ctx)
+
+        assert result == expected
+
     def test_uppercase_met_C(self):
         """Should handle uppercase *met(C) the same as lowercase."""
         pass_obj = RemoveRedundantTimeSignatures()
