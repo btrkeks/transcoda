@@ -13,12 +13,12 @@
     "decoder_dim": 512,
     "decoder_depth": 2,
     "norm_pix_loss": false,
-    "ink_bias_strength": 0.6
+    "ink_bias_strength": 0.3
   },
   "training": {
     "batch_size": 4,
     "num_workers": 4,
-    "max_steps": 1000,
+    "max_steps": 30000,
     "accumulate_grad_batches": 16,
     "base_learning_rate": 0.00064,
     "weight_decay": 0.05,
