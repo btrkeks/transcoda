@@ -25,7 +25,7 @@
   },
   "optimizer": {
     "learning_rate": 0.001,
-    "encoder_lr_factor": 0.3,
+    "encoder_lr_factor": 0.1,
     "weight_decay": 0.01,
     "warmup_steps": 500,
     "cosine_eta_min_factor": 0.05,
