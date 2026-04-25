@@ -2,8 +2,8 @@
   "data": {
     "image_dir": "data/fcmae_images",
     "manifest_path": null,
-    "image_height": 768,
-    "image_width": 544,
+    "image_height": 1485,
+    "image_width": 1050,
     "extensions": [".png", ".jpg", ".jpeg", ".webp"]
   },
   "model": {
@@ -13,13 +13,13 @@
     "decoder_dim": 512,
     "decoder_depth": 2,
     "norm_pix_loss": true,
-    "ink_bias_strength": 1.0
+    "ink_bias_strength": 0.3
   },
   "training": {
-    "batch_size": 8,
+    "batch_size": 2,
     "num_workers": 4,
     "max_steps": 1000,
-    "accumulate_grad_batches": 1,
+    "accumulate_grad_batches": 4,
     "base_learning_rate": 0.00064,
     "weight_decay": 0.05,
     "warmup_steps": 100,

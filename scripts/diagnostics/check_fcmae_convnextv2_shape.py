@@ -20,8 +20,8 @@ def _feature_map(output: object, *, expected_channels: int) -> torch.Tensor:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Probe ConvNeXtV2 FCMAE feature-map shape")
     parser.add_argument("--model", default="facebook/convnextv2-base-22k-224")
-    parser.add_argument("--image-height", type=int, default=768)
-    parser.add_argument("--image-width", type=int, default=544)
+    parser.add_argument("--image-height", type=int, default=1485)
+    parser.add_argument("--image-width", type=int, default=1050)
     parser.add_argument("--stride", type=int, default=32)
     args = parser.parse_args()
 

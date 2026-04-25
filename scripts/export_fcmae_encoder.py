@@ -71,8 +71,8 @@ def export_fcmae_encoder(
     output_dir: str | Path,
     overwrite: bool = False,
     validate: bool = False,
-    validation_image_height: int = 768,
-    validation_image_width: int = 544,
+    validation_image_height: int = 1485,
+    validation_image_width: int = 1050,
 ) -> Path:
     checkpoint_path = Path(checkpoint_path)
     output_dir = Path(output_dir)
@@ -107,8 +107,8 @@ def main() -> None:
     parser.add_argument("output_dir")
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--validate", action="store_true")
-    parser.add_argument("--validation-image-height", type=int, default=768)
-    parser.add_argument("--validation-image-width", type=int, default=544)
+    parser.add_argument("--validation-image-height", type=int, default=1485)
+    parser.add_argument("--validation-image-width", type=int, default=1050)
     args = parser.parse_args()
 
     export_fcmae_encoder(

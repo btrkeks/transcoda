@@ -54,7 +54,7 @@ Options:
   --job-name NAME          Slurm job name (default: fcmae-pretrain)
   --sbatch-arg ARG         Additional sbatch arg (repeatable)
   --resume PATH            Forward training.resume_from_checkpoint=PATH
-  --no-sync                Skip uv sync in the Slurm job body
+  --no-sync                Skip 'uv sync --group omr-ned' in the Slurm job body
   --dry-run                Print rendered command/job script and exit
   -h, --help               Show this help
 
@@ -379,7 +379,7 @@ WRAP_SEGMENTS=("set -eu")
 WRAP_SEGMENTS+=("cd $(printf '%q' "${ROOT_DIR}")")
 WRAP_SEGMENTS+=("source .venv/bin/activate")
 if [ "${NO_SYNC}" = false ]; then
-  WRAP_SEGMENTS+=("uv sync")
+  WRAP_SEGMENTS+=("uv sync --group omr-ned")
 fi
 printf -v PY_ESCAPED '%q ' "${PY_CMD[@]}"
 WRAP_SEGMENTS+=("${PY_ESCAPED% }")
