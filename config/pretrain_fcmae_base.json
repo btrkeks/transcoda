@@ -16,7 +16,7 @@
     "ink_bias_strength": 0.3
   },
   "training": {
-    "batch_size": 3,
+    "batch_size": 2,
     "num_workers": 4,
     "max_steps": 30000,
     "accumulate_grad_batches": 16,
