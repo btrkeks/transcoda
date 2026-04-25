@@ -115,8 +115,8 @@ See [`config/README.md`](config/README.md) for full config documentation and all
 ### Remote Training (Slurm)
 
 ```bash
-./train.sh submit            # Submit job to cluster
-./train.sh validate          # Validate job setup
+./train.sh submit            # Submit job to cluster; auto-assigns and prints a unique run id by default
+./train.sh validate          # Validate the last submitted run by default
 ./train.sh logs              # View job logs
 ./train.sh queue             # Show job queue
 ./train.sh cancel            # Cancel running job
@@ -299,3 +299,29 @@ The harness writes a timestamped run directory under `/tmp/dataset_generation_pr
 - `generation.stdout.log` and `generation.stderr.log` for harness output
 - `system_ps.log`, `system_vmstat.log`, and `system_top.log` for machine telemetry
 - the dataset-generation `run_artifacts_dir` referenced from `summary.json`
+
+### Trim long sequences
+
+```bash
+python ./scripts/dataset_generation/filter_by_seq_len.py ./data/datasets/train/train_20k ./vocab/bpe3k-splitspaces 3000
+```
+
+### Cloud commands
+
+```bash
+./cloud pull 20260422T183615Z-12556
+```
+
+### Slurm
+
+#### Training
+
+```bash
+./train.sh submit -- --data.train_path=./data/datasets/train/train_20k_v2 --model.max_seq_len=3000
+```
+
+#### Validation
+
+```bash
+./train.sh validate
+```
