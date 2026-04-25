@@ -126,6 +126,24 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     assert module._latest_preview["norm_pix_loss"] is True
 
 
+def test_fcmae_dataset_skips_empty_image_files(tmp_path: Path) -> None:
+    image_dir = tmp_path / "images"
+    image_dir.mkdir()
+    _write_image(image_dir / "valid.png", (80, 120))
+    (image_dir / "empty.webp").write_bytes(b"")
+
+    dataset = FCMAEImageDataset(
+        FCMAEDataConfig(
+            image_dir=str(image_dir),
+            image_height=128,
+            image_width=96,
+        ),
+        patch_size=32,
+    )
+
+    assert [path.name for path in dataset.paths] == ["valid.png"]
+
+
 def test_reconstruction_logger_logs_filled_reconstruction(monkeypatch) -> None:
     logged_images = []
 

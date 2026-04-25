@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,25 @@ from torch.utils.data import DataLoader, Dataset
 from src.data.preprocessing import normalize_image
 from src.pretraining.fcmae.config import FCMAEDataConfig
 
+log = logging.getLogger(__name__)
+
+
+def _drop_empty_files(paths: list[Path]) -> list[Path]:
+    kept = []
+    dropped = []
+    for path in paths:
+        try:
+            is_empty = path.is_file() and path.stat().st_size == 0
+        except OSError:
+            is_empty = False
+        if is_empty:
+            dropped.append(path)
+        else:
+            kept.append(path)
+    if dropped:
+        log.warning("Skipping %d empty FCMAE image file(s), e.g. %s", len(dropped), dropped[0])
+    return kept
+
 
 def _collect_image_paths(config: FCMAEDataConfig) -> list[Path]:
     extensions = {extension.lower() for extension in config.extensions}
@@ -22,7 +42,7 @@ def _collect_image_paths(config: FCMAEDataConfig) -> list[Path]:
             for path in image_dir.rglob("*")
             if path.is_file() and path.suffix.lower() in extensions
         ]
-        return sorted(paths)
+        return _drop_empty_files(sorted(paths))
 
     if config.manifest_path is None:
         raise ValueError("manifest_path is required when image_dir is not set")
@@ -37,7 +57,7 @@ def _collect_image_paths(config: FCMAEDataConfig) -> list[Path]:
         if not path.is_absolute():
             path = base_dir / path
         paths.append(path)
-    return paths
+    return _drop_empty_files(paths)
 
 
 def fit_image_to_canvas(
