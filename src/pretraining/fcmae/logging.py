@@ -7,7 +7,7 @@ import lightning.pytorch as L
 import torch
 from lightning.pytorch.loggers import WandbLogger
 
-from src.pretraining.fcmae.masking import upsample_mask
+from src.pretraining.fcmae.masking import patchify, unpatchify, upsample_mask
 
 log = logging.getLogger(__name__)
 
@@ -73,15 +73,25 @@ class FCMAEReconstructionLogger(L.Callback):
         import wandb
 
         pixel_values = payload["pixel_values"].detach().cpu()
+        pred_patches = payload["pred_patches"].detach().cpu()
         mask = payload["mask"].detach().cpu()
         limit = min(self.max_images, pixel_values.shape[0])
         patch_size = pixel_values.shape[-2] // mask.shape[-2]
+        grid_h, grid_w = mask.shape[-2:]
+        if payload.get("norm_pix_loss", False):
+            target_patches = patchify(pixel_values, patch_size)
+            mean = target_patches.mean(dim=-1, keepdim=True)
+            var = target_patches.var(dim=-1, keepdim=True)
+            pred_patches = pred_patches * (var + 1.0e-6).sqrt() + mean
+        reconstruction = unpatchify(pred_patches, grid_h, grid_w, patch_size)
 
         images = []
         for idx in range(limit):
             original = (pixel_values[idx] + 1.0).div(2.0).clamp(0.0, 1.0)
+            reconstructed = (reconstruction[idx] + 1.0).div(2.0).clamp(0.0, 1.0)
             pixel_mask = upsample_mask(mask[idx : idx + 1], patch_size)[0].unsqueeze(0)
             masked = torch.where(pixel_mask, torch.ones_like(original), original)
+            filled = torch.where(pixel_mask, reconstructed, original)
             overlay = original.clone()
             overlay[0] = torch.where(pixel_mask[0], torch.ones_like(overlay[0]), overlay[0])
             overlay[1] = torch.where(pixel_mask[0], overlay[1] * 0.35, overlay[1])
@@ -89,6 +99,9 @@ class FCMAEReconstructionLogger(L.Callback):
 
             images.append(wandb.Image(original.permute(1, 2, 0).numpy(), caption=f"original/{idx}"))
             images.append(wandb.Image(masked.permute(1, 2, 0).numpy(), caption=f"masked/{idx}"))
+            images.append(
+                wandb.Image(filled.permute(1, 2, 0).numpy(), caption=f"reconstruction/{idx}")
+            )
             images.append(
                 wandb.Image(overlay.permute(1, 2, 0).numpy(), caption=f"mask_overlay/{idx}")
             )

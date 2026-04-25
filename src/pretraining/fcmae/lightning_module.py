@@ -71,10 +71,12 @@ class FCMAEPretrainer(L.LightningModule):
         self._log_if_attached("train/valid_patch_ratio", valid_patch_ratio)
         self._latest_preview = {
             "pixel_values": batch["pixel_values"].detach(),
+            "pred_patches": output.pred_patches.detach(),
             "mask": output.mask.detach(),
             "valid_patch_mask": (
                 None if output.valid_patch_mask is None else output.valid_patch_mask.detach()
             ),
+            "norm_pix_loss": self.model_config.norm_pix_loss,
         }
         optimizer = None
         if self._trainer is not None:
