@@ -179,6 +179,50 @@ def test_reconstruction_logger_logs_filled_reconstruction(monkeypatch) -> None:
     assert np.allclose(reconstruction[:2, :2], 0.0)
 
 
+def test_reconstruction_logger_logs_once_per_global_step(monkeypatch) -> None:
+    class FakeExperiment:
+        def __init__(self) -> None:
+            self.logs = []
+
+        def log(self, payload: dict[str, object], *, step: int) -> None:
+            self.logs.append((payload, step))
+
+    class FakeWandbLogger:
+        def __init__(self) -> None:
+            self.experiment = FakeExperiment()
+
+    monkeypatch.setattr("src.pretraining.fcmae.logging.WandbLogger", FakeWandbLogger)
+    monkeypatch.setitem(
+        sys.modules,
+        "wandb",
+        SimpleNamespace(Image=lambda data, *, caption: SimpleNamespace(data=data, caption=caption)),
+    )
+
+    pixel_values = torch.zeros(1, 3, 4, 4)
+    pred_patches = patchify(pixel_values, patch_size=2)
+    payload = {
+        "pixel_values": pixel_values,
+        "pred_patches": pred_patches,
+        "mask": torch.zeros(1, 2, 2, dtype=torch.bool),
+        "norm_pix_loss": False,
+    }
+    logger = FakeWandbLogger()
+    trainer = SimpleNamespace(logger=logger, global_step=500)
+    pl_module = SimpleNamespace(_latest_preview=payload)
+    callback = FCMAEReconstructionLogger(every_n_steps=500, max_batches=2, max_images=1)
+
+    for _ in range(4):
+        pl_module._latest_preview = payload
+        callback.on_train_batch_end(trainer, pl_module, outputs=None, batch=None, batch_idx=0)
+
+    trainer.global_step = 1000
+    pl_module._latest_preview = payload
+    callback.on_train_batch_end(trainer, pl_module, outputs=None, batch=None, batch_idx=0)
+
+    assert [step for _payload, step in logger.experiment.logs] == [500, 1000]
+    assert callback._logged_batches == 2
+
+
 def test_pretrainer_accepts_checkpoint_hparam_dicts() -> None:
     model_config = FCMAEModelConfig(patch_size=32, decoder_dim=16, decoder_depth=1)
     training_config = FCMAETrainingConfig(batch_size=2, num_workers=0, max_steps=1)

@@ -33,6 +33,7 @@ class FCMAEReconstructionLogger(L.Callback):
         self.max_batches = max_batches
         self.max_images = max_images
         self._logged_batches = 0
+        self._last_logged_step: int | None = None
 
     def on_train_batch_end(
         self,
@@ -50,6 +51,8 @@ class FCMAEReconstructionLogger(L.Callback):
         global_step = int(trainer.global_step)
         if global_step <= 0 or global_step % self.every_n_steps != 0:
             return
+        if self._last_logged_step == global_step:
+            return
 
         payload = getattr(pl_module, "_latest_preview", None)
         if not payload:
@@ -59,6 +62,7 @@ class FCMAEReconstructionLogger(L.Callback):
         try:
             self._log_payload(logger, payload, global_step=global_step)
             self._logged_batches += 1
+            self._last_logged_step = global_step
         except Exception as exc:  # pragma: no cover - preview logging is best effort.
             log.warning("FCMAE reconstruction preview logging failed: %s", exc)
 
