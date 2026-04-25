@@ -92,6 +92,18 @@ def _setup_logger(config: FCMAEConfig, config_dict: dict[str, Any]) -> WandbLogg
     return logger
 
 
+def _build_checkpoint_callback(config: FCMAEConfig) -> ModelCheckpoint:
+    return ModelCheckpoint(
+        dirpath=config.checkpoint.dirpath,
+        filename=config.checkpoint.filename,
+        save_last=config.checkpoint.save_last,
+        save_top_k=config.checkpoint.save_top_k,
+        every_n_train_steps=config.checkpoint.every_n_train_steps,
+        every_n_epochs=None,
+        save_on_train_epoch_end=False,
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Dense FCMAE-style ConvNeXtV2 pretraining")
     parser.add_argument("config_path")
@@ -112,13 +124,7 @@ def main() -> None:
     module = FCMAEPretrainer(config.model, config.training, full_config=config.model_dump())
 
     callbacks: list[Any] = []
-    checkpoint = ModelCheckpoint(
-        dirpath=config.checkpoint.dirpath,
-        filename=config.checkpoint.filename,
-        save_last=config.checkpoint.save_last,
-        save_top_k=config.checkpoint.save_top_k,
-    )
-    callbacks.append(checkpoint)
+    callbacks.append(_build_checkpoint_callback(config))
     if config.logging.wandb_enabled and config.logging.log_reconstructions:
         callbacks.append(
             FCMAEReconstructionLogger(

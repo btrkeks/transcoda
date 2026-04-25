@@ -47,7 +47,8 @@ class FCMAECheckpointConfig(BaseModel):
     dirpath: str = "weights/fcmae"
     filename: str = "fcmae-{step:06d}"
     save_last: bool = True
-    save_top_k: int = 0
+    save_top_k: int = -1
+    every_n_train_steps: int | None = 5000
 
 
 class FCMAELoggingConfig(BaseModel):
@@ -114,6 +115,13 @@ class FCMAEConfig(BaseModel):
             raise ValueError("training.weight_decay must be >= 0")
         if self.training.warmup_steps < 0:
             raise ValueError("training.warmup_steps must be >= 0")
+        if self.checkpoint.save_top_k < -1:
+            raise ValueError("checkpoint.save_top_k must be >= -1")
+        if (
+            self.checkpoint.every_n_train_steps is not None
+            and self.checkpoint.every_n_train_steps < 1
+        ):
+            raise ValueError("checkpoint.every_n_train_steps must be null or >= 1")
         if self.logging.log_reconstruction_every_n_steps < 1:
             raise ValueError("logging.log_reconstruction_every_n_steps must be >= 1")
         if (
