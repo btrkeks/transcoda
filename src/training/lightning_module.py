@@ -6,8 +6,6 @@ import lightning.pytorch as L
 import torch
 from lightning.pytorch.utilities.types import OptimizerLRSchedulerConfig
 from torch.optim.lr_scheduler import (
-    CosineAnnealingLR,
-    CosineAnnealingWarmRestarts,
     LinearLR,
     SequentialLR,
 )
@@ -47,6 +45,10 @@ from src.model import SMTConfig, SMTModelForCausalLM, VisionFrontendOutput
 from src.model.generation_policy import (
     build_generate_kwargs,
     settings_from_generation_config,
+)
+from src.training.optim.cosine import (
+    make_cosine_annealing_lambda_lr,
+    make_cosine_warm_restarts_lambda_lr,
 )
 from src.training.optim.layerwise import (
     build_llrd_param_groups_for_convnextv2,
@@ -495,25 +497,30 @@ class SMTTrainer(L.LightningModule):
                 pass
 
         # --- Learning Rate Scheduler Setup ---
+        # Cosine schedulers apply a shared multiplier to each group's base_lr,
+        # so every param group decays toward its own per-group floor at
+        # `cosine_eta_min_factor * group.initial_lr`. This is required for LLRD:
+        # otherwise shallow encoder groups (whose initial LR can be smaller than
+        # a global eta_min) would see their LR rise over training.
         warmup_steps = self.hparams.optimizer_config.warmup_steps
-        eta_min = decoder_lr * self.hparams.optimizer_config.cosine_eta_min_factor
+        eta_min_factor = float(self.hparams.optimizer_config.cosine_eta_min_factor)
 
         total_steps = _finite_estimated_stepping_batches(self.trainer)
 
         lr_scheduler_type = cfg.lr_scheduler
         if lr_scheduler_type == "cosine_warm_restarts":
-            main_scheduler = CosineAnnealingWarmRestarts(
+            main_scheduler = make_cosine_warm_restarts_lambda_lr(
                 optimizer,
                 T_0=cfg.cosine_restart_period,
                 T_mult=cfg.cosine_restart_mult,
-                eta_min=eta_min,
+                eta_min_factor=eta_min_factor,
             )
         else:
             t_max_value = int(max(1, total_steps - warmup_steps))
-            main_scheduler = CosineAnnealingLR(
+            main_scheduler = make_cosine_annealing_lambda_lr(
                 optimizer,
                 T_max=t_max_value,
-                eta_min=eta_min,
+                eta_min_factor=eta_min_factor,
             )
 
         warmup_scheduler = LinearLR(

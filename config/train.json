@@ -31,7 +31,9 @@
     "cosine_eta_min_factor": 0.05,
     "lr_scheduler": "cosine",
     "cosine_restart_period": 5000,
-    "cosine_restart_mult": 2
+    "cosine_restart_mult": 2,
+    "layerwise_decay_gamma": 0.6,
+    "layerwise_target": "encoder"
   },
   "checkpoint": {
     "dirpath": "weights/GrandStaff/es_polish_v1",
