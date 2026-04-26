@@ -32,7 +32,7 @@
     "filename": "fcmae-{step:06d}",
     "save_last": true,
     "save_top_k": -1,
-    "every_n_train_steps": 5000
+    "every_n_train_steps": 1000
   },
   "logging": {
     "wandb_enabled": false,
@@ -42,7 +42,7 @@
     "tags": [],
     "log_model": false,
     "log_reconstructions": true,
-    "log_reconstruction_every_n_steps": 200,
+    "log_reconstruction_every_n_steps": 500,
     "log_reconstruction_max_batches": 80,
     "log_reconstruction_max_images": 4
   },
