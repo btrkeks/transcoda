@@ -48,7 +48,7 @@
     "strategy": "greedy"
   },
   "training": {
-    "batch_size": 4,
+    "batch_size": 6,
     "val_batch_size": 16,
     "num_workers": 12,
     "max_epochs": 10,
