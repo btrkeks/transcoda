@@ -48,14 +48,14 @@
     "strategy": "greedy"
   },
   "training": {
-    "batch_size": 6,
+    "batch_size": 8,
     "val_batch_size": 16,
     "num_workers": 12,
     "max_epochs": 10,
     "min_steps": 10054,
     "val_check_interval": 5000,
     "limit_val_batches": 1.0,
-    "accumulate_grad_batches": 12,
+    "accumulate_grad_batches": 8,
     "progress_train_interval_seconds": 30.0,
     "progress_train_every_n_steps": 50,
     "progress_val_percent_interval": 10,
