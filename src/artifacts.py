@@ -66,7 +66,7 @@ class DecodingSpec:
     top_p: float | None = None
     num_beams: int | None = None
     length_penalty: float | None = 1.0
-    repetition_penalty: float = 1.1
+    repetition_penalty: float = 1.3
     early_stopping: bool | str = True
     num_return_sequences: int = 1
     do_sample: bool = False
