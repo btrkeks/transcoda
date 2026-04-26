@@ -181,12 +181,9 @@ class FCMAEImageDataset(Dataset[dict[str, Any]]):
             self.patch_size,
         )
         valid_patch_mask = valid_pixel_mask_to_patch_mask(valid_pixel_mask, self.patch_size)
-        ink_density = compute_patch_ink_density(pixel_values, self.patch_size)
         return {
             "pixel_values": pixel_values,
-            "valid_pixel_mask": valid_pixel_mask,
             "valid_patch_mask": valid_patch_mask,
-            "ink_density": ink_density,
             "path": str(path),
         }
 
@@ -222,4 +219,5 @@ class FCMAEDataModule(L.LightningDataModule):
             num_workers=self.num_workers,
             pin_memory=True,
             persistent_workers=self.num_workers > 0,
+            prefetch_factor=4 if self.num_workers > 0 else None,
         )

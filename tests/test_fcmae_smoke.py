@@ -13,8 +13,11 @@ from src.pretraining.fcmae.config import (
     FCMAEModelConfig,
     FCMAETrainingConfig,
 )
-from src.pretraining.fcmae.data import FCMAEImageDataset
-from src.pretraining.fcmae.lightning_module import FCMAEPretrainer
+from src.pretraining.fcmae.data import FCMAEImageDataset, compute_patch_ink_density
+from src.pretraining.fcmae.lightning_module import (
+    FCMAEPretrainer,
+    compute_patch_ink_density_batched,
+)
 from src.pretraining.fcmae.logging import FCMAEReconstructionLogger
 from src.pretraining.fcmae.masking import patchify, random_patch_mask, unpatchify, upsample_mask
 from src.pretraining.fcmae.model import DenseMaskedImageModelingConvNeXtV2
@@ -134,7 +137,7 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     batch = [dataset[0], dataset[1]]
     pixel_values = torch.stack([item["pixel_values"] for item in batch])
     valid_patch_mask = torch.stack([item["valid_patch_mask"] for item in batch])
-    ink_density = torch.stack([item["ink_density"] for item in batch])
+    ink_density = compute_patch_ink_density_batched(pixel_values, patch_size=32)
     assert pixel_values.shape == (2, 3, 160, 128)
     assert torch.all(pixel_values[:, :, 130:, :] == 1.0)
     assert torch.all(pixel_values[:, :, :, 98:] == 1.0)
@@ -143,6 +146,10 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     assert not valid_patch_mask[:, :, -1].any()
     assert ink_density.shape == (2, 5, 4)
     assert ((ink_density >= 0) & (ink_density <= 1)).all()
+    per_sample = torch.stack(
+        [compute_patch_ink_density(item["pixel_values"], patch_size=32) for item in batch]
+    )
+    assert torch.allclose(ink_density, per_sample)
 
     model_config = FCMAEModelConfig(
         patch_size=32,
@@ -178,6 +185,7 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
         FCMAETrainingConfig(batch_size=2, num_workers=0, max_steps=1, warmup_steps=0),
         model=model,
     )
+    module._should_snapshot_preview = lambda: True
     loss = module.training_step(
         {
             "pixel_values": pixel_values,

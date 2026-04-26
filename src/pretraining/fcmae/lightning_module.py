@@ -11,6 +11,36 @@ from src.pretraining.fcmae.config import FCMAEModelConfig, FCMAETrainingConfig
 from src.pretraining.fcmae.model import DenseMaskedImageModelingConvNeXtV2
 
 
+def compute_patch_ink_density_batched(pixel_values: torch.Tensor, patch_size: int) -> torch.Tensor:
+    if pixel_values.ndim != 4:
+        raise ValueError("pixel_values must have shape (B, C, H, W)")
+    height, width = pixel_values.shape[-2:]
+    if height % patch_size != 0 or width % patch_size != 0:
+        raise ValueError("pixel_values dimensions must be divisible by patch_size")
+    intensity = (pixel_values.float().mean(dim=1) + 1.0) / 2.0
+    ink = (1.0 - intensity).clamp_(0.0, 1.0)
+    grid_h = height // patch_size
+    grid_w = width // patch_size
+    return ink.reshape(-1, grid_h, patch_size, grid_w, patch_size).mean(dim=(2, 4))
+
+
+def _resolve_preview_cadence(full_config: dict[str, Any] | None) -> int:
+    if not full_config:
+        return 0
+    logging_cfg = full_config.get("logging") if isinstance(full_config, dict) else None
+    if not isinstance(logging_cfg, dict):
+        return 0
+    if not logging_cfg.get("wandb_enabled", False):
+        return 0
+    if not logging_cfg.get("log_reconstructions", False):
+        return 0
+    cadence = logging_cfg.get("log_reconstruction_every_n_steps", 0)
+    try:
+        return max(0, int(cadence))
+    except (TypeError, ValueError):
+        return 0
+
+
 class FCMAEPretrainer(L.LightningModule):
     def __init__(
         self,
@@ -28,6 +58,7 @@ class FCMAEPretrainer(L.LightningModule):
         self.model = model or DenseMaskedImageModelingConvNeXtV2(model_config)
         self._latest_preview: dict[str, Any] | None = None
         self.full_config = full_config
+        self._preview_cadence = _resolve_preview_cadence(full_config)
         self.save_hyperparameters(
             {
                 "model_config": model_config.model_dump(),
@@ -49,10 +80,16 @@ class FCMAEPretrainer(L.LightningModule):
         )
 
     def training_step(self, batch: dict[str, Any], batch_idx: int) -> torch.Tensor:
+        pixel_values = batch["pixel_values"]
+        ink_density = batch.get("ink_density")
+        if ink_density is None:
+            ink_density = compute_patch_ink_density_batched(
+                pixel_values, self.model_config.patch_size
+            )
         output = self.model(
-            batch["pixel_values"],
+            pixel_values,
             valid_patch_mask=batch.get("valid_patch_mask"),
-            ink_density=batch.get("ink_density"),
+            ink_density=ink_density,
         )
         self._log_if_attached("train/loss", output.loss, prog_bar=True)
         self._log_if_attached("train/mask_ratio", self.model_config.mask_ratio)
@@ -72,21 +109,29 @@ class FCMAEPretrainer(L.LightningModule):
         else:
             valid_patch_ratio = valid_patch_mask.to(device=output.loss.device).float().mean()
         self._log_if_attached("train/valid_patch_ratio", valid_patch_ratio)
-        self._latest_preview = {
-            "pixel_values": batch["pixel_values"].detach(),
-            "pred_patches": output.pred_patches.detach(),
-            "mask": output.mask.detach(),
-            "valid_patch_mask": (
-                None if output.valid_patch_mask is None else output.valid_patch_mask.detach()
-            ),
-            "norm_pix_loss": self.model_config.norm_pix_loss,
-        }
+        if self._should_snapshot_preview():
+            self._latest_preview = {
+                "pixel_values": pixel_values.detach(),
+                "pred_patches": output.pred_patches.detach(),
+                "mask": output.mask.detach(),
+                "valid_patch_mask": (
+                    None if output.valid_patch_mask is None else output.valid_patch_mask.detach()
+                ),
+                "norm_pix_loss": self.model_config.norm_pix_loss,
+            }
         optimizer = None
         if self._trainer is not None:
             optimizer = self.optimizers(use_pl_optimizer=False)
         if optimizer is not None:
             self._log_if_attached("train/lr", optimizer.param_groups[0]["lr"])
         return output.loss
+
+    def _should_snapshot_preview(self) -> bool:
+        if self._preview_cadence <= 0:
+            return False
+        if self._trainer is None:
+            return False
+        return ((int(self.trainer.global_step) + 1) % self._preview_cadence) == 0
 
     def _scaled_learning_rate(self) -> float:
         world_size = int(getattr(self.trainer, "world_size", 1) or 1)
