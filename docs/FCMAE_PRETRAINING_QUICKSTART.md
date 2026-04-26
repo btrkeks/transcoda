@@ -36,7 +36,7 @@ mkdir -p data/fcmae_images
 5. Submit the real run:
 
 ```bash
-./pretrain_fcmae.sh submit --time 48:00:00 --mem 64G --cpus-per-task 8 -- \
+./pretrain_fcmae.sh submit --time 48:00:00 -- \
   data.image_dir=data/fcmae_images \
   checkpoint.dirpath=weights/fcmae-real-scans \
   training.max_steps=200000 \

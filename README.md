@@ -317,7 +317,10 @@ python ./scripts/dataset_generation/filter_by_seq_len.py ./data/datasets/train/t
 #### Training
 
 ```bash
-./train.sh submit -- --data.train_path=./data/datasets/train/train_20k_v2 --model.max_seq_len=3000
+./train.sh submit -- \
+  --data.train_path=./data/datasets/train/train_20k_v2 \
+  --model.max_seq_len=3000 \
+  --model.encoder_model_name_or_path=weights/fcmae-real-scans/exported_encoder
 ```
 
 #### Validation
