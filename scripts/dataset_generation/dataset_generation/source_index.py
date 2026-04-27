@@ -40,6 +40,7 @@ class SourceIndex:
     compatible_entry_ids_by_measure_count_cache: dict[int, dict[int, tuple[int, ...]]] = field(
         default_factory=dict
     )
+    entry_indices_by_spine_class_cache: dict[str, tuple[int, ...]] = field(default_factory=dict)
 
 
 def build_source_index(*input_dirs: str | Path) -> SourceIndex:

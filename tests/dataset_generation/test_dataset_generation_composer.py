@@ -420,6 +420,89 @@ def test_choose_entries_selects_uniformly_from_available_anchor_entries(tmp_path
     assert chosen == (2,)
 
 
+def test_anchor_spine_class_weights_route_to_chosen_class(tmp_path: Path):
+    spine1_path = tmp_path / "spine1.krn"
+    spine1_path.write_text("**kern\n*clefG2\n=1\n4c\n*-\n", encoding="utf-8")
+    spine2_path = tmp_path / "spine2.krn"
+    spine2_path.write_text(
+        "**kern\t**kern\n*clefF4\t*clefG2\n=1\t=1\n4c\t4e\n*-\t*-\n",
+        encoding="utf-8",
+    )
+    entries = [
+        _make_source_entry(spine1_path, "spine1", spine1_path.read_text(), entry_idx=0),
+        _make_source_entry(spine2_path, "spine2", spine2_path.read_text(), entry_idx=1),
+    ]
+    source_index = _make_source_index_for_entries(entries)
+    recipe = ProductionRecipe(
+        composition=CompositionPolicy(
+            segment_count_weights=((1, 1.0),),
+            anchor_spine_class_weights=(("2", 1.0),),
+            min_total_measures=1,
+            max_total_measures=8,
+            max_selection_attempts=2,
+        )
+    )
+
+    chosen = _choose_entries(source_index, recipe, _FixedRng([0], [0.0, 0.0]))
+
+    assert chosen == (1,)
+
+
+def test_anchor_spine_class_weights_fall_back_when_chosen_class_is_exhausted(tmp_path: Path):
+    spine1_path = tmp_path / "spine1.krn"
+    spine1_path.write_text("**kern\n*clefG2\n=1\n4c\n*-\n", encoding="utf-8")
+    spine2_path = tmp_path / "spine2.krn"
+    spine2_path.write_text(
+        "**kern\t**kern\n*clefF4\t*clefG2\n=1\t=1\n4c\t4e\n*-\t*-\n",
+        encoding="utf-8",
+    )
+    entries = [
+        _make_source_entry(spine1_path, "spine1", spine1_path.read_text(), entry_idx=0),
+        _make_source_entry(spine2_path, "spine2", spine2_path.read_text(), entry_idx=1),
+    ]
+    source_index = _make_source_index_for_entries(entries)
+    recipe = ProductionRecipe(
+        composition=CompositionPolicy(
+            segment_count_weights=((1, 1.0),),
+            anchor_spine_class_weights=(("1", 0.5), ("2", 0.5)),
+            min_total_measures=1,
+            max_total_measures=8,
+            max_selection_attempts=2,
+        )
+    )
+
+    chosen = _choose_entries(
+        source_index,
+        recipe,
+        _FixedRng([0], [0.0, 0.0]),
+        excluded_entry_ids={0},
+    )
+
+    assert chosen == (1,)
+
+
+def test_anchor_spine_class_cache_is_scoped_to_source_index(tmp_path: Path):
+    first_root = tmp_path / "first"
+    second_root = tmp_path / "second"
+    first_root.mkdir()
+    second_root.mkdir()
+    (first_root / "one.krn").write_text("**kern\n*clefG2\n=1\n4c\n*-\n", encoding="utf-8")
+    (second_root / "two.krn").write_text(
+        "**kern\t**kern\n*clefF4\t*clefG2\n=1\t=1\n4c\t4e\n*-\t*-\n",
+        encoding="utf-8",
+    )
+    first_index = build_source_index(first_root)
+    second_index = build_source_index(second_root)
+
+    first = composer_module._entry_indices_for_spine_class(first_index, "1")
+    second = composer_module._entry_indices_for_spine_class(second_index, "2")
+
+    assert first == (0,)
+    assert second == (0,)
+    assert first_index.entry_indices_by_spine_class_cache == {"1": (0,)}
+    assert second_index.entry_indices_by_spine_class_cache == {"2": (0,)}
+
+
 def test_choose_entries_raises_when_all_anchor_entries_are_excluded(tmp_path: Path):
     path = tmp_path / "snippet.krn"
     text = "*clefG2\n=1\n4c\n*-\n"
@@ -486,6 +569,7 @@ def test_choose_entries_stops_when_no_boundary_compatible_followup_exists(
         ProductionRecipe(
             composition=CompositionPolicy(
                 segment_count_weights=((2, 1.0),),
+                anchor_spine_class_weights=(("2", 1.0),),
                 min_total_measures=1,
                 max_total_measures=8,
                 max_selection_attempts=2,

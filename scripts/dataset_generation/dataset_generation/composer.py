@@ -176,7 +176,12 @@ def _choose_entries(
         recipe.composition.max_total_measures,
     )
 
-    anchor_entry_idx = _pick_anchor_entry_idx(source_index, excluded_ids, rng)
+    anchor_entry_idx = _pick_anchor_entry_idx(
+        source_index,
+        excluded_ids,
+        rng,
+        spine_class_weights=recipe.composition.anchor_spine_class_weights,
+    )
     anchor = source_index.entries[anchor_entry_idx]
     chosen_entry_ids: list[int] = [anchor_entry_idx]
     unavailable_entry_ids = set(excluded_ids)
@@ -233,15 +238,72 @@ def _pick_anchor_entry_idx(
     source_index: SourceIndex,
     excluded_entry_ids: frozenset[int],
     rng: random.Random,
+    *,
+    spine_class_weights: tuple[tuple[str, float], ...] | None = None,
 ) -> int:
-    available_entry_ids = tuple(
-        entry.entry_idx
-        for entry in source_index.entries
-        if entry.entry_idx not in excluded_entry_ids
-    )
-    if available_entry_ids:
-        return available_entry_ids[rng.randrange(len(available_entry_ids))]
+    if not spine_class_weights:
+        available_entry_ids = tuple(
+            entry.entry_idx
+            for entry in source_index.entries
+            if entry.entry_idx not in excluded_entry_ids
+        )
+        if available_entry_ids:
+            return available_entry_ids[rng.randrange(len(available_entry_ids))]
+        raise ValueError("Cannot compose from an empty source index")
+
+    active = [
+        (cls, float(weight))
+        for cls, weight in spine_class_weights
+        if float(weight) > 0.0 and _entry_indices_for_spine_class(source_index, cls)
+    ]
+    while active:
+        chosen_position = _weighted_index(active, rng)
+        chosen_class, _ = active[chosen_position]
+        class_entry_ids = _entry_indices_for_spine_class(source_index, chosen_class)
+        candidates = tuple(
+            entry_idx for entry_idx in class_entry_ids if entry_idx not in excluded_entry_ids
+        )
+        if candidates:
+            return candidates[rng.randrange(len(candidates))]
+        active.pop(chosen_position)
     raise ValueError("Cannot compose from an empty source index")
+
+
+def _entry_indices_for_spine_class(
+    source_index: SourceIndex, class_label: str
+) -> tuple[int, ...]:
+    cached = source_index.entry_indices_by_spine_class_cache.get(class_label)
+    if cached is not None:
+        return cached
+    grouped: list[int] = []
+    for spine_count, entry_ids in source_index.entry_indices_by_initial_spine_count.items():
+        if _spine_class_label_for_count(int(spine_count)) == class_label:
+            grouped.extend(entry_ids)
+    materialized = tuple(grouped)
+    source_index.entry_indices_by_spine_class_cache[class_label] = materialized
+    return materialized
+
+
+def _spine_class_label_for_count(initial_spine_count: int) -> str:
+    count = max(1, int(initial_spine_count))
+    if count == 1:
+        return "1"
+    if count == 2:
+        return "2"
+    return "3_plus"
+
+
+def _weighted_index(
+    weighted_values: Sequence[tuple[object, float]], rng: random.Random
+) -> int:
+    total = sum(weight for _, weight in weighted_values)
+    roll = rng.random() * total
+    cumulative = 0.0
+    for index, (_, weight) in enumerate(weighted_values):
+        cumulative += weight
+        if roll <= cumulative:
+            return index
+    return len(weighted_values) - 1
 
 
 def _weighted_choice(

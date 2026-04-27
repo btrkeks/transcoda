@@ -12,6 +12,11 @@ class CompositionPolicy:
         (2, 0.28),
         (3, 0.10),
     )
+    anchor_spine_class_weights: tuple[tuple[str, float], ...] = (
+        ("1", 0.30),
+        ("2", 0.55),
+        ("3_plus", 0.15),
+    )
     min_total_measures: int = 10
     max_total_measures: int = 32
     max_selection_attempts: int = 48
