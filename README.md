@@ -181,7 +181,7 @@ docs/                    # Architecture, normalization, constraint docs
 
 ## Paper
 
-The full thesis is in [`paper.pdf`](../paper.pdf).
+The full thesis is in [`paper.pdf`](./paper.pdf).
 
 ## Citation
 
