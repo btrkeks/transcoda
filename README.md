@@ -1,52 +1,79 @@
 # Transcoda
 
-Optical Music Recognition (OMR) system that converts sheet music images into [`**kern`](https://www.humdrum.org/rep/kern/) (Humdrum) notation. Uses a vision-encoder-decoder architecture with grammar-constrained decoding to ensure structurally valid output.
+**End-to-end zero-shot Optical Music Recognition via data-centric synthetic training.**
 
-## Architecture
+A compact 59M-parameter vision-encoder-decoder that turns raw score images directly into [`**kern`](https://www.humdrum.org/rep/kern/) symbolic transcriptions. Trained from scratch in about 5 hours on a single consumer GPU, on synthetic data only.
 
-```
-Image (B, 3, H, W)
-    │
-    ▼
-┌──────────────────────────────────────────────┐
-│ ConvVisionFrontend                           │
-│  - HuggingFace vision backbone (AutoModel)   │
-│  - Token-space MLP projector                 │
-│  - 2D sinusoidal positional stream           │
-└──────────────────────────────────────────────┘
-    │
-    ▼
-┌──────────────────────────────────────────────┐
-│ Autoregressive Decoder                       │
-│  - Token embedding + RoPE positions          │
-│  - N pre-norm decoder layers                 │
-│      self-attn → cross-attn → FFN            │
-│  - Final LayerNorm + vocab projection        │
-└──────────────────────────────────────────────┘
-    │
-    ▼
-┌──────────────────────────────────────────────┐
-│ Grammar-Constrained Decoding                 │
-│  - xgrammar with GBNF grammar for **kern     │
-│  - Spine structure & rhythm constraints      │
-│  - Runaway guard                             │
-└──────────────────────────────────────────────┘
-    │
-    ▼
-**kern transcription
-```
+<p align="center">
+  <img src="figures/architecture.png" alt="Transcoda architecture: ConvNeXt-V2 encoder, projector MLP, 2D sinusoidal positional encoding, and an 8-layer Transformer decoder with optional constrained decoding." width="100%">
+</p>
 
-The vision encoder is pluggable — any HuggingFace vision model works (default: ConvNeXtV2-tiny-22k). The decoder is a custom transformer with cross-attention over encoder features. At inference time, an [xgrammar](https://github.com/mlc-ai/xgrammar)-based constrained decoding layer filters logits to guarantee syntactically valid `**kern` output.
+## TL;DR
 
-## Features
+- **Compact and fast.** 59M parameters, 5h training on a single RTX 5090.
+- **Data-centric.** A deterministic pipeline removes structural ambiguity from `**kern` targets so the decoder learns one canonical sequence per image.
+- **Best score among compared systems** on a clean Verovio synthetic benchmark (18.22% OMR-NED) and on real-world Polish historical scans (76.03% OMR-NED), beating baselines that are an order of magnitude larger.
+- **Optional constrained decoding** guarantees 100% formally valid `**kern` output for downstream renderers, at a small accuracy cost.
+- Releases a standardized Verovio synthetic benchmark for future OMR evaluation.
 
-- **Pluggable vision encoder** — swap in any HuggingFace vision backbone via config
-- **Grammar-constrained decoding** — GBNF grammar enforces valid `**kern` syntax at every decoding step
-- **21-pass normalization pipeline** — canonicalizes ground-truth kern for consistent training targets
-- **Synthetic data generation** — renders kern scores to images via Verovio with configurable augmentations
-- **PyTorch Lightning training** — tiered validation, auto-resume, model compilation, gradient accumulation
-- **Comprehensive metrics** — CER, SER, LER, and OMR-NED (semantic music notation distance)
-- **W&B integration** — experiment tracking, artifact logging, example visualization
+## Headline results
+
+OMR-NED (lower is better). Polish = 97 historical scanned scores; Verovio = 6,864 cleanly rendered synthetic scores.
+
+| Model         |  Params | Polish (real) ↓ | Verovio (synthetic) ↓ |
+| ------------- | ------: | --------------: | --------------------: |
+| SMT++         |       — |          80.16% |                93.58% |
+| Legato        |     1B+ |          86.73% |                43.91% |
+| **Transcoda** | **59M** |      **76.03%** |            **18.22%** |
+
+Transcoda uses unconstrained beam search (width 3) for these numbers. Switching to constrained decoding raises Polish OMR-NED to 80.27% but enforces strict structural validity.
+
+## Method
+
+**Architecture.** A pretrained ConvNeXt-V2 encodes a full-page score image into a 47×33 grid of 768-d patch features. A projector MLP and a 2D sinusoidal positional encoding lift these into a 1551×512 sequence. An 8-layer Transformer decoder with RoPE self-attention emits `**kern` tokens autoregressively over a 3,000-token vocabulary. End-to-end, no symbol detector, no staff segmenter.
+
+**Target canonicalization is the key insight.** `**kern` lets the same score map to many syntactically different but semantically equivalent sequences. A deterministic pass collapses each score to one canonical form, so the decoder no longer has to model annotator style. The ablation is sharp:
+
+| Configuration                          | OMR-NED ↓ |
+| -------------------------------------- | --------: |
+| Full Transcoda (canonicalized targets) |    18.56% |
+| Same model, raw non-canonical targets  |    82.51% |
+
+Removing canonicalization adds **+63.95** OMR-NED points on clean synthetic data. Capacity is not the bottleneck; target entropy is.
+
+**Constrained decoding (optional).** A stateful, layered grammar engine enforces 2D `**kern` syntax and rhythmic mathematics during inference. It guarantees formally valid output for downstream parsers and renderers. On clean data it changes nothing. On heavily degraded scans it trades raw matching accuracy for a hard validity guarantee.
+
+## Data pipeline
+
+Training uses 361,938 synthetic examples. Two augmentation families decouple visual diversity from target ambiguity.
+
+**Asymmetric semantic augmentation** adds dynamics, pedal markings, and tempo text to the _rendered image_ without changing the canonical `**kern` target. The model sees richer engraving without inheriting transcription noise.
+
+<p align="center">
+  <img src="figures/semantic-base.png"      alt="Base render"      width="49%">
+  <img src="figures/semantic-augmented.png" alt="Same target with added dynamics, pedal, and tempo markings" width="49%">
+</p>
+
+**Visual degradation** simulates print-and-scan reality: clean baseline, geometric warp, ink drop-out, and bleed-through.
+
+<p align="center">
+  <img src="figures/aug-clean.png"    alt="Clean render"   width="49%">
+  <img src="figures/aug-warp.png"     alt="Geometric warp" width="49%">
+</p>
+<p align="center">
+  <img src="figures/aug-poor-ink.jpg" alt="Low-ink degradation" width="49%">
+  <img src="figures/aug-bleed.jpg"    alt="Bleed-through"       width="49%">
+</p>
+
+## Qualitative example
+
+Bach excerpt, identical input. Transcoda preserves rhythm and pitch; both baselines drift on long-range structure.
+
+<p align="center">
+  <img src="figures/qualitative.png" alt="Side-by-side outputs of Transcoda, Legato, and SMT++ on a Bach excerpt." width="85%">
+</p>
+
+TEDn against ground truth: **Transcoda 1.93**, Legato 3.12, SMT++ 66.04.
 
 ## Quick Start
 
@@ -99,82 +126,8 @@ python train.py config/train.json --fresh_run=true
 python train.py config/train.json --validate_only=true --checkpoint_path path/to/model.ckpt
 ```
 
-### Configuration
-
-Training configs live in `config/`. Key files:
-
-| File                 | Purpose                                     |
-| -------------------- | ------------------------------------------- |
-| `train.json`         | Production training (synthetic grand staff) |
-| `finetune_real.json` | Fine-tune on real scans                     |
-| `debug.json`         | Quick sanity check                          |
-| `profile.json`       | Performance profiling                       |
-
-See [`config/README.md`](config/README.md) for full config documentation and all available options.
-
-### Remote Training (Slurm)
-
-```bash
-./train.sh submit            # Submit job to cluster; auto-assigns and prints a unique run id by default
-./train.sh validate          # Validate the last submitted run by default
-./train.sh logs              # View job logs
-./train.sh queue             # Show job queue
-./train.sh cancel            # Cancel running job
-```
-
-## FCMAE Encoder Pretraining
-
-FCMAE-style masked image pretraining uses `config/pretrain_fcmae_base.json` and writes regular
-Lightning checkpoints. Local smoke runs keep W&B disabled by default:
-
-```bash
-source .venv/bin/activate
-python scripts/pretrain_fcmae.py config/pretrain_fcmae_base.json training.max_steps=10
-```
-
-On Slurm, use the dedicated wrapper and put config overrides after `--` as `key=value` tokens:
-
-```bash
-./pretrain_fcmae.sh submit \
-  --job-name fcmae-real-scans \
-  --time 48:00:00 \
-  --mem 64G \
-  -- \
-  data.manifest_path=data/fcmae_real_scans_manifest.txt \
-  data.image_dir=null \
-  checkpoint.dirpath=weights/fcmae-real-scans \
-  logging.wandb_enabled=true
-```
-
-Resume with either `--resume weights/fcmae-real-scans/last.ckpt` or the equivalent
-`training.resume_from_checkpoint=...` override. `./pretrain_fcmae.sh logs` tails the most recent
-remembered FCMAE job.
-
-### Exporting a Pretrained Encoder
-
-Export the ConvNeXtV2 encoder as a Hugging Face directory:
-
-```bash
-python scripts/export_fcmae_encoder.py \
-  weights/fcmae-real-scans/last.ckpt \
-  weights/fcmae-real-scans/exported_encoder \
-  --validate
-```
-
-The exporter refuses to write into a non-empty directory unless `--overwrite` is passed and writes
-`fcmae_export_metadata.json` next to the exported `config.json`.
-
-### Supervised Handoff
-
-The exported encoder is consumed through the existing Transformers encoder provider:
-
-```bash
-./train.sh submit -- \
-  model.encoder_provider=transformers \
-  model.encoder_model_name_or_path=weights/fcmae-real-scans/exported_encoder \
-  checkpoint.dirpath=weights/smt-fcmae-real-scans-finetune \
-  checkpoint.run_name=smt-fcmae-real-scans-finetune
-```
+See [`docs/TRAINING_AND_DATA.md`](docs/TRAINING_AND_DATA.md) for configuration details, Slurm
+commands, FCMAE pretraining, dataset generation, profiling, and sequence trimming.
 
 ## Dataset Generation
 
@@ -190,43 +143,8 @@ The pipeline converts raw music scores through several stages into training-read
 6. **Rendering** — Verovio renders kern to SVG to PNG with augmentations
 7. **Sequence-length filtering** — remove outliers
 
-### Running the Pipeline
-
-```bash
-source .venv/bin/activate
-
-# Generate training dataset with the production rewrite
-python -m scripts.dataset_generation.dataset_generation.main \
-  data/interim/train/pdmx/3_normalized \
-  data/interim/train/grandstaff/3_normalized \
-  data/interim/train/openscore-lieder/3_normalized \
-  data/interim/train/openscore-stringquartets/3_normalized \
-  --output_dir data/datasets/train_rewrite \
-  --target_samples 1000 \
-  --num_workers 4
-
-# Or use the convenience wrapper
-bash scripts/dataset_generation/run_rewrite_train_pipeline.sh
-
-# Validation generation remains on the old pipeline path for now
-PIPELINE_TARGET=validation bash scripts/dataset_generation/run_full_pipeline.sh
-```
-
-The rewrite writes a Hugging Face dataset via `save_to_disk()` at `output_dir` and stores run artifacts under `data/datasets/_runs/<output_name>/<run_id>/` by default. Each run directory includes:
-
-- `info.json` with the run configuration and summary
-- `progress.json` with live counters
-- resumable state under `<output_dir>/.resume/`
-
-The rewrite dataset also includes clean-render layout diagnostics such as `vertical_fill_ratio`,
-`bottom_whitespace_ratio`, `bottom_whitespace_px`, `top_whitespace_px`, and
-`content_height_px`. These are measured before offline dirt/degradation augmentation so they
-reflect page occupancy of the synthetic render itself rather than the augmented image.
-
-Balanced generation is mandatory in the rewrite path. Production runs always use the bundled
-token-length calibration spec checked into the repo, and generation aborts if that spec is
-missing or incompatible with the current recipe/tokenizer. The calibration CLI remains available
-as a maintenance tool for refreshing the bundled spec when those assumptions change.
+See [`docs/TRAINING_AND_DATA.md`](docs/TRAINING_AND_DATA.md) for dataset generation commands, run
+artifacts, calibration notes, profiling, and sequence trimming.
 
 See [`docs/normalization.md`](docs/normalization.md) for details on the normalization pipeline.
 
@@ -256,75 +174,23 @@ docs/                    # Architecture, normalization, constraint docs
 ## Documentation
 
 - [Model Architecture](docs/MODEL_ARCHITECTURE.md) — encoder-decoder design, positional encoding, attention
+- [Training and Data Operations](docs/TRAINING_AND_DATA.md) — Slurm commands, FCMAE pretraining, dataset generation, profiling, trimming
 - [Normalization Pipeline](docs/normalization.md) — 21-pass kern canonicalization
 - [Constrained Decoding](docs/constraint-decoding.md) — xgrammar integration and GBNF grammar
 - [Configuration](config/README.md) — config structure, CLI overrides, per-section reference
 
-## Commands
+## Paper
 
-### Generate dataset
+The full thesis is in [`paper.pdf`](../paper.pdf).
 
-```bash
-source .venv/bin/activate && python -m scripts.dataset_generation.dataset_generation.main \
-  data/interim/train/pdmx/3_normalized \
-  data/interim/train/grandstaff/3_normalized \
-  data/interim/train/musetrainer/3_normalized \
-  data/interim/train/openscore-lieder/3_normalized \
-  data/interim/train/openscore-stringquartets/3_normalized \
-  --name test_v1 \
-  --target_samples 100 \
-  --num_workers 4 \
-  --max_attempts 999
-```
+## Citation
 
-### Profile dataset generation
-
-```bash
-source .venv/bin/activate
-
-python scripts/dataset_generation/profile_dataset_generation.py \
-  data/interim/train/pdmx/3_normalized \
-  data/interim/train/grandstaff/3_normalized \
-  data/interim/train/musetrainer/3_normalized \
-  data/interim/train/openscore-lieder/3_normalized \
-  data/interim/train/openscore-stringquartets/3_normalized \
-  --target_samples 100 \
-  --num_workers 4
-```
-
-The harness writes a timestamped run directory under `/tmp/dataset_generation_profiles/` by default. Start with:
-
-- `summary.json` for the full command, elapsed time, and artifact paths
-- `pyspy.svg` for the subprocess flamegraph
-- `generation.stdout.log` and `generation.stderr.log` for harness output
-- `system_ps.log`, `system_vmstat.log`, and `system_top.log` for machine telemetry
-- the dataset-generation `run_artifacts_dir` referenced from `summary.json`
-
-### Trim long sequences
-
-```bash
-python ./scripts/dataset_generation/filter_by_seq_len.py ./data/datasets/train/train_20k ./vocab/bpe3k-splitspaces 3000
-```
-
-### Cloud commands
-
-```bash
-./cloud pull 20260422T183615Z-12556
-```
-
-### Slurm
-
-#### Training
-
-```bash
-./train.sh submit -- \
-  --data.train_path=./data/datasets/train/train_20k_v2 \
-  --model.max_seq_len=3000 \
-  --model.encoder_model_name_or_path=weights/fcmae-real-scans/exported_encoder
-```
-
-#### Validation
-
-```bash
-./train.sh validate
+```bibtex
+@thesis{dratschuk2026transcoda,
+  author = {Dratschuk, Daniel},
+  title  = {Transcoda: End-to-End Zero-Shot Optical Music Recognition via Data-Centric Synthetic Training},
+  school = {Heinrich-Heine-Universit{\"a}t D{\"u}sseldorf},
+  type   = {Bachelor's thesis},
+  year   = {2026},
+}
 ```
