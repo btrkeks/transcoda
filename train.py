@@ -346,6 +346,29 @@ def main(
         )
         config = experiment_config_from_dict(config_dict)
 
+    # Disable trackers that aren't DDP-aware. RunawayMonitorTracker and
+    # OMRNEDTracker accumulate Python-side state and don't all-reduce across
+    # ranks, so under DDP each rank would compute partial aggregates that
+    # silently combine into a misleading global. Auto-disable rather than
+    # report wrong numbers.
+    ddp_world_size = int(config.training.devices) * int(config.training.num_nodes)
+    if ddp_world_size > 1:
+        config_dict.setdefault("training", {})
+        if config.training.compute_omr_ned:
+            console.print(
+                f"[yellow]DDP run detected (world_size={ddp_world_size}): "
+                "disabling training.compute_omr_ned (tracker is not DDP-safe).[/yellow]"
+            )
+            config.training.compute_omr_ned = False
+            config_dict["training"]["compute_omr_ned"] = False
+        if config.training.runaway_monitor_enabled:
+            console.print(
+                f"[yellow]DDP run detected (world_size={ddp_world_size}): "
+                "disabling training.runaway_monitor_enabled (tracker is not DDP-safe).[/yellow]"
+            )
+            config.training.runaway_monitor_enabled = False
+            config_dict["training"]["runaway_monitor_enabled"] = False
+
     deterministic = False
     seed_everything(seed, deterministic=deterministic)
 

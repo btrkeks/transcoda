@@ -140,6 +140,27 @@ class Training(BaseModel):
     early_stopping_patience: int = 5
     early_stopping_min_delta: float = 0.01
 
+    # DDP / Trainer plumbing
+    devices: int = 1
+    strategy: str = "auto"
+    num_nodes: int = 1
+
+    @model_validator(mode="after")
+    def validate_ddp(self) -> Training:
+        if self.devices < 1:
+            raise ValueError("training.devices must be >= 1")
+        if self.num_nodes < 1:
+            raise ValueError("training.num_nodes must be >= 1")
+        if self.strategy == "ddp_spawn":
+            raise ValueError(
+                "training.strategy='ddp_spawn' is not supported; use 'ddp' instead. "
+                "ddp_spawn re-pickles the datamodule/tokenizer per subprocess and is "
+                "fragile with our setup."
+            )
+        if self.devices * self.num_nodes > 1 and self.strategy == "auto":
+            self.strategy = "ddp"
+        return self
+
     @model_validator(mode="after")
     def validate_runaway_guard(self) -> Training:
         valid_strictness = {"lenient", "moderate", "strict"}

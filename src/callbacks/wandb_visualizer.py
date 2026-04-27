@@ -236,6 +236,13 @@ class WandbVisualizerCallback(Callback):
 
     def on_validation_epoch_end(self, trainer: Trainer, pl_module: LightningModule) -> None:
         """Build and log a W&B table from the heap contents, then clear heaps."""
+        # Under DDP, heaps are populated independently on each rank from that rank's
+        # validation shard. Log only from rank 0 (best/worst examples will be drawn
+        # from rank 0's shard, which is representative but not globally optimal).
+        if not trainer.is_global_zero:
+            self._clear_heaps()
+            return
+
         if not self._should_log_examples(trainer, pl_module):
             self._clear_heaps()
             return

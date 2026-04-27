@@ -21,7 +21,8 @@ PARTITION="gpu"
 PARTITION_EXPLICIT=false
 GPUS=1
 GPU_TYPE=""
-CPUS_PER_TASK=8
+DEFAULT_CPUS_PER_TASK=8
+CPUS_PER_TASK=${DEFAULT_CPUS_PER_TASK}
 MEMORY=""
 TIME_LIMIT="24:00:00"
 JOB_NAME=""
@@ -1089,6 +1090,22 @@ if ! resolve_validate_checkpoint_path; then
 fi
 
 prepare_validate_run_identity
+
+# Multi-GPU defaults: auto-forward DDP trainer settings and scale per-task CPUs.
+# Each Lightning DDP subprocess inherits the per-task CPU allocation, so we
+# multiply the default by GPUS to keep DataLoader workers from starving.
+if [ "${GPUS}" -gt 1 ]; then
+  if ! has_forwarded_override "training.devices"; then
+    AUTO_FORWARDED_ARGS+=("--training.devices=${GPUS}")
+  fi
+  if ! has_forwarded_override "training.strategy"; then
+    AUTO_FORWARDED_ARGS+=("--training.strategy=ddp")
+  fi
+  if [ "${CPUS_PER_TASK}" -eq "${DEFAULT_CPUS_PER_TASK}" ]; then
+    CPUS_PER_TASK=$((DEFAULT_CPUS_PER_TASK * GPUS))
+    echo "[train.sh] auto-scaled --cpus-per-task to ${CPUS_PER_TASK} for ${GPUS} GPUs (DDP)" >&2
+  fi
+fi
 
 if [ "${COMMAND}" = "doctor" ]; then
   if run_doctor; then

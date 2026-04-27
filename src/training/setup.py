@@ -147,8 +147,9 @@ def setup_trainer(config: ExperimentConfig, callbacks, logger, num_train_batches
         "logger": logger,
         "callbacks": callbacks,
         "precision": "bf16-true",
-        "strategy": "auto",
-        "devices": 1,
+        "strategy": training_config.strategy,
+        "devices": training_config.devices,
+        "num_nodes": training_config.num_nodes,
         "log_every_n_steps": 10,
     }
 

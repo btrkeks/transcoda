@@ -706,7 +706,15 @@ class SMTTrainer(L.LightningModule):
 
         stage = self.stage_calculator(self.global_step)
 
-        self.log(TRAIN_LOSS, loss, on_step=True, on_epoch=True, batch_size=x.size(0), prog_bar=False)
+        self.log(
+            TRAIN_LOSS,
+            loss,
+            on_step=True,
+            on_epoch=True,
+            batch_size=x.size(0),
+            prog_bar=False,
+            sync_dist=True,
+        )
         self.log(TRAIN_STAGE, stage, on_epoch=True, prog_bar=False)
 
         # Log step execution time
@@ -754,6 +762,7 @@ class SMTTrainer(L.LightningModule):
                 batch_size=x.size(0),
                 prog_bar=False,
                 add_dataloader_idx=False,
+                sync_dist=True,
             )
 
         # Calculate the maximum actual sequence length in the batch (excluding -100 padding)
@@ -880,6 +889,7 @@ class SMTTrainer(L.LightningModule):
                             cer_value,
                             on_epoch=True,
                             prog_bar=False,
+                            sync_dist=True,
                         )
                 else:
                     active_set_count += 1
@@ -890,6 +900,7 @@ class SMTTrainer(L.LightningModule):
                             value,
                             on_epoch=True,
                             prog_bar=False,
+                            sync_dist=True,
                         )
                         if metric_name == "SER":
                             all_ser_values.append(value)
@@ -909,6 +920,7 @@ class SMTTrainer(L.LightningModule):
                                 float(value),
                                 on_epoch=True,
                                 prog_bar=False,
+                                sync_dist=True,
                             )
                     tracker.reset()
 
@@ -920,6 +932,7 @@ class SMTTrainer(L.LightningModule):
                 overall_ser,
                 on_epoch=True,
                 prog_bar=True,
+                sync_dist=True,
             )
         if self._val_set_names:
             self.log(
@@ -927,12 +940,14 @@ class SMTTrainer(L.LightningModule):
                 float(active_set_count),
                 on_epoch=True,
                 prog_bar=False,
+                sync_dist=True,
             )
             self.log(
                 self._validation_aggregate_metric_name("is_full_pass"),
                 1.0 if active_set_count == len(base_set_names) else 0.0,
                 on_epoch=True,
                 prog_bar=False,
+                sync_dist=True,
             )
         if runaway_set_metrics:
             total_runaway_samples = sum(
@@ -952,6 +967,7 @@ class SMTTrainer(L.LightningModule):
                     total_runaway_rate,
                     on_epoch=True,
                     prog_bar=False,
+                    sync_dist=True,
                 )
                 for key in runaway_rate_keys[1:]:
                     weighted_value = (
@@ -966,12 +982,14 @@ class SMTTrainer(L.LightningModule):
                         weighted_value,
                         on_epoch=True,
                         prog_bar=False,
+                        sync_dist=True,
                     )
                 self.log(
                     self._validation_aggregate_metric_name("runaway_samples"),
                     float(total_runaway_samples),
                     on_epoch=True,
                     prog_bar=False,
+                    sync_dist=True,
                 )
 
         # Compute and log OMR-NED metrics (if enabled)
@@ -982,12 +1000,14 @@ class SMTTrainer(L.LightningModule):
                 omr_ned_metrics.overall_score,
                 on_epoch=True,
                 prog_bar=True,
+                sync_dist=True,
             )
             self.log(
                 self._validation_aggregate_metric_name("OMR_NED_failures"),
                 float(omr_ned_metrics.overall_failures),
                 on_epoch=True,
                 prog_bar=False,
+                sync_dist=True,
             )
             for source, score in omr_ned_metrics.by_source_score.items():
                 self.log(
@@ -995,12 +1015,14 @@ class SMTTrainer(L.LightningModule):
                     score,
                     on_epoch=True,
                     prog_bar=False,
+                    sync_dist=True,
                 )
                 self.log(
                     self._validation_set_metric_name(source, "OMR_NED_failures"),
                     float(omr_ned_metrics.by_source_failures.get(source, 0)),
                     on_epoch=True,
                     prog_bar=False,
+                    sync_dist=True,
                 )
             self._omr_ned_tracker.reset()
 
@@ -1044,10 +1066,17 @@ class SMTTrainer(L.LightningModule):
                 value,
                 on_epoch=True,
                 prog_bar=(normalized_name == "SER"),
+                sync_dist=True,
             )
         test_runaway_tracker = getattr(self, "_test_runaway_tracker", None)
         if test_runaway_tracker is not None:
             computed = test_runaway_tracker.compute()
             for metric_name, value in computed.items():
-                self.log(build_test_metric_key(metric_name), float(value), on_epoch=True, prog_bar=False)
+                self.log(
+                    build_test_metric_key(metric_name),
+                    float(value),
+                    on_epoch=True,
+                    prog_bar=False,
+                    sync_dist=True,
+                )
             test_runaway_tracker.reset()
