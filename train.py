@@ -513,24 +513,24 @@ def main(
     )
     wandb_logger = setup_logger(config, config_dict)
 
-    # Store run artifact as summary metadata (avoid metric-history clutter).
-    # Fallback to regular logging for test doubles that do not expose `.summary`.
     # Under DDP, WandbLogger.experiment on non-zero ranks returns a DummyExperiment
-    # whose `summary` attribute is a no-op method (neither None nor dict-like), so
-    # we test for `__setitem__` rather than `is not None`.
-    run_artifact_payload = artifact.to_json()
-    experiment = wandb_logger.experiment
-    summary = getattr(experiment, "summary", None)
-    if hasattr(summary, "__setitem__"):
-        summary["run_artifact"] = run_artifact_payload
-        console.print("[cyan]Run artifact saved to W&B summary")
-    else:
-        experiment.log({"run_artifact": run_artifact_payload})
-        console.print("[cyan]Run artifact logged to W&B")
+    # whose attribute access returns no-op functions: `summary` is not dict-like,
+    # `config.update(...)` raises AttributeError because `config` is a function.
+    # Gate every pre-Trainer W&B mutation and local file write on rank zero.
+    is_rank_zero = int(os.environ.get("RANK", "0")) == 0
 
-    # Save local backup of config and artifact for reproducibility.
-    # Gate on rank 0 to avoid every DDP rank racing on the same files.
-    if int(os.environ.get("RANK", "0")) == 0:
+    run_artifact_payload = artifact.to_json()
+    if is_rank_zero:
+        experiment = wandb_logger.experiment
+        summary = getattr(experiment, "summary", None)
+        if hasattr(summary, "__setitem__"):
+            summary["run_artifact"] = run_artifact_payload
+            console.print("[cyan]Run artifact saved to W&B summary")
+        else:
+            # Test-double path: no real summary; log via metric-history instead.
+            experiment.log({"run_artifact": run_artifact_payload})
+            console.print("[cyan]Run artifact logged to W&B")
+
         run_dir = Path(config.checkpoint.dirpath)
         run_dir.mkdir(parents=True, exist_ok=True)
         (run_dir / "config_resolved.json").write_text(json.dumps(config_dict, indent=2))
@@ -570,20 +570,21 @@ def main(
     if resolved_checkpoint_path is not None:
         run_metadata["resume/checkpoint_path"] = resolved_checkpoint_path
 
-    wandb_logger.experiment.config.update(
-        {
-            "scale/num_params": num_params,
-            "scale/num_trainable_params": num_trainable,
-            "scale/train_samples": train_sample_count,
-            "scale/val_samples": total_val_samples,
-            "scale/total_steps": total_steps,
-            "scale/effective_batch_size": config.training.batch_size
-            * (config.training.accumulate_grad_batches or 1),
-            **slurm_config,
-            **run_metadata,
-        },
-        allow_val_change=True,
-    )
+    if is_rank_zero:
+        wandb_logger.experiment.config.update(
+            {
+                "scale/num_params": num_params,
+                "scale/num_trainable_params": num_trainable,
+                "scale/train_samples": train_sample_count,
+                "scale/val_samples": total_val_samples,
+                "scale/total_steps": total_steps,
+                "scale/effective_batch_size": config.training.batch_size
+                * (config.training.accumulate_grad_batches or 1),
+                **slurm_config,
+                **run_metadata,
+            },
+            allow_val_change=True,
+        )
     console.print(f"[cyan]Model: {num_trainable:,} trainable params ({num_params:,} total)")
 
     num_train_batches = None
