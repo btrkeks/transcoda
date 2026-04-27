@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from scripts.dataset_generation.dataset_generation.source_stats import compute_kern_source_stats
@@ -37,6 +37,9 @@ class SourceIndex:
     entry_idx_by_path: dict[Path, int]
     entry_indices_by_initial_spine_count: dict[int, tuple[int, ...]]
     invalid_sources: tuple[InvalidSourceDiagnostic, ...] = ()
+    compatible_entry_ids_by_measure_count_cache: dict[int, dict[int, tuple[int, ...]]] = field(
+        default_factory=dict
+    )
 
 
 def build_source_index(*input_dirs: str | Path) -> SourceIndex:

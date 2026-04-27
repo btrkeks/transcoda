@@ -10,9 +10,15 @@ from scripts.dataset_generation.dataset_generation.composer import (
     plan_sample,
     plan_sample_structure,
 )
-from scripts.dataset_generation.dataset_generation.recipe import CompositionPolicy, ProductionRecipe
+from scripts.dataset_generation.dataset_generation.recipe import (
+    CompositionPolicy,
+    ProductionRecipe,
+)
 from scripts.dataset_generation.dataset_generation.renderer import count_systems_in_svg
-from scripts.dataset_generation.dataset_generation.source_index import SourceIndex, build_source_index
+from scripts.dataset_generation.dataset_generation.source_index import (
+    SourceIndex,
+    build_source_index,
+)
 from scripts.dataset_generation.dataset_generation.types_domain import SourceEntry
 from src.core.kern_concatenation import (
     diagnose_spine_topology,
@@ -386,6 +392,78 @@ def test_choose_entries_uses_restored_terminal_spine_count_for_compatibility(tmp
         "anchor",
         "compatible",
     )
+
+
+def test_choose_entries_selects_uniformly_from_available_anchor_entries(tmp_path: Path):
+    entries: list[SourceEntry] = []
+    for idx in range(3):
+        path = tmp_path / f"snippet_{idx}.krn"
+        text = "*clefG2\n=1\n4c\n*-\n"
+        path.write_text(text, encoding="utf-8")
+        entries.append(_make_source_entry(path, f"snippet_{idx}", text, entry_idx=idx))
+    source_index = _make_source_index_for_entries(entries)
+
+    chosen = _choose_entries(
+        source_index,
+        ProductionRecipe(
+            composition=CompositionPolicy(
+                segment_count_weights=((1, 1.0),),
+                min_total_measures=1,
+                max_total_measures=8,
+                max_selection_attempts=2,
+            )
+        ),
+        _FixedRng([0]),
+        excluded_entry_ids={0, 1},
+    )
+
+    assert chosen == (2,)
+
+
+def test_choose_entries_raises_when_all_anchor_entries_are_excluded(tmp_path: Path):
+    path = tmp_path / "snippet.krn"
+    text = "*clefG2\n=1\n4c\n*-\n"
+    path.write_text(text, encoding="utf-8")
+    source_index = _make_source_index_for_entries(
+        [_make_source_entry(path, "snippet", text, entry_idx=0)]
+    )
+
+    with pytest.raises(ValueError, match="Cannot compose from an empty source index"):
+        _choose_entries(
+            source_index,
+            ProductionRecipe(),
+            _FixedRng([0]),
+            excluded_entry_ids={0},
+        )
+
+
+def test_measure_compatibility_cache_is_scoped_to_source_index(tmp_path: Path):
+    first_root = tmp_path / "first"
+    second_root = tmp_path / "second"
+    first_root.mkdir()
+    second_root.mkdir()
+    (first_root / "one.krn").write_text("*clefG2\n=1\n4c\n*-\n", encoding="utf-8")
+    (second_root / "two.krn").write_text(
+        "*clefG2\n=1\n4c\n=2\n4d\n*-\n",
+        encoding="utf-8",
+    )
+    first_index = build_source_index(first_root)
+    second_index = build_source_index(second_root)
+
+    first = composer_module._compatible_entry_ids_by_measure_count(
+        source_index=first_index,
+        initial_spine_count=1,
+    )
+    second = composer_module._compatible_entry_ids_by_measure_count(
+        source_index=second_index,
+        initial_spine_count=1,
+    )
+
+    assert not hasattr(composer_module, "_MEASURE_INDEX_CACHE")
+    assert first == {1: (0,)}
+    assert second == {2: (0,)}
+    assert first_index.compatible_entry_ids_by_measure_count_cache == {1: {1: (0,)}}
+    assert second_index.compatible_entry_ids_by_measure_count_cache == {1: {2: (0,)}}
 
 
 def test_choose_entries_stops_when_no_boundary_compatible_followup_exists(

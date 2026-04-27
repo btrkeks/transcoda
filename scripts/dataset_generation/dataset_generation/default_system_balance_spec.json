@@ -190,7 +190,7 @@
     "/home/daniel/.local/share/src/Transcoda/data/interim/train/openscore-stringquartets/3_normalized"
   ],
   "mode": "spine_aware_line_proxy",
-  "recipe_fingerprint": "f64c8e3c755b015287c6962aa75cf9941e11bf5ef0abeea15aa0ba170ec0889c",
+  "recipe_fingerprint": "6fd91f37e121db8bf31c912545fc6459911ad32569f768301292ce05270536b2",
   "recipe_version": "dataset_generation_v1",
   "recommended_line_count_ranges": {
     "1": {

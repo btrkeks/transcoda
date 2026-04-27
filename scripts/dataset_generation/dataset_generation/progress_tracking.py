@@ -53,6 +53,7 @@ def build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object]
             "target_failure_reason_counts": defaultdict(Counter),
             "candidate_hit_counts": Counter(),
             "retry_counts": Counter(),
+            "accepted_source_usage": Counter(),
             "quarantined_sources": set(),
             "quarantined_entry_ids": set(),
             "augmentation_outcome_counts": Counter(),
@@ -151,6 +152,9 @@ def build_runtime_counters(snapshot: ResumeSnapshot | None) -> dict[str, object]
         ),
         "candidate_hit_counts": Counter(snapshot.candidate_hit_counts),
         "retry_counts": Counter(snapshot.retry_counts),
+        "accepted_source_usage": Counter(
+            {int(entry_idx): int(count) for entry_idx, count in snapshot.accepted_source_usage.items()}
+        ),
         "quarantined_sources": {Path(path).expanduser().resolve() for path in snapshot.quarantined_sources},
         "quarantined_entry_ids": set(),
         "augmentation_outcome_counts": Counter(snapshot.augmentation_outcome_counts),
@@ -234,6 +238,10 @@ def snapshot_from_counters(counters: dict[str, object]) -> RuntimeSnapshot:
         },
         candidate_hit_counts=dict(counters["candidate_hit_counts"]),
         retry_counts=dict(counters["retry_counts"]),
+        accepted_source_usage={
+            str(entry_idx): int(count)
+            for entry_idx, count in dict(counters["accepted_source_usage"]).items()
+        },
         quarantined_sources=tuple(
             sorted(str(path) for path in counters["quarantined_sources"])  # type: ignore[arg-type]
         ),

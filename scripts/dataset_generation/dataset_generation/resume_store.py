@@ -60,6 +60,7 @@ class RuntimeSnapshot:
     target_failure_reason_counts: dict[str, dict[str, int]]
     candidate_hit_counts: dict[str, int]
     retry_counts: dict[str, int]
+    accepted_source_usage: dict[str, int]
     quarantined_sources: tuple[str, ...]
     augmentation_outcome_counts: dict[str, int]
     augmentation_band_counts: dict[str, int]
@@ -232,6 +233,7 @@ class ResumableShardStore:
             )
             self._set_meta(conn, "candidate_hit_counts", snapshot.candidate_hit_counts)
             self._set_meta(conn, "retry_counts", snapshot.retry_counts)
+            self._set_meta(conn, "accepted_source_usage", snapshot.accepted_source_usage)
             self._set_meta(conn, "quarantined_sources", list(snapshot.quarantined_sources))
             self._set_meta(conn, "augmentation_outcome_counts", snapshot.augmentation_outcome_counts)
             self._set_meta(conn, "augmentation_band_counts", snapshot.augmentation_band_counts)
@@ -319,6 +321,7 @@ class ResumableShardStore:
                 ),
                 candidate_hit_counts=dict(self._get_meta(conn, "candidate_hit_counts", {})),
                 retry_counts=dict(self._get_meta(conn, "retry_counts", {})),
+                accepted_source_usage=dict(self._get_meta(conn, "accepted_source_usage", {})),
                 quarantined_sources=tuple(self._get_meta(conn, "quarantined_sources", [])),
                 augmentation_outcome_counts=dict(
                     self._get_meta(conn, "augmentation_outcome_counts", {})
@@ -474,6 +477,7 @@ class ResumableShardStore:
             self._set_meta(conn, "target_failure_reason_counts", {})
             self._set_meta(conn, "candidate_hit_counts", {})
             self._set_meta(conn, "retry_counts", {})
+            self._set_meta(conn, "accepted_source_usage", {})
             self._set_meta(conn, "quarantined_sources", [])
             self._set_meta(conn, "augmentation_outcome_counts", {})
             self._set_meta(conn, "augmentation_band_counts", {})
@@ -542,6 +546,7 @@ class ResumableShardStore:
                 ),
                 candidate_hit_counts=dict(self._get_meta(conn, "candidate_hit_counts", {})),
                 retry_counts=dict(self._get_meta(conn, "retry_counts", {})),
+                accepted_source_usage=dict(self._get_meta(conn, "accepted_source_usage", {})),
                 quarantined_sources=tuple(self._get_meta(conn, "quarantined_sources", [])),
                 augmentation_outcome_counts=dict(
                     self._get_meta(conn, "augmentation_outcome_counts", {})

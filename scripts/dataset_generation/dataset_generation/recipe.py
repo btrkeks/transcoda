@@ -15,6 +15,7 @@ class CompositionPolicy:
     min_total_measures: int = 10
     max_total_measures: int = 32
     max_selection_attempts: int = 48
+    max_per_source_uses: int = 9
 
 
 @dataclass(frozen=True)

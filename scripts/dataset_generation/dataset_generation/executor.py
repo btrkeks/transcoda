@@ -301,6 +301,7 @@ def run_dataset_generation(
                     sample_idx=next_to_schedule,
                     base_seed=base_seed,
                     quarantined_entry_ids=counters["quarantined_entry_ids"],  # type: ignore[arg-type]
+                    accepted_source_usage=counters["accepted_source_usage"],  # type: ignore[arg-type]
                     system_balance_runtime=balance_runtime,
                     accepted_system_histogram=counters["accepted_system_histogram"],  # type: ignore[arg-type]
                 )
@@ -337,6 +338,7 @@ def run_dataset_generation(
                     recipe=active_recipe,
                     target_samples=target_samples,
                     run_context=run_context,
+                    source_index=source_index,
                 )
                 last_progress_at_ref = [last_progress_at]
                 maybe_flush_and_report(
@@ -382,6 +384,7 @@ def run_dataset_generation(
                             sample_idx=next_to_schedule,
                             base_seed=base_seed,
                             quarantined_entry_ids=counters["quarantined_entry_ids"],  # type: ignore[arg-type]
+                            accepted_source_usage=counters["accepted_source_usage"],  # type: ignore[arg-type]
                             system_balance_runtime=balance_runtime,
                             accepted_system_histogram=counters["accepted_system_histogram"],  # type: ignore[arg-type]
                         )
@@ -602,6 +605,7 @@ def run_dataset_generation(
                         recipe=active_recipe,
                         target_samples=target_samples,
                         run_context=run_context,
+                        source_index=source_index,
                     )
 
                     last_progress_at_ref = [last_progress_at]
@@ -751,9 +755,17 @@ def _plan_with_quarantine(
     sample_idx: int,
     base_seed: int,
     quarantined_entry_ids: set[int],
+    accepted_source_usage: Counter,
     system_balance_runtime: SystemBalanceRuntime,
     accepted_system_histogram: Counter,
 ) -> PlannedTask:
+    hard_cap = int(recipe.composition.max_per_source_uses)
+    saturated_entry_ids = {
+        int(entry_idx)
+        for entry_idx, count in accepted_source_usage.items()
+        if hard_cap > 0 and int(count) >= hard_cap
+    }
+    effective_excluded_entry_ids = set(quarantined_entry_ids) | saturated_entry_ids
     try:
         if system_balance_runtime.mode != "spine_aware_line_proxy":
             raise RuntimeError(
@@ -765,7 +777,7 @@ def _plan_with_quarantine(
             recipe=recipe,
             sample_idx=sample_idx,
             base_seed=base_seed,
-            excluded_entry_ids=quarantined_entry_ids,
+            excluded_entry_ids=effective_excluded_entry_ids,
             spec=system_balance_runtime.spec,  # type: ignore[arg-type]
             accepted_system_histogram=accepted_system_histogram,
             candidate_plan_count=system_balance_runtime.candidate_plan_count,
@@ -780,9 +792,11 @@ def _plan_with_quarantine(
     except ValueError as exc:
         if not _has_schedulable_entries(
             source_index=source_index,
-            quarantined_entry_ids=quarantined_entry_ids,
+            quarantined_entry_ids=effective_excluded_entry_ids,
         ):
-            raise RuntimeError("No schedulable sources remain after applying quarantine") from exc
+            raise RuntimeError(
+                "No schedulable sources remain after applying quarantine and source-use caps"
+            ) from exc
         raise RuntimeError(
             f"Failed to build a valid balanced plan after exhausting candidate plans: {exc}"
         ) from exc
@@ -1012,6 +1026,7 @@ def _commit_ready_results(
     recipe: ProductionRecipe,
     target_samples: int,
     run_context: RunContext,
+    source_index,
 ) -> list[dict[str, object]]:
     for sample_idx in sorted(pending_terminal):
         outcome = pending_terminal.pop(sample_idx)
@@ -1064,6 +1079,12 @@ def _commit_ready_results(
             if committed_to_dataset:
                 pending_rows.append(outcome_to_dataset_row(outcome, recipe=recipe))
                 counters["accepted_samples"] = int(counters["accepted_samples"]) + 1
+                accepted_source_usage: Counter = counters["accepted_source_usage"]  # type: ignore[assignment]
+                if task is not None:
+                    for segment in task.plan.segments:
+                        entry_idx = source_index.entry_idx_by_path.get(segment.path.resolve())
+                        if entry_idx is not None:
+                            accepted_source_usage[int(entry_idx)] += 1
                 accepted_spine_class = spine_class_for_count(
                     outcome.sample.initial_kern_spine_count
                 )

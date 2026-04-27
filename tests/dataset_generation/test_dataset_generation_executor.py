@@ -1,7 +1,7 @@
 import json
 from collections import Counter, defaultdict
 from concurrent.futures import TimeoutError
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 
 import numpy as np
@@ -14,6 +14,7 @@ import scripts.dataset_generation.dataset_generation.progress_tracking as progre
 from scripts.dataset_generation.dataset_generation.executor import run_dataset_generation
 from scripts.dataset_generation.dataset_generation.io import encode_jpeg_image
 from scripts.dataset_generation.dataset_generation.recipe import (
+    CompositionPolicy,
     ProductionRecipe,
     RenderOnlyAugmentationPolicy,
 )
@@ -432,6 +433,7 @@ def test_plan_with_quarantine_preserves_planning_exhausted_error(tmp_path, monke
             sample_idx=0,
             base_seed=0,
             quarantined_entry_ids=set(),
+            accepted_source_usage=Counter(),
             system_balance_runtime=executor_module.SystemBalanceRuntime(
                 mode="spine_aware_line_proxy",
                 spec=object(),
@@ -462,6 +464,103 @@ def test_plan_with_quarantine_keeps_no_schedulable_message_for_true_empty_case(
             sample_idx=0,
             base_seed=0,
             quarantined_entry_ids=quarantined,
+            accepted_source_usage=Counter(),
+            system_balance_runtime=executor_module.SystemBalanceRuntime(
+                mode="spine_aware_line_proxy",
+                spec=object(),
+            ),
+            accepted_system_histogram=defaultdict(Counter),
+        )
+
+
+def test_runtime_snapshot_round_trips_accepted_source_usage():
+    counters = progress_tracking_module.build_runtime_counters(None)
+    assert counters["accepted_source_usage"] == Counter()
+
+    usage: Counter = counters["accepted_source_usage"]  # type: ignore[assignment]
+    usage[3] = 2
+    usage[11] = 5
+
+    snapshot = progress_tracking_module.snapshot_from_counters(counters)
+    assert snapshot.accepted_source_usage == {"3": 2, "11": 5}
+
+    restored_snapshot = replace(snapshot, accepted_source_usage={"7": 4})
+    restored = progress_tracking_module.build_runtime_counters(restored_snapshot)
+    assert restored["accepted_source_usage"] == Counter({7: 4})
+
+
+def test_plan_with_quarantine_excludes_saturated_sources(tmp_path, monkeypatch):
+    input_dir = _make_simple_input_dir(tmp_path, ("one", "two", "three"))
+    source_index = executor_module.build_source_index(input_dir)
+    seen_excluded: list[set[int]] = []
+    fake_plan_sample = _make_fake_plan_sample({0: [2]})
+
+    def fake_choose_balanced_plan(**kwargs):
+        seen_excluded.append(set(kwargs["excluded_entry_ids"]))
+        plan = fake_plan_sample(
+            kwargs["source_index"],
+            kwargs["recipe"],
+            sample_idx=kwargs["sample_idx"],
+            base_seed=kwargs["base_seed"],
+            excluded_entry_ids=kwargs["excluded_entry_ids"],
+        )
+        return CandidatePlanScore(
+            candidate_idx=0,
+            plan=plan,
+            line_count=plan.source_non_empty_line_count,
+            source_max_initial_spine_count=plan.source_max_initial_spine_count,
+            spine_class="1",
+            target_bucket=1,
+            target_center_line_count=1.0,
+            in_target_range=True,
+            distance_to_bucket=0.0,
+            vertical_fit_penalty=0.0,
+        )
+
+    monkeypatch.setattr(executor_module, "choose_balanced_plan", fake_choose_balanced_plan)
+
+    task = executor_module._plan_with_quarantine(
+        source_index=source_index,
+        recipe=ProductionRecipe(
+            composition=CompositionPolicy(max_per_source_uses=9),
+        ),
+        sample_idx=0,
+        base_seed=0,
+        quarantined_entry_ids={0},
+        accepted_source_usage=Counter({1: 9}),
+        system_balance_runtime=executor_module.SystemBalanceRuntime(
+            mode="spine_aware_line_proxy",
+            spec=object(),
+        ),
+        accepted_system_histogram=defaultdict(Counter),
+    )
+
+    assert seen_excluded == [{0, 1}]
+    assert [segment.source_id for segment in task.plan.segments] == ["input/two"]
+
+
+def test_plan_with_quarantine_reports_empty_when_all_sources_saturated(tmp_path, monkeypatch):
+    input_dir = _make_simple_input_dir(tmp_path, ("one", "two"))
+    source_index = executor_module.build_source_index(input_dir)
+
+    monkeypatch.setattr(
+        executor_module,
+        "choose_balanced_plan",
+        lambda **kwargs: (_ for _ in ()).throw(
+            ValueError("All candidate plans were invalid or exhausted: Cannot compose from an empty source index")
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="No schedulable sources remain"):
+        executor_module._plan_with_quarantine(
+            source_index=source_index,
+            recipe=ProductionRecipe(
+                composition=CompositionPolicy(max_per_source_uses=9),
+            ),
+            sample_idx=0,
+            base_seed=0,
+            quarantined_entry_ids=set(),
+            accepted_source_usage=Counter({0: 9, 1: 9}),
             system_balance_runtime=executor_module.SystemBalanceRuntime(
                 mode="spine_aware_line_proxy",
                 spec=object(),
@@ -654,6 +753,31 @@ def test_executor_commits_completed_samples_out_of_order(tmp_path, monkeypatch):
     assert ds[0]["sample_id"] == "sample_00000001"
     assert info["snapshot"]["next_sample_idx"] == 2
     assert info["snapshot"]["failure_reason_counts"]["discarded_after_target"] == 1
+    assert info["snapshot"]["accepted_source_usage"] == {"1": 1}
+
+
+def test_executor_counts_accepted_source_usage_per_committed_segment(tmp_path, monkeypatch):
+    input_dir = _make_simple_input_dir(tmp_path, ("a", "b"))
+    output_dir = tmp_path / "output"
+    _install_fake_pool(
+        monkeypatch,
+        outcomes_by_sample_idx={0: [_make_worker_success]},
+    )
+    _install_fake_balanced_planner(monkeypatch, {0: [0, 1]})
+
+    summary = run_dataset_generation(
+        input_dirs=(input_dir,),
+        output_dir=output_dir,
+        target_samples=1,
+        num_workers=2,
+        max_attempts=1,
+        quiet=True,
+    )
+
+    info = _read_json(summary.run_artifacts_dir / "info.json")
+
+    assert summary.accepted_samples == 1
+    assert info["snapshot"]["accepted_source_usage"] == {"0": 1, "1": 1}
 
 
 def test_executor_writes_failure_events_jsonl_for_rejected_outcomes(tmp_path, monkeypatch):
@@ -690,6 +814,7 @@ def test_executor_writes_failure_events_jsonl_for_rejected_outcomes(tmp_path, mo
     assert events[0]["target_bucket"] == 1
     assert events[0]["planned_line_count"] == 4
     assert events[0]["candidate_in_target_range"] is True
+    assert info["snapshot"]["accepted_source_usage"] == {"1": 1}
 
 
 def test_executor_failure_events_preserve_truncation_attempt_ledger(tmp_path, monkeypatch):

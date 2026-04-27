@@ -21,7 +21,6 @@ from src.core.kern_utils import is_spinemerge_line, is_spinesplit_line, is_termi
 _CLEF_RE = re.compile(r"^\*clef[A-Ga-gvX]v?\d?$")
 _KEYSIG_RE = re.compile(r"^\*k\[.*\]$")
 _METER_RE = re.compile(r"^\*M\d+/\d+$")
-_MEASURE_INDEX_CACHE: dict[tuple[int, int], dict[int, tuple[int, ...]]] = {}
 
 
 @dataclass(frozen=True)
@@ -235,14 +234,13 @@ def _pick_anchor_entry_idx(
     excluded_entry_ids: frozenset[int],
     rng: random.Random,
 ) -> int:
-    entry_count = len(source_index.entries)
-    for _ in range(min(32, max(1, entry_count))):
-        entry_idx = source_index.entries[rng.randrange(entry_count)].entry_idx
-        if entry_idx not in excluded_entry_ids:
-            return entry_idx
-    for entry in source_index.entries:
-        if entry.entry_idx not in excluded_entry_ids:
-            return entry.entry_idx
+    available_entry_ids = tuple(
+        entry.entry_idx
+        for entry in source_index.entries
+        if entry.entry_idx not in excluded_entry_ids
+    )
+    if available_entry_ids:
+        return available_entry_ids[rng.randrange(len(available_entry_ids))]
     raise ValueError("Cannot compose from an empty source index")
 
 
@@ -315,8 +313,8 @@ def _compatible_entry_ids_by_measure_count(
     source_index: SourceIndex,
     initial_spine_count: int,
 ) -> dict[int, tuple[int, ...]]:
-    cache_key = (id(source_index), int(initial_spine_count))
-    cached = _MEASURE_INDEX_CACHE.get(cache_key)
+    cache_key = int(initial_spine_count)
+    cached = source_index.compatible_entry_ids_by_measure_count_cache.get(cache_key)
     if cached is not None:
         return cached
 
@@ -331,7 +329,7 @@ def _compatible_entry_ids_by_measure_count(
         measure_count: tuple(entry_ids)
         for measure_count, entry_ids in sorted(grouped.items())
     }
-    _MEASURE_INDEX_CACHE[cache_key] = indexed
+    source_index.compatible_entry_ids_by_measure_count_cache[cache_key] = indexed
     return indexed
 
 
