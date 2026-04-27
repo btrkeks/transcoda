@@ -517,7 +517,11 @@ def main(
     # whose attribute access returns no-op functions: `summary` is not dict-like,
     # `config.update(...)` raises AttributeError because `config` is a function.
     # Gate every pre-Trainer W&B mutation and local file write on rank zero.
-    is_rank_zero = int(os.environ.get("RANK", "0")) == 0
+    # Lightning's subprocess launcher sets LOCAL_RANK (not RANK); torchrun sets
+    # both. Check LOCAL_RANK first so this works under both launchers.
+    is_rank_zero = (
+        int(os.environ.get("LOCAL_RANK", os.environ.get("RANK", "0"))) == 0
+    )
 
     run_artifact_payload = artifact.to_json()
     if is_rank_zero:
