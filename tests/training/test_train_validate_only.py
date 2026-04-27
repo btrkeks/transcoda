@@ -329,6 +329,46 @@ def test_validate_only_uses_checkpoint_max_seq_len_for_datamodule(
     assert _DummyModelWrapper.last_kwargs["maxlen"] == 3000
 
 
+def test_validate_only_uses_checkpoint_model_architecture(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    config_path = _write_min_config(tmp_path)
+    trainer = _DummyTrainer()
+    _patch_entrypoint(monkeypatch, trainer)
+    checkpoint_path = str(tmp_path / "best.ckpt")
+
+    monkeypatch.setattr(
+        train_entry,
+        "_load_checkpoint_experiment_config",
+        lambda _checkpoint_path: {
+            "model": {
+                "d_model": 768,
+                "dim_ff": 1536,
+                "num_hidden_layers": 6,
+                "num_attn_heads": 12,
+                "encoder_model_name_or_path": "facebook/convnextv2-base-22k-224",
+                "positional_encoding": "rope",
+                "max_seq_len": 3000,
+            }
+        },
+    )
+
+    train_entry.main(
+        config_path=str(config_path),
+        checkpoint_path=checkpoint_path,
+        validate_only=True,
+    )
+
+    assert _DummyModelWrapper.last_kwargs is not None
+    model_cfg = _DummyModelWrapper.last_kwargs["model_config"]
+    assert model_cfg.d_model == 768
+    assert model_cfg.dim_ff == 1536
+    assert model_cfg.num_hidden_layers == 6
+    assert model_cfg.num_attn_heads == 12
+    assert model_cfg.encoder_model_name_or_path == "facebook/convnextv2-base-22k-224"
+    assert model_cfg.positional_encoding == "rope"
+
+
 def test_validate_only_explicit_max_seq_len_override_wins_over_checkpoint(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
@@ -354,6 +394,38 @@ def test_validate_only_explicit_max_seq_len_override_wins_over_checkpoint(
     assert _DummyDataModule.last_init_kwargs["max_decoder_len"] == 4096
     assert _DummyModelWrapper.last_kwargs is not None
     assert _DummyModelWrapper.last_kwargs["maxlen"] == 4096
+
+
+def test_validate_only_explicit_model_override_wins_over_checkpoint(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    config_path = _write_min_config(tmp_path)
+    trainer = _DummyTrainer()
+    _patch_entrypoint(monkeypatch, trainer)
+    checkpoint_path = str(tmp_path / "best.ckpt")
+
+    monkeypatch.setattr(
+        train_entry,
+        "_load_checkpoint_experiment_config",
+        lambda _checkpoint_path: {
+            "model": {
+                "d_model": 768,
+                "encoder_model_name_or_path": "facebook/convnextv2-base-22k-224",
+            }
+        },
+    )
+
+    train_entry.main(
+        config_path=str(config_path),
+        checkpoint_path=checkpoint_path,
+        validate_only=True,
+        **{"model.encoder_model_name_or_path": "facebook/convnextv2-tiny-22k-224"},
+    )
+
+    assert _DummyModelWrapper.last_kwargs is not None
+    model_cfg = _DummyModelWrapper.last_kwargs["model_config"]
+    assert model_cfg.d_model == 768
+    assert model_cfg.encoder_model_name_or_path == "facebook/convnextv2-tiny-22k-224"
 
 
 def test_main_auto_resume_uses_last_ckpt(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):

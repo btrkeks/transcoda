@@ -45,9 +45,15 @@ from scripts.dataset_generation.dataset_generation.truncation import (
     TruncationProbeResult,
     classify_truncation_mode,
     find_best_truncation_candidate,
+    validate_truncation_candidate_contains_music,
     validate_truncation_candidate_terminal_state,
 )
-from scripts.dataset_generation.dataset_generation.types_domain import AttemptStageName, SamplePlan
+from scripts.dataset_generation.dataset_generation.types_domain import (
+    AttemptStageName,
+    PreferredFiveSixStatus,
+    SamplePlan,
+    TruncationMode,
+)
 from scripts.dataset_generation.dataset_generation.types_events import (
     AugmentationPreviewArtifacts,
     AugmentationTraceEvent,
@@ -70,6 +76,9 @@ _WORKER_RENDERER: VerovioRenderer | None = None
 _WORKER_CAPTURE_VEROVIO_DIAGNOSTICS = True
 _WORKER_STAGE_EVENTS_PATH: Path | None = None
 _RATIONAL_DURATION_PATTERN = re.compile(r"\d%-?\d")
+_MIN_ACCEPTED_CONTENT_HEIGHT_PX = 120
+_MIN_ACCEPTED_VERTICAL_FILL_RATIO = 0.08
+_LOW_CONTENT_RENDER_REASON = "low_content_render"
 
 
 def compute_initial_kern_spine_count(transcription: str) -> int:
@@ -201,6 +210,21 @@ def evaluate_sample_plan(
             <= recipe.truncation.preferred_max_systems
             else None
         )
+        low_content_failure = _build_low_content_failure_if_needed(
+            plan=plan,
+            render_result=full_render,
+            attempt_ledger=attempt_ledger,
+            truncation_attempted=False,
+            truncation_mode=truncation_mode,
+            full_render_system_count=full_render_system_count,
+            full_render_content_height_px=full_render_content_height_px,
+            full_render_vertical_fill_ratio=full_render_vertical_fill_ratio,
+            full_render_rejection_reason=full_render_rejection_reason,
+            accepted_render_system_count=full_render_system_count,
+            preferred_5_6_status=preferred_status,
+        )
+        if low_content_failure is not None:
+            return low_content_failure
         sample, aug_trace, aug_preview = _finalize_sample(
             plan=plan,
             render_result=full_render,
@@ -249,6 +273,25 @@ def evaluate_sample_plan(
         rescue_decision = rescue_attempt.decision
         if rescue_decision.action == "accept_without_truncation":
             preferred_5_6_rescue_succeeded = full_render_in_preferred_band
+            low_content_failure = _build_low_content_failure_if_needed(
+                plan=plan,
+                render_result=rescue_render,
+                attempt_ledger=attempt_ledger,
+                truncation_attempted=False,
+                truncation_mode=truncation_mode,
+                full_render_system_count=full_render_system_count,
+                full_render_content_height_px=full_render_content_height_px,
+                full_render_vertical_fill_ratio=full_render_vertical_fill_ratio,
+                full_render_rejection_reason=full_render_rejection_reason,
+                accepted_render_system_count=rescue_render.svg_diagnostics.system_count,
+                preferred_5_6_rescue_attempted=full_render_in_preferred_band,
+                preferred_5_6_rescue_succeeded=full_render_in_preferred_band,
+                preferred_5_6_status=(
+                    "preferred_5_6_rescued" if full_render_in_preferred_band else None
+                ),
+            )
+            if low_content_failure is not None:
+                return low_content_failure
             sample, aug_trace, aug_preview = _finalize_sample(
                 plan=plan,
                 render_result=rescue_render,
@@ -309,10 +352,12 @@ def evaluate_sample_plan(
                 transcription=search_result.selected_candidate.transcription,
                 truncation_ratio=search_result.selected_candidate.ratio,
                 truncation_attempted=truncation_attempted,
+                attempt_ledger=attempt_ledger,
                 full_render_system_count=full_render_system_count,
                 full_render_content_height_px=full_render_content_height_px,
                 full_render_vertical_fill_ratio=full_render_vertical_fill_ratio,
                 full_render_rejection_reason=full_render_rejection_reason,
+                truncation_mode=truncation_mode,
                 preferred_5_6_rescue_attempted=preferred_5_6_rescue_attempted,
                 preferred_5_6_rescue_succeeded=preferred_5_6_rescue_succeeded,
                 preferred_5_6_status=(
@@ -357,15 +402,35 @@ def _build_truncated_success(
     transcription: str,
     truncation_ratio: float,
     truncation_attempted: bool,
+    attempt_ledger: AttemptLedger,
     full_render_system_count: int | None,
     full_render_content_height_px: int | None,
     full_render_vertical_fill_ratio: float | None,
     full_render_rejection_reason: str | None,
+    truncation_mode: TruncationMode | None,
     preferred_5_6_rescue_attempted: bool,
     preferred_5_6_rescue_succeeded: bool,
     preferred_5_6_status: str | None,
     verovio_events: tuple[VerovioDiagnosticEvent, ...],
-) -> WorkerSuccess:
+) -> WorkerOutcome:
+    low_content_failure = _build_low_content_failure_if_needed(
+        plan=plan,
+        render_result=render_result,
+        attempt_ledger=attempt_ledger,
+        truncation_attempted=truncation_attempted,
+        truncation_mode=truncation_mode,
+        full_render_system_count=full_render_system_count,
+        full_render_content_height_px=full_render_content_height_px,
+        full_render_vertical_fill_ratio=full_render_vertical_fill_ratio,
+        full_render_rejection_reason=full_render_rejection_reason,
+        accepted_render_system_count=render_result.svg_diagnostics.system_count,
+        preferred_5_6_rescue_attempted=preferred_5_6_rescue_attempted,
+        preferred_5_6_rescue_succeeded=preferred_5_6_rescue_succeeded,
+        preferred_5_6_status=preferred_5_6_status,
+        verovio_events=verovio_events,
+    )
+    if low_content_failure is not None:
+        return low_content_failure
     sample, aug_trace, aug_preview = _finalize_sample(
         plan=plan,
         render_result=render_result,
@@ -467,6 +532,10 @@ def _probe_truncation_candidate(
     validation_reason = validate_truncation_candidate_terminal_state(
         candidate_render_transcription
     )
+    if validation_reason is None:
+        validation_reason = validate_truncation_candidate_contains_music(
+            candidate_render_transcription
+        )
     if validation_reason is not None:
         structural_attempt = _record_structural_rejection_attempt(
             sample_plan=sample_plan,
@@ -617,6 +686,59 @@ def _execute_layout_rescue_attempt(
         stage_events_path=stage_events_path,
         render_context=render_context,
     )
+
+
+def _build_low_content_failure_if_needed(
+    *,
+    plan: SamplePlan,
+    render_result: RenderResult,
+    attempt_ledger: AttemptLedger | None,
+    truncation_attempted: bool,
+    truncation_mode: TruncationMode | None,
+    full_render_system_count: int | None,
+    full_render_content_height_px: int | None,
+    full_render_vertical_fill_ratio: float | None,
+    full_render_rejection_reason: str | None,
+    accepted_render_system_count: int | None,
+    preferred_5_6_rescue_attempted: bool = False,
+    preferred_5_6_rescue_succeeded: bool = False,
+    preferred_5_6_status: PreferredFiveSixStatus | None = None,
+    verovio_events: tuple[VerovioDiagnosticEvent, ...] | None = None,
+) -> WorkerFailure | None:
+    if not _is_low_content_render(render_result):
+        return None
+    if verovio_events is None:
+        verovio_events = attempt_ledger.verovio_tuple() if attempt_ledger is not None else ()
+    failure_attempts = (
+        attempt_ledger.failure_tuple() if attempt_ledger is not None else ()
+    )
+    return WorkerFailure(
+        sample_id=plan.sample_id,
+        failure_reason=_LOW_CONTENT_RENDER_REASON,
+        truncation_attempted=truncation_attempted,
+        truncation_rescued=False,
+        truncation_mode=truncation_mode,
+        full_render_system_count=full_render_system_count,
+        full_render_content_height_px=full_render_content_height_px,
+        full_render_vertical_fill_ratio=full_render_vertical_fill_ratio,
+        full_render_rejection_reason=full_render_rejection_reason,
+        accepted_render_system_count=accepted_render_system_count,
+        preferred_5_6_rescue_attempted=preferred_5_6_rescue_attempted,
+        preferred_5_6_rescue_succeeded=preferred_5_6_rescue_succeeded,
+        preferred_5_6_status=preferred_5_6_status,
+        failure_attempts=failure_attempts,
+        verovio_diagnostics=verovio_events,
+    )
+
+
+def _is_low_content_render(render_result: RenderResult) -> bool:
+    content_height = render_result.content_height_px
+    if content_height is not None and content_height < _MIN_ACCEPTED_CONTENT_HEIGHT_PX:
+        return True
+    vertical_fill = render_result.vertical_fill_ratio
+    if vertical_fill is not None and vertical_fill < _MIN_ACCEPTED_VERTICAL_FILL_RATIO:
+        return True
+    return False
 
 
 def _finalize_sample(

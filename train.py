@@ -137,29 +137,39 @@ def _apply_validate_checkpoint_defaults(
     overrides: dict[str, Any],
 ) -> dict[str, Any]:
     """
-    For validate-only runs, prefer checkpoint-time limits unless explicitly overridden.
+    For validate-only runs, prefer checkpoint-time model settings unless overridden.
 
-    This keeps the validation datamodule aligned with the checkpoint's trained sequence
-    length even if the local repo config has since changed.
+    This keeps the validation model architecture aligned with the checkpoint even if
+    the local repo config has since changed.
     """
     checkpoint_config = _load_checkpoint_experiment_config(checkpoint_path)
     if checkpoint_config is None:
         return config_dict
 
     checkpoint_model_cfg = checkpoint_config.get("model", {})
-    checkpoint_max_seq_len = checkpoint_model_cfg.get("max_seq_len")
-    if checkpoint_max_seq_len is None or "model.max_seq_len" in overrides:
+    if not isinstance(checkpoint_model_cfg, dict):
         return config_dict
 
     config_dict.setdefault("model", {})
-    current_max_seq_len = config_dict["model"].get("max_seq_len")
-    if current_max_seq_len != checkpoint_max_seq_len:
+    applied: list[str] = []
+    model_fields = set(ModelConfig.model_fields)
+    for checkpoint_key, checkpoint_value in checkpoint_model_cfg.items():
+        config_key = checkpoint_key
+        if checkpoint_key == "num_dec_layers":
+            config_key = "num_hidden_layers"
+        if config_key not in model_fields or f"model.{config_key}" in overrides:
+            continue
+
+        current_value = config_dict["model"].get(config_key)
+        if current_value != checkpoint_value:
+            applied.append(config_key)
+        config_dict["model"][config_key] = checkpoint_value
+
+    if applied:
         console.print(
             "[yellow]validate_only=True: using checkpoint artifact "
-            f"model.max_seq_len={checkpoint_max_seq_len} "
-            f"(config has {current_max_seq_len})[/yellow]"
+            f"model config for {', '.join(sorted(applied))}[/yellow]"
         )
-    config_dict["model"]["max_seq_len"] = checkpoint_max_seq_len
     return config_dict
 
 

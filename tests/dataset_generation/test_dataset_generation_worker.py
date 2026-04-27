@@ -358,6 +358,140 @@ def test_truncation_exhausted_failure_keeps_full_attempt_diagnostics(monkeypatch
     assert outcome.preferred_5_6_status is None
 
 
+def test_non_musical_truncation_candidate_is_rejected_before_render(monkeypatch):
+    plan = _make_plan()
+    recipe = _make_recipe()
+    header_only = "*clefG2\n*k[f#]\n*M3/4\n"
+    musical = "*clefG2\n*k[f#]\n*M3/4\n4c\n"
+    _patch_truncation_search(
+        monkeypatch,
+        [
+            _make_candidate(
+                transcription=header_only,
+                chunk_count=1,
+                total_chunks=3,
+                ratio=1 / 3,
+            ),
+            _make_candidate(
+                transcription=musical,
+                chunk_count=2,
+                total_chunks=3,
+                ratio=2 / 3,
+            ),
+        ],
+    )
+    rendered_texts = []
+
+    def fake_render(render_text, recipe, *, seed, renderer):
+        rendered_texts.append(render_text)
+        if seed == plan.seed:
+            return _good_render(system_count=8)
+        return _good_render(system_count=4)
+
+    outcome = evaluate_sample_plan(
+        plan,
+        recipe=recipe,
+        renderer=object(),
+        render_fn=fake_render,
+        augment_fn=lambda plan, render_result, recipe: render_result.image,
+    )
+
+    assert isinstance(outcome, WorkerSuccess)
+    assert outcome.sample.label_transcription == musical
+    assert not any(rendered.strip().endswith("*M3/4") for rendered in rendered_texts)
+
+
+def test_all_non_musical_truncation_candidates_exhaust_truncation(monkeypatch):
+    plan = _make_plan()
+    recipe = _make_recipe()
+    _patch_truncation_search(
+        monkeypatch,
+        [
+            _make_candidate(
+                transcription="*clefG2\n*k[f#]\n*M3/4\n",
+                chunk_count=1,
+                total_chunks=2,
+                ratio=0.5,
+            )
+        ],
+    )
+
+    outcome = evaluate_sample_plan(
+        plan,
+        recipe=recipe,
+        renderer=object(),
+        render_fn=lambda render_text, recipe, *, seed, renderer: _good_render(system_count=8),
+        augment_fn=lambda plan, render_result, recipe: render_result.image,
+    )
+
+    assert isinstance(outcome, WorkerFailure)
+    assert outcome.failure_reason == "truncation_exhausted"
+    assert outcome.failure_attempts[-1].render_rejection_reason == (
+        "non_musical_truncation_candidate"
+    )
+
+
+def test_full_render_with_tiny_content_is_rejected_before_augmentation():
+    plan = _make_plan()
+    recipe = _make_recipe()
+    augment_calls = []
+
+    outcome = evaluate_sample_plan(
+        plan,
+        recipe=recipe,
+        renderer=object(),
+        render_fn=lambda render_text, recipe, *, seed, renderer: replace(
+            _good_render(system_count=4),
+            content_height_px=67,
+            vertical_fill_ratio=0.72,
+        ),
+        augment_fn=lambda plan, render_result, recipe: augment_calls.append(plan.sample_id)
+        or render_result.image,
+    )
+
+    assert isinstance(outcome, WorkerFailure)
+    assert outcome.failure_reason == "low_content_render"
+    assert augment_calls == []
+
+
+def test_truncated_render_with_low_vertical_fill_is_rejected(monkeypatch):
+    plan = _make_plan()
+    recipe = _make_recipe()
+    _patch_truncation_search(
+        monkeypatch,
+        [
+            _make_candidate(
+                transcription="**kern\n=1\n4c\n*-\n",
+                chunk_count=1,
+                total_chunks=2,
+                ratio=0.5,
+            )
+        ],
+    )
+
+    def fake_render(render_text, recipe, *, seed, renderer):
+        if seed == plan.seed:
+            return _good_render(system_count=8)
+        return replace(
+            _good_render(system_count=4),
+            content_height_px=500,
+            vertical_fill_ratio=0.04,
+        )
+
+    outcome = evaluate_sample_plan(
+        plan,
+        recipe=recipe,
+        renderer=object(),
+        render_fn=fake_render,
+        augment_fn=lambda plan, render_result, recipe: render_result.image,
+    )
+
+    assert isinstance(outcome, WorkerFailure)
+    assert outcome.failure_reason == "low_content_render"
+    assert outcome.truncation_attempted is True
+    assert outcome.accepted_render_system_count == 4
+
+
 def test_rescued_5_6_render_is_accepted_as_full_not_truncated():
     plan = _make_plan()
     recipe = _make_recipe()

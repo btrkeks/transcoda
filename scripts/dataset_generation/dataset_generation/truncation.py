@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -19,6 +20,8 @@ from src.core.kern_utils import (
     is_terminator_line,
     split_into_same_spine_nr_chunks_and_measures,
 )
+
+_DURATION_BEARING_NOTE_OR_REST_RE = re.compile(r"\d+(?:%\d+)?\.*[A-GRra-gr]")
 
 
 @dataclass(frozen=True)
@@ -218,6 +221,28 @@ def validate_truncation_candidate_terminal_state(text: str) -> str | None:
     if is_spinesplit_line(lines[-1]) or is_spinemerge_line(lines[-1]):
         return "invalid_terminal_spine_state"
     return None
+
+
+def validate_truncation_candidate_contains_music(text: str) -> str | None:
+    """Return a rejection reason when a candidate has no duration-bearing data."""
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if (
+            not line
+            or line.startswith("!")
+            or line.startswith("*")
+            or is_bar_line(line)
+            or is_spinesplit_line(line)
+            or is_spinemerge_line(line)
+        ):
+            continue
+        for field in raw_line.split("\t"):
+            for token in field.split():
+                if token == "." or token.startswith("*") or token.startswith("!"):
+                    continue
+                if _DURATION_BEARING_NOTE_OR_REST_RE.search(token):
+                    return None
+    return "non_musical_truncation_candidate"
 
 
 def find_best_truncation_candidate(
