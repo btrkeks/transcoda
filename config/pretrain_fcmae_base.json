@@ -12,14 +12,14 @@
     "mask_ratio": 0.6,
     "decoder_dim": 512,
     "decoder_depth": 2,
-    "norm_pix_loss": false,
-    "ink_bias_strength": 0.3
+    "norm_pix_loss": true,
+    "ink_bias_strength": 0.5
   },
   "training": {
     "batch_size": 4,
     "num_workers": 8,
     "max_steps": 30000,
-    "accumulate_grad_batches": 8,
+    "accumulate_grad_batches": 32,
     "base_learning_rate": 0.00064,
     "weight_decay": 0.05,
     "warmup_steps": 1000,
