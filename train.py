@@ -1,4 +1,5 @@
 import json
+import os
 import shlex
 import subprocess
 import sys
@@ -514,22 +515,27 @@ def main(
 
     # Store run artifact as summary metadata (avoid metric-history clutter).
     # Fallback to regular logging for test doubles that do not expose `.summary`.
+    # Under DDP, WandbLogger.experiment on non-zero ranks returns a DummyExperiment
+    # whose `summary` attribute is a no-op method (neither None nor dict-like), so
+    # we test for `__setitem__` rather than `is not None`.
     run_artifact_payload = artifact.to_json()
     experiment = wandb_logger.experiment
     summary = getattr(experiment, "summary", None)
-    if summary is not None:
+    if hasattr(summary, "__setitem__"):
         summary["run_artifact"] = run_artifact_payload
         console.print("[cyan]Run artifact saved to W&B summary")
     else:
         experiment.log({"run_artifact": run_artifact_payload})
         console.print("[cyan]Run artifact logged to W&B")
 
-    # Save local backup of config and artifact for reproducibility
-    run_dir = Path(config.checkpoint.dirpath)
-    run_dir.mkdir(parents=True, exist_ok=True)
-    (run_dir / "config_resolved.json").write_text(json.dumps(config_dict, indent=2))
-    (run_dir / "run_artifact.json").write_text(artifact.to_json())
-    console.print(f"[cyan]Local config/artifact saved to {run_dir}")
+    # Save local backup of config and artifact for reproducibility.
+    # Gate on rank 0 to avoid every DDP rank racing on the same files.
+    if int(os.environ.get("RANK", "0")) == 0:
+        run_dir = Path(config.checkpoint.dirpath)
+        run_dir.mkdir(parents=True, exist_ok=True)
+        (run_dir / "config_resolved.json").write_text(json.dumps(config_dict, indent=2))
+        (run_dir / "run_artifact.json").write_text(artifact.to_json())
+        console.print(f"[cyan]Local config/artifact saved to {run_dir}")
 
     # Log scale metrics for easy filtering/comparison in W&B
     num_params = sum(p.numel() for p in model_wrapper.parameters())
