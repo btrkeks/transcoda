@@ -131,16 +131,16 @@ def _load_checkpoint_experiment_config(checkpoint_path: str) -> dict[str, Any] |
     return experiment_config
 
 
-def _apply_validate_checkpoint_defaults(
+def _apply_checkpoint_model_defaults(
     config_dict: dict[str, Any],
     checkpoint_path: str,
     overrides: dict[str, Any],
 ) -> dict[str, Any]:
     """
-    For validate-only runs, prefer checkpoint-time model settings unless overridden.
+    Prefer checkpoint-time model settings unless explicitly overridden.
 
-    This keeps the validation model architecture aligned with the checkpoint even if
-    the local repo config has since changed.
+    This keeps the instantiated model architecture aligned with the checkpoint even
+    if the local repo config has since changed.
     """
     checkpoint_config = _load_checkpoint_experiment_config(checkpoint_path)
     if checkpoint_config is None:
@@ -167,7 +167,7 @@ def _apply_validate_checkpoint_defaults(
 
     if applied:
         console.print(
-            "[yellow]validate_only=True: using checkpoint artifact "
+            "[yellow]checkpoint resume: using checkpoint artifact "
             f"model config for {', '.join(sorted(applied))}[/yellow]"
         )
     return config_dict
@@ -309,9 +309,6 @@ def main(
     if validate_only and checkpoint_path is None:
         raise ValueError("checkpoint_path must be provided when validate_only=True")
 
-    if validate_only and checkpoint_path is not None:
-        config_dict = _apply_validate_checkpoint_defaults(config_dict, checkpoint_path, overrides)
-
     config = experiment_config_from_dict(config_dict)
     if not validate_only:
         _validate_final_validation_checkpoint_policy(config)
@@ -340,6 +337,14 @@ def main(
             console.print("[yellow]checkpoint.auto_resume=false: starting from scratch[/yellow]")
         else:
             console.print("[yellow]No last.ckpt found: starting from scratch[/yellow]")
+
+    if resolved_checkpoint_path is not None:
+        config_dict = _apply_checkpoint_model_defaults(
+            config_dict,
+            resolved_checkpoint_path,
+            overrides,
+        )
+        config = experiment_config_from_dict(config_dict)
 
     deterministic = False
     seed_everything(seed, deterministic=deterministic)

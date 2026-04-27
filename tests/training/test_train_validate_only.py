@@ -428,6 +428,84 @@ def test_validate_only_explicit_model_override_wins_over_checkpoint(
     assert model_cfg.encoder_model_name_or_path == "facebook/convnextv2-tiny-22k-224"
 
 
+def test_fit_explicit_checkpoint_uses_checkpoint_model_architecture(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    config_path = _write_min_config(tmp_path)
+    weights_dir = tmp_path / "weights"
+    weights_dir.mkdir(parents=True, exist_ok=True)
+    (weights_dir / "last.ckpt").write_bytes(b"placeholder")
+    trainer = _DummyTrainer()
+    _patch_entrypoint(monkeypatch, trainer)
+    checkpoint_path = str(tmp_path / "best.ckpt")
+
+    monkeypatch.setattr(
+        train_entry,
+        "_load_checkpoint_experiment_config",
+        lambda _checkpoint_path: {
+            "model": {
+                "d_model": 768,
+                "dim_ff": 1536,
+                "num_hidden_layers": 6,
+                "num_attn_heads": 12,
+                "encoder_model_name_or_path": "facebook/convnextv2-base-22k-224",
+                "positional_encoding": "rope",
+                "max_seq_len": 3000,
+            }
+        },
+    )
+
+    train_entry.main(config_path=str(config_path), checkpoint_path=checkpoint_path)
+
+    assert len(trainer.fit_calls) == 1
+    _, kwargs = trainer.fit_calls[0]
+    assert kwargs["ckpt_path"] == checkpoint_path
+    assert _DummyDataModule.last_init_kwargs is not None
+    assert _DummyDataModule.last_init_kwargs["max_decoder_len"] == 3000
+    assert _DummyModelWrapper.last_kwargs is not None
+    model_cfg = _DummyModelWrapper.last_kwargs["model_config"]
+    assert model_cfg.d_model == 768
+    assert model_cfg.dim_ff == 1536
+    assert model_cfg.num_hidden_layers == 6
+    assert model_cfg.num_attn_heads == 12
+    assert model_cfg.encoder_model_name_or_path == "facebook/convnextv2-base-22k-224"
+    assert model_cfg.positional_encoding == "rope"
+
+
+def test_fit_explicit_model_override_wins_over_checkpoint(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    config_path = _write_min_config(tmp_path)
+    weights_dir = tmp_path / "weights"
+    weights_dir.mkdir(parents=True, exist_ok=True)
+    (weights_dir / "last.ckpt").write_bytes(b"placeholder")
+    trainer = _DummyTrainer()
+    _patch_entrypoint(monkeypatch, trainer)
+    checkpoint_path = str(tmp_path / "best.ckpt")
+
+    monkeypatch.setattr(
+        train_entry,
+        "_load_checkpoint_experiment_config",
+        lambda _checkpoint_path: {
+            "model": {
+                "d_model": 768,
+                "encoder_model_name_or_path": "facebook/convnextv2-base-22k-224",
+            }
+        },
+    )
+
+    train_entry.main(
+        config_path=str(config_path),
+        checkpoint_path=checkpoint_path,
+        **{"model.encoder_model_name_or_path": "facebook/convnextv2-tiny-22k-224"},
+    )
+
+    assert _DummyModelWrapper.last_kwargs is not None
+    model_cfg = _DummyModelWrapper.last_kwargs["model_config"]
+    assert model_cfg.d_model == 768
+    assert model_cfg.encoder_model_name_or_path == "facebook/convnextv2-tiny-22k-224"
+
+
 def test_main_auto_resume_uses_last_ckpt(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     config_path = _write_min_config(tmp_path)
     cfg = json.loads(config_path.read_text())
@@ -440,6 +518,7 @@ def test_main_auto_resume_uses_last_ckpt(tmp_path: Path, monkeypatch: pytest.Mon
 
     trainer = _DummyTrainer()
     _patch_entrypoint(monkeypatch, trainer)
+    monkeypatch.setattr(train_entry, "_load_checkpoint_experiment_config", lambda _path: None)
 
     train_entry.main(config_path=str(config_path))
 
@@ -447,6 +526,44 @@ def test_main_auto_resume_uses_last_ckpt(tmp_path: Path, monkeypatch: pytest.Mon
     assert len(trainer.validate_calls) == 1
     _, kwargs = trainer.fit_calls[0]
     assert kwargs["ckpt_path"] == str(last_ckpt)
+
+
+def test_main_auto_resume_uses_checkpoint_model_architecture(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    config_path = _write_min_config(tmp_path)
+    cfg = json.loads(config_path.read_text())
+    cfg["checkpoint"]["auto_resume"] = True
+    config_path.write_text(json.dumps(cfg))
+    weights_dir = tmp_path / "weights"
+    weights_dir.mkdir(parents=True, exist_ok=True)
+    last_ckpt = weights_dir / "last.ckpt"
+    last_ckpt.write_bytes(b"placeholder")
+
+    trainer = _DummyTrainer()
+    _patch_entrypoint(monkeypatch, trainer)
+
+    monkeypatch.setattr(
+        train_entry,
+        "_load_checkpoint_experiment_config",
+        lambda _checkpoint_path: {
+            "model": {
+                "encoder_model_name_or_path": "facebook/convnextv2-base-22k-224",
+                "max_seq_len": 3000,
+            }
+        },
+    )
+
+    train_entry.main(config_path=str(config_path))
+
+    assert len(trainer.fit_calls) == 1
+    _, kwargs = trainer.fit_calls[0]
+    assert kwargs["ckpt_path"] == str(last_ckpt)
+    assert _DummyDataModule.last_init_kwargs is not None
+    assert _DummyDataModule.last_init_kwargs["max_decoder_len"] == 3000
+    assert _DummyModelWrapper.last_kwargs is not None
+    model_cfg = _DummyModelWrapper.last_kwargs["model_config"]
+    assert model_cfg.encoder_model_name_or_path == "facebook/convnextv2-base-22k-224"
 
 
 def test_main_fresh_run_disables_auto_resume(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
