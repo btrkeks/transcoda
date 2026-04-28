@@ -14,6 +14,7 @@ from dataclasses import dataclass
 
 import torch
 from torch import nn
+import torch.nn.functional as F
 from transformers import AutoModel, ConvNextV2Config
 from transformers.models.convnextv2.modeling_convnextv2 import ConvNextV2Layer
 
@@ -29,7 +30,12 @@ from src.pretraining.fcmae.masking import (
 @dataclass
 class MaskedImageModelingOutput:
     loss: torch.Tensor
+    reconstruction_loss: torch.Tensor
+    ink_aux_loss: torch.Tensor | None
+    ink_aux_bce_loss: torch.Tensor | None
+    ink_aux_dice_loss: torch.Tensor | None
     pred_patches: torch.Tensor
+    ink_pred_patches: torch.Tensor | None
     target_patches: torch.Tensor
     mask: torch.Tensor
     valid_patch_mask: torch.Tensor | None
@@ -41,6 +47,14 @@ class MaskedImageModelingOutput:
     masked_background_patch_ratio: torch.Tensor | None
     masked_foreground_patch_ratio: torch.Tensor | None
     loss_weight_mean_masked: torch.Tensor | None
+
+
+@dataclass
+class InkAuxLossOutput:
+    loss: torch.Tensor
+    bce_loss: torch.Tensor
+    dice_loss: torch.Tensor
+    pred_patches: torch.Tensor
 
 
 @dataclass
@@ -150,6 +164,11 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             self.patch_size * self.patch_size * 3,
             kernel_size=1,
         )
+        self.ink_pred = nn.Conv2d(
+            config.decoder_dim,
+            self.patch_size * self.patch_size,
+            kernel_size=1,
+        )
 
     def _encode_with_feature_mask(self, pixel_values: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
         embeddings = getattr(self.encoder, "embeddings", None)
@@ -178,7 +197,12 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             expected_channels=self.encoder_output_dim,
         )
 
-    def _decode_features(self, features: torch.Tensor, grid_h: int, grid_w: int) -> torch.Tensor:
+    def _decode_features(
+        self,
+        features: torch.Tensor,
+        grid_h: int,
+        grid_w: int,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         if features.shape[-2:] != (grid_h, grid_w):
             raise ValueError(
                 "encoder feature map shape does not match patch grid: "
@@ -188,7 +212,67 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
         x = self.decoder(x)
         pred = self.pred(x)
         pred = pred.reshape(pred.shape[0], pred.shape[1], grid_h * grid_w)
+        return torch.einsum("ncl->nlc", pred), x
+
+    def _decode_ink_features(self, decoder_features: torch.Tensor, grid_h: int, grid_w: int) -> torch.Tensor:
+        pred = self.ink_pred(decoder_features)
+        pred = pred.reshape(pred.shape[0], pred.shape[1], grid_h * grid_w)
         return torch.einsum("ncl->nlc", pred)
+
+    def _ink_target_patches(self, pixel_values: torch.Tensor) -> torch.Tensor:
+        intensity = (pixel_values.float().mean(dim=1, keepdim=True) + 1.0) / 2.0
+        ink = (1.0 - intensity).clamp(0.0, 1.0)
+        return patchify(ink, self.patch_size)
+
+    def _ink_aux_loss(
+        self,
+        pixel_values: torch.Tensor,
+        pred: torch.Tensor,
+        mask: torch.Tensor,
+        valid_patch_mask: torch.Tensor | None,
+    ) -> InkAuxLossOutput:
+        target_ink = self._ink_target_patches(pixel_values).to(device=pred.device, dtype=pred.dtype)
+        binary_target = (target_ink > self.config.ink_aux_target_threshold).to(dtype=pred.dtype)
+        flat_mask = mask.reshape(mask.shape[0], -1).to(device=pred.device, dtype=pred.dtype)
+        if valid_patch_mask is None:
+            flat_valid = torch.ones_like(flat_mask)
+        else:
+            flat_valid = valid_patch_mask.reshape(valid_patch_mask.shape[0], -1).to(
+                device=pred.device,
+                dtype=pred.dtype,
+            )
+        loss_mask = (flat_mask * flat_valid).unsqueeze(-1)
+        denominator = loss_mask.sum() * pred.shape[-1]
+        if denominator <= 0:
+            zero = pred.sum() * 0.0
+            return InkAuxLossOutput(
+                loss=zero,
+                bce_loss=zero,
+                dice_loss=zero,
+                pred_patches=pred,
+            )
+
+        bce = F.binary_cross_entropy_with_logits(pred, binary_target, reduction="none")
+        bce_loss = (bce * loss_mask).sum() / denominator.clamp_min(1.0)
+
+        probs = torch.sigmoid(pred)
+        masked_probs = probs * loss_mask
+        masked_target = binary_target * loss_mask
+        eps = torch.tensor(1.0e-6, device=pred.device, dtype=pred.dtype)
+        dice_score = (2.0 * (masked_probs * masked_target).sum() + eps) / (
+            masked_probs.sum() + masked_target.sum() + eps
+        )
+        dice_loss = 1.0 - dice_score
+        loss = (
+            self.config.ink_aux_bce_weight * bce_loss
+            + self.config.ink_aux_dice_weight * dice_loss
+        )
+        return InkAuxLossOutput(
+            loss=loss,
+            bce_loss=bce_loss,
+            dice_loss=dice_loss,
+            pred_patches=pred,
+        )
 
     def _reconstruction_loss(
         self,
@@ -313,15 +397,24 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             patch_weights=ink_density,
             bias_strength=self.ink_bias_strength,
             foreground_mask_ratio=(
-                self.config.foreground_mask_ratio if ink_density is not None else None
+                self.config.foreground_mask_ratio
+                if ink_density is not None and self.config.use_foreground_quota_masking
+                else None
             ),
-            medium_mask_ratio=self.config.medium_mask_ratio if ink_density is not None else None,
+            medium_mask_ratio=(
+                self.config.medium_mask_ratio
+                if ink_density is not None and self.config.use_foreground_quota_masking
+                else None
+            ),
             background_mask_ratio=(
-                self.config.background_mask_ratio if ink_density is not None else None
+                self.config.background_mask_ratio
+                if ink_density is not None and self.config.use_foreground_quota_masking
+                else None
             ),
         )
         features = self._encode_with_feature_mask(pixel_values, mask)
-        pred = self._decode_features(features, grid_h, grid_w)
+        pred, decoder_features = self._decode_features(features, grid_h, grid_w)
+        ink_pred = self._decode_ink_features(decoder_features, grid_h, grid_w)
         reconstruction = self._reconstruction_loss(
             pixel_values,
             pred,
@@ -329,6 +422,8 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             valid_patch_mask,
             ink_density,
         )
+        ink_aux = self._ink_aux_loss(pixel_values, ink_pred, mask, valid_patch_mask)
+        total_loss = reconstruction.loss + self.config.ink_aux_loss_weight * ink_aux.loss
         (
             masked_background_loss,
             masked_foreground_loss,
@@ -356,8 +451,13 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             masked_ink_density = (ink * mask_f).sum() / denom
 
         return MaskedImageModelingOutput(
-            loss=reconstruction.loss,
+            loss=total_loss,
+            reconstruction_loss=reconstruction.loss,
+            ink_aux_loss=ink_aux.loss,
+            ink_aux_bce_loss=ink_aux.bce_loss,
+            ink_aux_dice_loss=ink_aux.dice_loss,
             pred_patches=pred,
+            ink_pred_patches=ink_aux.pred_patches,
             target_patches=reconstruction.target_patches,
             mask=mask,
             valid_patch_mask=valid_patch_mask,

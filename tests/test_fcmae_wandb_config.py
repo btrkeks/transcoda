@@ -30,11 +30,16 @@ def test_fcmae_logging_defaults_keep_wandb_off() -> None:
     assert config.data.image_height == 1485
     assert config.data.image_width == 1050
     assert config.model.ink_bias_strength == 0.3
+    assert config.model.use_foreground_quota_masking is False
     assert config.model.foreground_mask_ratio == 0.60
     assert config.model.medium_mask_ratio == 0.25
     assert config.model.background_mask_ratio == 0.15
-    assert config.model.ink_loss_weight_alpha == 3.0
+    assert config.model.ink_loss_weight_alpha == 0.0
     assert config.model.ink_loss_weight_target_density == 0.05
+    assert config.model.ink_aux_loss_weight == 1.0
+    assert config.model.ink_aux_bce_weight == 0.5
+    assert config.model.ink_aux_dice_weight == 0.5
+    assert config.model.ink_aux_target_threshold == 0.05
     assert config.logging.wandb_enabled is False
     assert config.logging.project == "SMT-FCMAE"
     assert config.logging.log_model is False
@@ -91,6 +96,10 @@ def test_fcmae_training_config_rejects_bad_ddp_settings(
         ),
         ({"ink_loss_weight_alpha": -1.0}, "ink_loss_weight_alpha"),
         ({"ink_loss_weight_target_density": 0.0}, "ink_loss_weight_target_density"),
+        ({"ink_aux_loss_weight": -1.0}, "ink_aux_loss_weight"),
+        ({"ink_aux_bce_weight": -1.0}, "ink_aux_bce_weight"),
+        ({"ink_aux_dice_weight": -1.0}, "ink_aux_dice_weight"),
+        ({"ink_aux_target_threshold": -0.1}, "ink_aux_target_threshold"),
     ],
 )
 def test_fcmae_model_config_rejects_bad_foreground_objective_settings(

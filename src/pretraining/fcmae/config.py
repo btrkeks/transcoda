@@ -25,11 +25,16 @@ class FCMAEModelConfig(BaseModel):
     decoder_depth: int = 2
     norm_pix_loss: bool = True
     ink_bias_strength: float = 0.3
+    use_foreground_quota_masking: bool = False
     foreground_mask_ratio: float = 0.60
     medium_mask_ratio: float = 0.25
     background_mask_ratio: float = 0.15
-    ink_loss_weight_alpha: float = 3.0
+    ink_loss_weight_alpha: float = 0.0
     ink_loss_weight_target_density: float = 0.05
+    ink_aux_loss_weight: float = 1.0
+    ink_aux_bce_weight: float = 0.5
+    ink_aux_dice_weight: float = 0.5
+    ink_aux_target_threshold: float = 0.05
 
     @model_validator(mode="after")
     def validate_foreground_objective(self) -> FCMAEModelConfig:
@@ -50,6 +55,14 @@ class FCMAEModelConfig(BaseModel):
             raise ValueError("model.ink_loss_weight_alpha must be >= 0")
         if self.ink_loss_weight_target_density <= 0:
             raise ValueError("model.ink_loss_weight_target_density must be > 0")
+        if self.ink_aux_loss_weight < 0:
+            raise ValueError("model.ink_aux_loss_weight must be >= 0")
+        if self.ink_aux_bce_weight < 0:
+            raise ValueError("model.ink_aux_bce_weight must be >= 0")
+        if self.ink_aux_dice_weight < 0:
+            raise ValueError("model.ink_aux_dice_weight must be >= 0")
+        if self.ink_aux_target_threshold < 0:
+            raise ValueError("model.ink_aux_target_threshold must be >= 0")
         return self
 
 

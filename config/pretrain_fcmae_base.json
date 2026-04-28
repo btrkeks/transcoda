@@ -14,11 +14,16 @@
     "decoder_depth": 1,
     "norm_pix_loss": true,
     "ink_bias_strength": 0.5,
+    "use_foreground_quota_masking": false,
     "foreground_mask_ratio": 0.6,
     "medium_mask_ratio": 0.25,
     "background_mask_ratio": 0.15,
-    "ink_loss_weight_alpha": 3.0,
-    "ink_loss_weight_target_density": 0.05
+    "ink_loss_weight_alpha": 0.0,
+    "ink_loss_weight_target_density": 0.05,
+    "ink_aux_loss_weight": 1.0,
+    "ink_aux_bce_weight": 0.5,
+    "ink_aux_dice_weight": 0.5,
+    "ink_aux_target_threshold": 0.05
   },
   "training": {
     "batch_size": 4,

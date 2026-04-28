@@ -92,6 +92,7 @@ class FCMAEPretrainer(L.LightningModule):
             ink_density=ink_density,
         )
         self._log_if_attached("train/loss", output.loss, prog_bar=True)
+        self._log_if_attached("train/loss_reconstruction", output.reconstruction_loss)
         self._log_if_attached("train/mask_ratio", self.model_config.mask_ratio)
         self._log_if_attached(
             "train/masked_foreground_ratio",
@@ -105,6 +106,12 @@ class FCMAEPretrainer(L.LightningModule):
             self._log_if_attached("train/masked_ink_density", output.masked_ink_density)
         if output.loss_weight_mean_masked is not None:
             self._log_if_attached("train/loss_weight_mean_masked", output.loss_weight_mean_masked)
+        if output.ink_aux_loss is not None:
+            self._log_if_attached("train/loss_ink_aux", output.ink_aux_loss)
+        if output.ink_aux_bce_loss is not None:
+            self._log_if_attached("train/loss_ink_aux_bce", output.ink_aux_bce_loss)
+        if output.ink_aux_dice_loss is not None:
+            self._log_if_attached("train/loss_ink_aux_dice", output.ink_aux_dice_loss)
         if output.masked_background_loss is not None:
             self._log_if_attached(
                 "train/loss_background_heavy_masked_patches",

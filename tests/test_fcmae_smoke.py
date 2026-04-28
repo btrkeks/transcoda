@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 from PIL import Image
 
 from src.pretraining.fcmae.config import (
@@ -238,6 +239,16 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     assert output.masked_foreground_loss is not None
     assert output.masked_background_patch_ratio is not None
     assert output.masked_foreground_patch_ratio is not None
+    assert output.reconstruction_loss is not None
+    assert output.ink_aux_loss is not None
+    assert output.ink_aux_bce_loss is not None
+    assert output.ink_aux_dice_loss is not None
+    assert output.ink_pred_patches is not None
+    assert output.ink_pred_patches.shape == (2, 20, 32 * 32)
+    assert torch.allclose(
+        output.loss,
+        output.reconstruction_loss + model_config.ink_aux_loss_weight * output.ink_aux_loss,
+    )
     assert output.loss_weight_mean_masked is not None
     assert torch.isfinite(output.loss_weight_mean_masked)
     assert model.mask_token.shape == (1, 4, 1, 1)
@@ -345,6 +356,95 @@ def test_fcmae_reconstruction_loss_uses_ink_weighted_denominator() -> None:
     assert torch.allclose(output.loss, expected)
     assert output.loss_weight_mean_masked is not None
     assert torch.allclose(output.loss_weight_mean_masked, weights.mean())
+
+
+def test_fcmae_ink_aux_loss_matches_manual_bce_and_dice() -> None:
+    model_config = FCMAEModelConfig(
+        patch_size=1,
+        mask_ratio=0.5,
+        decoder_dim=16,
+        decoder_depth=1,
+        ink_aux_bce_weight=0.25,
+        ink_aux_dice_weight=0.75,
+        ink_aux_target_threshold=0.05,
+    )
+    model = DenseMaskedImageModelingConvNeXtV2(
+        model_config,
+        encoder=TinyEncoder(out_channels=8),
+        encoder_output_dim=8,
+        encoder_stride=1,
+    )
+    pixel_values = torch.ones(1, 3, 1, 2)
+    pixel_values[:, :, :, 1] = -1.0
+    pred = torch.tensor([[[0.0], [2.0]]])
+    mask = torch.ones(1, 1, 2, dtype=torch.bool)
+
+    output = model._ink_aux_loss(pixel_values, pred, mask, valid_patch_mask=None)
+
+    target = torch.tensor([[[0.0], [1.0]]])
+    bce = F.binary_cross_entropy_with_logits(pred, target)
+    probs = torch.sigmoid(pred)
+    dice = 1.0 - (2.0 * (probs * target).sum() + 1.0e-6) / (
+        probs.sum() + target.sum() + 1.0e-6
+    )
+    expected = model_config.ink_aux_bce_weight * bce + model_config.ink_aux_dice_weight * dice
+    assert torch.allclose(output.bce_loss, bce)
+    assert torch.allclose(output.dice_loss, dice)
+    assert torch.allclose(output.loss, expected)
+    assert output.pred_patches.shape == (1, 2, 1)
+
+
+def test_fcmae_ink_aux_loss_ignores_unmasked_and_invalid_patches() -> None:
+    model_config = FCMAEModelConfig(
+        patch_size=1,
+        mask_ratio=0.5,
+        decoder_dim=16,
+        decoder_depth=1,
+    )
+    model = DenseMaskedImageModelingConvNeXtV2(
+        model_config,
+        encoder=TinyEncoder(out_channels=8),
+        encoder_output_dim=8,
+        encoder_stride=1,
+    )
+    pixel_values = torch.ones(1, 3, 1, 4)
+    pixel_values[:, :, :, 3] = -1.0
+    pred = torch.zeros(1, 4, 1)
+    changed_pred = pred.clone()
+    changed_pred[:, 1:3] = 20.0
+    mask = torch.tensor([[[True, False, True, True]]])
+    valid_patch_mask = torch.tensor([[[True, True, False, True]]])
+
+    base = model._ink_aux_loss(pixel_values, pred, mask, valid_patch_mask)
+    changed = model._ink_aux_loss(pixel_values, changed_pred, mask, valid_patch_mask)
+
+    assert torch.allclose(base.loss, changed.loss)
+    assert torch.allclose(base.bce_loss, changed.bce_loss)
+    assert torch.allclose(base.dice_loss, changed.dice_loss)
+
+
+def test_fcmae_ink_aux_loss_is_finite_for_all_background_targets() -> None:
+    model_config = FCMAEModelConfig(
+        patch_size=1,
+        mask_ratio=0.5,
+        decoder_dim=16,
+        decoder_depth=1,
+    )
+    model = DenseMaskedImageModelingConvNeXtV2(
+        model_config,
+        encoder=TinyEncoder(out_channels=8),
+        encoder_output_dim=8,
+        encoder_stride=1,
+    )
+    pixel_values = torch.ones(1, 3, 1, 2)
+    pred = torch.zeros(1, 2, 1)
+    mask = torch.ones(1, 1, 2, dtype=torch.bool)
+
+    output = model._ink_aux_loss(pixel_values, pred, mask, valid_patch_mask=None)
+
+    assert torch.isfinite(output.loss)
+    assert torch.isfinite(output.bce_loss)
+    assert torch.isfinite(output.dice_loss)
 
 
 def test_fcmae_masked_ink_bin_diagnostics_report_nan_for_empty_bins() -> None:
