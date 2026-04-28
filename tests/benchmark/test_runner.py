@@ -548,7 +548,7 @@ def test_our_adapter_uses_grammar_constrained_generate(monkeypatch) -> None:
     assert result == ["4c"]
     assert captured_kwargs["num_beams"] == 1
     assert captured_kwargs["logits_processor"] == [sentinel_processor]
-    assert captured_kwargs["repetition_penalty"] == pytest.approx(1.1)
+    assert captured_kwargs["repetition_penalty"] == pytest.approx(1.3)
     assert preprocess_calls[0]["layout_normalization"] == layout_normalization
 
 

@@ -87,7 +87,7 @@ def test_run_artifact_round_trip_with_slurm():
     assert loaded.slurm is not None
     assert loaded.slurm.job_id == "123"
     assert loaded.slurm.cpus_per_task == 8
-    assert loaded.decoding.repetition_penalty == 1.1
+    assert loaded.decoding.repetition_penalty == 1.3
 
 
 def test_run_artifact_from_legacy_json_without_slurm():
@@ -150,4 +150,4 @@ def test_run_artifact_from_legacy_json_without_repetition_penalty():
     payload["decoding"].pop("repetition_penalty", None)
     loaded = RunArtifact.from_json(json.dumps(payload))
 
-    assert loaded.decoding.repetition_penalty == 1.1
+    assert loaded.decoding.repetition_penalty == 1.3

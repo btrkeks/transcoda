@@ -20,7 +20,7 @@ def test_settings_from_generation_config_beam_defaults():
         strategy="beam",
         num_beams=4,
         length_penalty=1.0,
-        repetition_penalty=1.1,
+        repetition_penalty=1.3,
         early_stopping=True,
         num_return_sequences=1,
         use_cache=True,
@@ -34,7 +34,7 @@ def test_settings_from_decoding_spec_greedy():
 
     assert settings.strategy == "greedy"
     assert settings.num_beams == 1
-    assert settings.repetition_penalty == pytest.approx(1.1)
+    assert settings.repetition_penalty == pytest.approx(1.3)
 
 
 def test_apply_overrides_switches_to_beam():
@@ -131,7 +131,7 @@ def test_enforce_grammar_safe_settings_noop_for_greedy_single():
 
 def test_generation_config_default_repetition_penalty():
     cfg = Generation()
-    assert cfg.repetition_penalty == pytest.approx(1.1)
+    assert cfg.repetition_penalty == pytest.approx(1.3)
 
 
 def test_invalid_repetition_penalty_raises():

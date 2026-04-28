@@ -151,7 +151,7 @@ class RunArtifact:
         """Deserialize from JSON string."""
         obj = json.loads(s)
         decoding_payload = dict(obj["decoding"])
-        decoding_payload.setdefault("repetition_penalty", 1.1)
+        decoding_payload.setdefault("repetition_penalty", 1.3)
 
         return RunArtifact(
             experiment_config=obj["experiment_config"],

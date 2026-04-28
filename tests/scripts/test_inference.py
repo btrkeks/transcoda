@@ -79,7 +79,7 @@ def test_inference_uses_shared_constraint_factory(monkeypatch, tmp_path: Path) -
     assert captured["factory_kwargs"]["use_spine_structure_constraints"] is True
     assert captured["generate_kwargs"]["logits_processor"] == ["lp"]
     assert captured["generate_kwargs"]["stopping_criteria"] == ["stop"]
-    assert captured["generate_kwargs"]["repetition_penalty"] == 1.1
+    assert captured["generate_kwargs"]["repetition_penalty"] == 1.3
     assert output_path.read_text() == "**kern\t**kern\n4c\n*-"
 
 

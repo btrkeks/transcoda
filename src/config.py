@@ -272,7 +272,7 @@ class Generation(BaseModel):
     strategy: str = "beam"  # "greedy" | "beam"
     num_beams: int = 4
     length_penalty: float = 1.0
-    repetition_penalty: float = 1.1
+    repetition_penalty: float = 1.3
     early_stopping: bool | str = True
     max_length: int | None = None
     num_return_sequences: int = 1
