@@ -3,8 +3,8 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from src.core.metrics import RunawayMonitorConfig, RunawayMonitorTracker
-from src.training.lightning_module import SMTTrainer
+from src.core.metrics import CharacterErrorRate, RunawayMonitorConfig, RunawayMonitorTracker
+from src.training.lightning_module import SMTTrainer, _RepeatLoopFilteredSampleCounts
 
 
 class _ValMetricRecorder:
@@ -55,6 +55,7 @@ class _ValidationTrainerStub:
             i2w={0: "<pad>", 1: "<bos>", 2: "<eos>", 3: "A\n", 4: "B\n", 5: "C\n"},
         )
         self.hparams = SimpleNamespace(training=SimpleNamespace(log_example_images=True))
+        self._validation_example_logging_override = None
         self.model = _ModelStub()
         self._val_set_names = ["synth", "polish"]
         self.val_metrics_by_set = {"synth": _ValMetricRecorder(), "polish": _ValMetricRecorder()}
@@ -65,6 +66,20 @@ class _ValidationTrainerStub:
             "synth": _make_tracker(self.config.i2w),
             "polish": _make_tracker(self.config.i2w),
         }
+        self.val_cer_no_repeat_loops_by_set = torch.nn.ModuleDict(
+            {
+                "polish": CharacterErrorRate(
+                    pad_id=0,
+                    bos_id=1,
+                    eos_id=2,
+                    i2w=self.config.i2w,
+                )
+            }
+        )
+        self.val_repeat_loop_filtered_counts_by_set = torch.nn.ModuleDict(
+            {"polish": _RepeatLoopFilteredSampleCounts()}
+        )
+        self._validation_metric_prefix = "val"
         self.logged = []
 
     def log(self, name, value, **kwargs):
@@ -81,10 +96,19 @@ class _ValidationTrainerStub:
     def _generate_with_grammar(self, pixel_values, image_sizes, max_length):
         return torch.tensor(
             [
-                [1, 3, 3, 3, 3, 0],  # no eos, long
-                [1, 3, 4, 2, 0, 0],  # normal
+                [1, 3, 3, 3, 3, 3, 3, 3, 0, 0],  # repeat loop
+                [1, 3, 4, 2, 0, 0, 0, 0, 0, 0],  # normal
             ]
         )
+
+    def should_log_validation_examples(self):
+        return SMTTrainer.should_log_validation_examples(self)
+
+    def _validation_set_metric_name(self, set_name, metric_name):
+        return SMTTrainer._validation_set_metric_name(self, set_name, metric_name)
+
+    def _validation_aggregate_metric_name(self, metric_name):
+        return SMTTrainer._validation_aggregate_metric_name(self, metric_name)
 
 
 def _log_map(logged):
@@ -100,7 +124,12 @@ def test_validation_step_updates_runaway_tracker():
 
     batch = {
         "pixel_values": torch.randn(2, 3, 8, 8),
-        "labels": torch.tensor([[1, 3, 2, -100, -100, -100], [1, 3, 4, 2, -100, -100]]),
+        "labels": torch.tensor(
+            [
+                [1, 3, 2, -100, -100, -100, -100, -100, -100, -100],
+                [1, 3, 4, 2, -100, -100, -100, -100, -100, -100],
+            ]
+        ),
         "sample_ids": torch.tensor([11, 12]),
     }
 
@@ -112,6 +141,57 @@ def test_validation_step_updates_runaway_tracker():
     assert outputs is not None
     assert outputs["val_set_name"] == "synth"
     assert len(stub.val_metrics_by_set["synth"].calls) == 1
+
+
+def test_validation_step_updates_polish_cer_without_repeat_loops():
+    stub = _ValidationTrainerStub()
+    stub._val_set_names = ["polish"]
+    stub.val_metrics_by_set = {"polish": _ValMetricRecorder()}
+    stub._val_batches_seen_by_set = {"polish": 0}
+    stub._val_runaway_tracker_by_set = {"polish": _make_tracker(stub.config.i2w)}
+
+    batch = {
+        "pixel_values": torch.randn(2, 3, 8, 8),
+        "labels": torch.tensor(
+            [
+                [1, 3, 2, -100, -100, -100, -100, -100, -100, -100],
+                [1, 3, 4, 2, -100, -100, -100, -100, -100, -100],
+            ]
+        ),
+        "sample_ids": torch.tensor([21, 22]),
+    }
+
+    SMTTrainer.validation_step(stub, batch, batch_idx=0, dataloader_idx=0)
+
+    assert stub.val_cer_no_repeat_loops_by_set["polish"].compute().item() == 0.0
+    counts = stub.val_repeat_loop_filtered_counts_by_set["polish"].compute()
+    assert counts["CER_no_repeat_loops_samples"].item() == 1.0
+    assert counts["repeat_loop_excluded_samples"].item() == 1.0
+
+
+def test_validation_step_does_not_update_filtered_metric_for_synth():
+    stub = _ValidationTrainerStub()
+    stub._val_set_names = ["synth"]
+    stub.val_metrics_by_set = {"synth": _ValMetricRecorder()}
+    stub._val_batches_seen_by_set = {"synth": 0}
+    stub._val_runaway_tracker_by_set = {"synth": _make_tracker(stub.config.i2w)}
+
+    batch = {
+        "pixel_values": torch.randn(2, 3, 8, 8),
+        "labels": torch.tensor(
+            [
+                [1, 3, 2, -100, -100, -100, -100, -100, -100, -100],
+                [1, 3, 4, 2, -100, -100, -100, -100, -100, -100],
+            ]
+        ),
+        "sample_ids": torch.tensor([31, 32]),
+    }
+
+    SMTTrainer.validation_step(stub, batch, batch_idx=0, dataloader_idx=0)
+
+    counts_metric = stub.val_repeat_loop_filtered_counts_by_set["polish"]
+    assert counts_metric.included.item() == 0.0
+    assert counts_metric.excluded.item() == 0.0
 
 
 def test_on_validation_epoch_end_logs_per_set_and_overall_runaway_metrics():
@@ -129,6 +209,11 @@ def test_on_validation_epoch_end_logs_per_set_and_overall_runaway_metrics():
     stub._val_runaway_tracker_by_set["polish"].update_batch(
         polish_preds, polish_targets, max_length_cap=5
     )
+    stub.val_cer_no_repeat_loops_by_set["polish"].update(
+        torch.tensor([[1, 3, 4, 2, 0, 0]]),
+        torch.tensor([[1, 3, 4, 2, 0, 0]]),
+    )
+    stub.val_repeat_loop_filtered_counts_by_set["polish"].update(included=1, excluded=0)
 
     SMTTrainer.on_validation_epoch_end(stub)
     logs = _log_map(stub.logged)
@@ -141,6 +226,39 @@ def test_on_validation_epoch_end_logs_per_set_and_overall_runaway_metrics():
 
     assert stub._val_runaway_tracker_by_set["synth"].compute()["runaway_samples"] == 0
     assert stub._val_runaway_tracker_by_set["polish"].compute()["runaway_samples"] == 0
+
+
+def test_on_validation_epoch_end_logs_polish_cer_without_repeat_loops():
+    stub = _ValidationTrainerStub()
+    stub._val_batches_seen_by_set = {"synth": 0, "polish": 1}
+    stub.val_cer_no_repeat_loops_by_set["polish"].update(
+        torch.tensor([[1, 3, 4, 2, 0, 0]]),
+        torch.tensor([[1, 3, 4, 2, 0, 0]]),
+    )
+    stub.val_repeat_loop_filtered_counts_by_set["polish"].update(included=1, excluded=2)
+
+    SMTTrainer.on_validation_epoch_end(stub)
+    logs = _log_map(stub.logged)
+
+    assert logs["val/polish/CER_no_repeat_loops"] == 0.0
+    assert logs["val/polish/CER_no_repeat_loops_samples"] == 1.0
+    assert logs["val/polish/repeat_loop_excluded_samples"] == 2.0
+    assert stub.val_repeat_loop_filtered_counts_by_set["polish"].included.item() == 0.0
+
+
+def test_on_validation_epoch_end_logs_filtered_metric_with_final_val_prefix():
+    stub = _ValidationTrainerStub()
+    stub._validation_metric_prefix = "final_val"
+    stub._val_batches_seen_by_set = {"synth": 0, "polish": 1}
+    stub.val_repeat_loop_filtered_counts_by_set["polish"].update(included=0, excluded=1)
+
+    SMTTrainer.on_validation_epoch_end(stub)
+    logs = _log_map(stub.logged)
+
+    assert "final_val/polish/CER_no_repeat_loops" in logs
+    assert "final_val/polish/CER_no_repeat_loops_samples" in logs
+    assert "final_val/polish/repeat_loop_excluded_samples" in logs
+    assert "val/polish/CER_no_repeat_loops" not in logs
 
 
 def test_on_validation_epoch_end_skips_unseen_set_from_overall_runaway_metrics():

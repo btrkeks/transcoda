@@ -342,16 +342,20 @@ class RunawayMonitorTracker:
             max_length_hit=max_length_hit,
         )
 
-    def update_batch(self, preds, targets, *, max_length_cap: int) -> None:
+    def update_batch(
+        self, preds, targets, *, max_length_cap: int
+    ) -> list[RunawayMonitorSampleDiagnostics]:
         """Update aggregate state from a batch of predictions and targets."""
         pred_list = preds.detach().cpu().tolist()
         target_list = targets.detach().cpu().tolist()
+        diagnostics = []
         for pred_ids, target_ids in zip(pred_list, target_list, strict=False):
             diag = self.analyze_sample(
                 pred_ids=pred_ids,
                 target_ids=target_ids,
                 max_length_cap=max_length_cap,
             )
+            diagnostics.append(diag)
 
             self._total_samples += 1
             self._len_ratios.append(diag.length_ratio)
@@ -366,6 +370,7 @@ class RunawayMonitorTracker:
                 self._no_eos_at_max_length_count += 1
             if diag.max_length_hit:
                 self._max_length_hit_count += 1
+        return diagnostics
 
     @staticmethod
     def _p95(values: list[float]) -> float:

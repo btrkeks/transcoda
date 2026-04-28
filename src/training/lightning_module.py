@@ -10,7 +10,7 @@ from torch.optim.lr_scheduler import (
     SequentialLR,
 )
 from torchinfo import summary
-from torchmetrics import MetricCollection
+from torchmetrics import Metric, MetricCollection
 
 from src.config import Generation, ModelConfig, OptimizerConfig, Training
 from src.core.kern_utils import strip_tie_beam_markers_from_kern_text
@@ -77,6 +77,29 @@ def _finite_estimated_stepping_batches(trainer: L.Trainer) -> int | float:
 
 def _is_polish_style_validation_set(set_name: str) -> bool:
     return set_name == "polish" or set_name.startswith("polish_")
+
+
+class _RepeatLoopFilteredSampleCounts(Metric):
+    """Counts samples included/excluded from repeat-loop-filtered validation metrics."""
+
+    full_state_update = False
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.add_state("included", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("excluded", default=torch.tensor(0.0), dist_reduce_fx="sum")
+
+    def update(self, included: int, excluded: int) -> None:  # type: ignore[override]
+        device = self.included.device
+        dtype = self.included.dtype
+        self.included += torch.tensor(float(included), device=device, dtype=dtype)
+        self.excluded += torch.tensor(float(excluded), device=device, dtype=dtype)
+
+    def compute(self) -> dict[str, torch.Tensor]:  # type: ignore[override]
+        return {
+            "CER_no_repeat_loops_samples": self.included,
+            "repeat_loop_excluded_samples": self.excluded,
+        }
 
 
 class SMTTrainer(L.LightningModule):
@@ -212,6 +235,30 @@ class SMTTrainer(L.LightningModule):
         else:
             self._val_runaway_tracker_by_set = None
             self._test_runaway_tracker = None
+
+        repeat_loop_filtered_set_names = [
+            name
+            for name in self._val_set_names
+            if (
+                self._runaway_monitor_enabled
+                and not is_subset_val_set_name(name)
+                and _is_polish_style_validation_set(base_val_set_name(name))
+            )
+        ]
+        self.val_cer_no_repeat_loops_by_set = torch.nn.ModuleDict(
+            {
+                name: CharacterErrorRate(
+                    pad_id=pad_token_id,
+                    bos_id=bos_token_id,
+                    eos_id=eos_token_id,
+                    i2w=i2w,
+                )
+                for name in repeat_loop_filtered_set_names
+            }
+        )
+        self.val_repeat_loop_filtered_counts_by_set = torch.nn.ModuleDict(
+            {name: _RepeatLoopFilteredSampleCounts() for name in repeat_loop_filtered_set_names}
+        )
 
         # OMR-NED tracker for semantic music notation comparison (optional)
         self._compute_omr_ned = training.compute_omr_ned
@@ -784,15 +831,38 @@ class SMTTrainer(L.LightningModule):
         self.val_metrics_by_set[val_set_name].update(preds, labels_for_metric)
 
         # Update runaway monitor diagnostics for this validation set (if enabled).
+        runaway_diagnostics = None
         runaway_trackers = getattr(self, "_val_runaway_tracker_by_set", None)
         if runaway_trackers is not None and not is_subset_loader:
             runaway_tracker = runaway_trackers.get(val_set_name)
             if runaway_tracker is not None:
-                runaway_tracker.update_batch(
+                runaway_diagnostics = runaway_tracker.update_batch(
                     preds=preds,
                     targets=labels_for_metric,
                     max_length_cap=max_length_with_buffer,
                 )
+                filtered_cer_by_set = getattr(self, "val_cer_no_repeat_loops_by_set", None)
+                filtered_counts_by_set = getattr(
+                    self, "val_repeat_loop_filtered_counts_by_set", None
+                )
+                if (
+                    filtered_cer_by_set is not None
+                    and filtered_counts_by_set is not None
+                    and val_set_name in filtered_cer_by_set
+                    and val_set_name in filtered_counts_by_set
+                ):
+                    included_indices = [
+                        idx for idx, diag in enumerate(runaway_diagnostics) if not diag.repeat_loop
+                    ]
+                    excluded_count = len(runaway_diagnostics) - len(included_indices)
+                    filtered_counts_by_set[val_set_name].update(
+                        included=len(included_indices), excluded=excluded_count
+                    )
+                    if included_indices:
+                        filtered_cer_by_set[val_set_name].update(
+                            preds[included_indices],
+                            labels_for_metric[included_indices],
+                        )
 
         # Accumulate samples for OMR-NED computation (if enabled)
         if self._compute_omr_ned and self._omr_ned_tracker is not None and not is_subset_loader:
@@ -854,6 +924,14 @@ class SMTTrainer(L.LightningModule):
         if runaway_trackers is not None:
             for tracker in runaway_trackers.values():
                 tracker.reset()
+        filtered_cer_by_set = getattr(self, "val_cer_no_repeat_loops_by_set", None)
+        if filtered_cer_by_set is not None:
+            for metric in filtered_cer_by_set.values():
+                metric.reset()
+        filtered_counts_by_set = getattr(self, "val_repeat_loop_filtered_counts_by_set", None)
+        if filtered_counts_by_set is not None:
+            for metric in filtered_counts_by_set.values():
+                metric.reset()
 
     def on_validation_epoch_end(self) -> None:
         """Compute and log validation metrics at the end of each epoch.
@@ -906,6 +984,39 @@ class SMTTrainer(L.LightningModule):
                             all_ser_values.append(value)
 
             metrics.reset()
+
+            filtered_cer_by_set = getattr(self, "val_cer_no_repeat_loops_by_set", None)
+            filtered_counts_by_set = getattr(self, "val_repeat_loop_filtered_counts_by_set", None)
+            if (
+                filtered_cer_by_set is not None
+                and filtered_counts_by_set is not None
+                and set_name in filtered_cer_by_set
+                and set_name in filtered_counts_by_set
+            ):
+                if seen_batches > 0:
+                    count_values = filtered_counts_by_set[set_name].compute()
+                    included_samples = count_values["CER_no_repeat_loops_samples"]
+                    if float(included_samples.detach().cpu().item()) > 0:
+                        filtered_cer = filtered_cer_by_set[set_name].compute()
+                    else:
+                        filtered_cer = torch.zeros_like(included_samples)
+                    self.log(
+                        self._validation_set_metric_name(set_name, "CER_no_repeat_loops"),
+                        filtered_cer,
+                        on_epoch=True,
+                        prog_bar=False,
+                        sync_dist=True,
+                    )
+                    for metric_name, value in count_values.items():
+                        self.log(
+                            self._validation_set_metric_name(set_name, metric_name),
+                            value,
+                            on_epoch=True,
+                            prog_bar=False,
+                            sync_dist=True,
+                        )
+                filtered_cer_by_set[set_name].reset()
+                filtered_counts_by_set[set_name].reset()
 
             runaway_trackers = getattr(self, "_val_runaway_tracker_by_set", None)
             if runaway_trackers is not None:
