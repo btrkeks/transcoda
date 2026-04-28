@@ -41,6 +41,52 @@ def test_progress_config_accepts_valid_values():
     assert config.training.progress_val_percent_interval == 20
 
 
+def test_freeze_encoder_steps_defaults_to_zero():
+    config = experiment_config_from_dict(
+        {
+            "data": {
+                "train_path": "./data/datasets/train_full",
+                "validation_paths": {"synth": "./data/datasets/validation/synth"},
+                "vocab_dir": "./vocab/bpe4k",
+            },
+            "checkpoint": {},
+        }
+    )
+
+    assert config.training.freeze_encoder_steps == 0
+
+
+def test_freeze_encoder_steps_accepts_positive_value():
+    config = experiment_config_from_dict(
+        {
+            "data": {
+                "train_path": "./data/datasets/train_full",
+                "validation_paths": {"synth": "./data/datasets/validation/synth"},
+                "vocab_dir": "./vocab/bpe4k",
+            },
+            "checkpoint": {},
+            "training": {"freeze_encoder_steps": 123},
+        }
+    )
+
+    assert config.training.freeze_encoder_steps == 123
+
+
+def test_freeze_encoder_steps_rejects_negative_value():
+    with pytest.raises(ValueError, match="freeze_encoder_steps"):
+        experiment_config_from_dict(
+            {
+                "data": {
+                    "train_path": "./data/datasets/train_full",
+                    "validation_paths": {"synth": "./data/datasets/validation/synth"},
+                    "vocab_dir": "./vocab/bpe4k",
+                },
+                "checkpoint": {},
+                "training": {"freeze_encoder_steps": -1},
+            }
+        )
+
+
 def test_semantic_constraints_require_grammar_constraints():
     with pytest.raises(ValueError, match="require training.use_grammar_constraints=true"):
         experiment_config_from_dict(

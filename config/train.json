@@ -25,14 +25,14 @@
   },
   "optimizer": {
     "learning_rate": 0.001,
-    "encoder_lr_factor": 0.3,
+    "encoder_lr_factor": 0.1,
     "weight_decay": 0.01,
-    "warmup_steps": 500,
+    "warmup_steps": 1000,
     "cosine_eta_min_factor": 0.05,
     "lr_scheduler": "cosine",
     "cosine_restart_period": 5000,
     "cosine_restart_mult": 2,
-    "layerwise_decay_gamma": null,
+    "layerwise_decay_gamma": 0.8,
     "layerwise_target": "encoder"
   },
   "checkpoint": {
@@ -56,7 +56,8 @@
     "max_epochs": 10,
     "val_check_interval": 1000,
     "limit_val_batches": 1.0,
-    "accumulate_grad_batches": 8,
+    "accumulate_grad_batches": 19,
+    "freeze_encoder_steps": 2000,
     "progress_train_interval_seconds": 30.0,
     "progress_train_every_n_steps": 50,
     "progress_val_percent_interval": 10,

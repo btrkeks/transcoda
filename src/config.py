@@ -70,6 +70,9 @@ class Training(BaseModel):
     gradient_clip_val: float | None = 1.0
     gradient_clip_algorithm: str = "norm"
     accumulate_grad_batches: int | None = 8
+    # Temporarily freeze the full vision encoder for the first N optimizer steps.
+    # Permanent stage freezes remain controlled by model.freeze_encoder_stages.
+    freeze_encoder_steps: int = 0
     # Slurm-friendly progress logging cadence and verbosity controls.
     progress_train_interval_seconds: float = 30.0
     progress_train_every_n_steps: int = 50
@@ -260,6 +263,8 @@ class Training(BaseModel):
             raise ValueError("training.early_stopping_patience must be >= 1")
         if self.early_stopping_min_delta < 0:
             raise ValueError("training.early_stopping_min_delta must be >= 0")
+        if self.freeze_encoder_steps < 0:
+            raise ValueError("training.freeze_encoder_steps must be >= 0")
 
         return self
 

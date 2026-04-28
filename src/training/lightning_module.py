@@ -150,6 +150,10 @@ class SMTTrainer(L.LightningModule):
             rope_theta=model_config.rope_theta,
         )
         self.model = SMTModelForCausalLM(self.config)
+        self._scheduled_encoder_trainable_params = [
+            param for param in self.model.frontend.encoder.parameters() if param.requires_grad
+        ]
+        self._encoder_freeze_schedule_active = False
 
         # Apply label smoothing if configured (combats exposure bias)
         if training.label_smoothing > 0:
@@ -393,6 +397,45 @@ class SMTTrainer(L.LightningModule):
         if callable(mark_step_begin):
             mark_step_begin()
 
+    def _encoder_freeze_steps(self) -> int:
+        training = getattr(getattr(self, "hparams", None), "training", None)
+        return int(getattr(training, "freeze_encoder_steps", 0) or 0)
+
+    def _set_scheduled_encoder_requires_grad(self, requires_grad: bool) -> None:
+        params = getattr(self, "_scheduled_encoder_trainable_params", [])
+        for param in params:
+            param.requires_grad = requires_grad
+
+    def _update_encoder_freeze_schedule(self) -> bool:
+        """Apply the step-based encoder freeze schedule and return frozen state."""
+        freeze_steps = SMTTrainer._encoder_freeze_steps(self)
+        if freeze_steps <= 0:
+            if getattr(self, "_encoder_freeze_schedule_active", False):
+                SMTTrainer._set_scheduled_encoder_requires_grad(self, True)
+                self._encoder_freeze_schedule_active = False
+            return False
+
+        should_freeze = int(getattr(self, "global_step", 0) or 0) < freeze_steps
+        is_active = bool(getattr(self, "_encoder_freeze_schedule_active", False))
+
+        if should_freeze and not is_active:
+            SMTTrainer._set_scheduled_encoder_requires_grad(self, False)
+            self._encoder_freeze_schedule_active = True
+            print_fn = getattr(self, "print", None)
+            if callable(print_fn):
+                print_fn(
+                    "Temporarily froze encoder parameters for "
+                    f"training.freeze_encoder_steps={freeze_steps}."
+                )
+        elif not should_freeze and is_active:
+            SMTTrainer._set_scheduled_encoder_requires_grad(self, True)
+            self._encoder_freeze_schedule_active = False
+            print_fn = getattr(self, "print", None)
+            if callable(print_fn):
+                print_fn("Unfroze encoder parameters after freeze_encoder_steps schedule.")
+
+        return should_freeze
+
     def on_load_checkpoint(self, checkpoint: dict) -> None:
         """Clean up checkpoints saved with torch.compile enabled.
 
@@ -422,6 +465,8 @@ class SMTTrainer(L.LightningModule):
 
     def on_fit_start(self) -> None:
         """Initialize torch.compile once at fit start if requested."""
+        SMTTrainer._update_encoder_freeze_schedule(self)
+
         if self._compile_initialized:
             return
         self._compile_initialized = True
@@ -522,6 +567,10 @@ class SMTTrainer(L.LightningModule):
             optimizer = torch.optim.AdamW(param_groups, fused=True, **adamw_kwargs)
         else:
             optimizer = torch.optim.AdamW(param_groups, **adamw_kwargs)
+
+        # Apply the temporary encoder freeze only after optimizer groups have been
+        # built, since the grouping utilities intentionally skip frozen params.
+        SMTTrainer._update_encoder_freeze_schedule(self)
 
         # --- Log Parameter Group Summary (rank 0 only) ---
         if getattr(self, "global_rank", 0) == 0:
@@ -724,6 +773,16 @@ class SMTTrainer(L.LightningModule):
 
     def on_train_batch_start(self, batch, batch_idx):
         """Mark when the batch is ready for timing metrics."""
+        encoder_frozen = SMTTrainer._update_encoder_freeze_schedule(self)
+        self.log(
+            "train/encoder_frozen",
+            float(encoder_frozen),
+            on_step=True,
+            on_epoch=False,
+            prog_bar=False,
+            logger=True,
+            sync_dist=True,
+        )
         self._batch_ready_time = time.perf_counter()
 
     def training_step(self, batch, _batch_idx):
