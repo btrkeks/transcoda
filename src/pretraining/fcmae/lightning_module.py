@@ -103,6 +103,26 @@ class FCMAEPretrainer(L.LightningModule):
         )
         if output.masked_ink_density is not None:
             self._log_if_attached("train/masked_ink_density", output.masked_ink_density)
+        if output.masked_background_loss is not None:
+            self._log_if_attached(
+                "train/loss_background_heavy_masked_patches",
+                output.masked_background_loss,
+            )
+        if output.masked_foreground_loss is not None:
+            self._log_if_attached(
+                "train/loss_foreground_heavy_masked_patches",
+                output.masked_foreground_loss,
+            )
+        if output.masked_background_patch_ratio is not None:
+            self._log_if_attached(
+                "train/masked_background_heavy_patch_ratio",
+                output.masked_background_patch_ratio,
+            )
+        if output.masked_foreground_patch_ratio is not None:
+            self._log_if_attached(
+                "train/masked_foreground_heavy_patch_ratio",
+                output.masked_foreground_patch_ratio,
+            )
         valid_patch_mask = batch.get("valid_patch_mask")
         if valid_patch_mask is None:
             valid_patch_ratio = torch.ones((), device=output.loss.device)

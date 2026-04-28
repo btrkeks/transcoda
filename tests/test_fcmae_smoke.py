@@ -20,7 +20,11 @@ from src.pretraining.fcmae.lightning_module import (
 )
 from src.pretraining.fcmae.logging import FCMAEReconstructionLogger
 from src.pretraining.fcmae.masking import patchify, random_patch_mask, unpatchify, upsample_mask
-from src.pretraining.fcmae.model import DenseMaskedImageModelingConvNeXtV2
+from src.pretraining.fcmae.model import (
+    BACKGROUND_HEAVY_INK_DENSITY_THRESHOLD,
+    FOREGROUND_HEAVY_INK_DENSITY_THRESHOLD,
+    DenseMaskedImageModelingConvNeXtV2,
+)
 
 
 class TinyEncoder(torch.nn.Module):
@@ -178,6 +182,10 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     assert output.valid_patch_mask is not None
     assert output.masked_ink_density is not None
     assert torch.isfinite(output.masked_ink_density)
+    assert output.masked_background_loss is not None
+    assert output.masked_foreground_loss is not None
+    assert output.masked_background_patch_ratio is not None
+    assert output.masked_foreground_patch_ratio is not None
     assert model.mask_token.shape == (1, 4, 1, 1)
 
     module = FCMAEPretrainer(
@@ -203,6 +211,80 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     assert module._latest_preview is not None
     assert "pred_patches" in module._latest_preview
     assert module._latest_preview["norm_pix_loss"] is True
+
+
+def test_fcmae_masked_ink_bin_diagnostics_use_masked_valid_patches_only() -> None:
+    model_config = FCMAEModelConfig(
+        patch_size=32,
+        mask_ratio=0.5,
+        decoder_dim=16,
+        decoder_depth=1,
+    )
+    model = DenseMaskedImageModelingConvNeXtV2(
+        model_config,
+        encoder=TinyEncoder(out_channels=8),
+        encoder_output_dim=8,
+        encoder_stride=32,
+    )
+    per_patch_loss = torch.tensor([[1.0, 3.0, 5.0, 7.0]])
+    loss_mask = torch.tensor([[1.0, 1.0, 0.0, 1.0]])
+    ink_density = torch.tensor(
+        [
+            [
+                [
+                    BACKGROUND_HEAVY_INK_DENSITY_THRESHOLD / 2.0,
+                    FOREGROUND_HEAVY_INK_DENSITY_THRESHOLD,
+                    FOREGROUND_HEAVY_INK_DENSITY_THRESHOLD,
+                    (BACKGROUND_HEAVY_INK_DENSITY_THRESHOLD + FOREGROUND_HEAVY_INK_DENSITY_THRESHOLD)
+                    / 2.0,
+                ]
+            ]
+        ]
+    )
+
+    background_loss, foreground_loss, background_ratio, foreground_ratio = (
+        model._masked_ink_bin_diagnostics(per_patch_loss, loss_mask, ink_density)
+    )
+
+    assert background_loss is not None
+    assert foreground_loss is not None
+    assert background_ratio is not None
+    assert foreground_ratio is not None
+    assert torch.allclose(background_loss, torch.tensor(1.0))
+    assert torch.allclose(foreground_loss, torch.tensor(3.0))
+    assert torch.allclose(background_ratio, torch.tensor(1.0 / 3.0))
+    assert torch.allclose(foreground_ratio, torch.tensor(1.0 / 3.0))
+
+
+def test_fcmae_masked_ink_bin_diagnostics_report_nan_for_empty_bins() -> None:
+    model_config = FCMAEModelConfig(
+        patch_size=32,
+        mask_ratio=0.5,
+        decoder_dim=16,
+        decoder_depth=1,
+    )
+    model = DenseMaskedImageModelingConvNeXtV2(
+        model_config,
+        encoder=TinyEncoder(out_channels=8),
+        encoder_output_dim=8,
+        encoder_stride=32,
+    )
+    per_patch_loss = torch.tensor([[1.0, 3.0]])
+    loss_mask = torch.tensor([[1.0, 1.0]])
+    ink_density = torch.full((1, 1, 2), FOREGROUND_HEAVY_INK_DENSITY_THRESHOLD)
+
+    background_loss, foreground_loss, background_ratio, foreground_ratio = (
+        model._masked_ink_bin_diagnostics(per_patch_loss, loss_mask, ink_density)
+    )
+
+    assert background_loss is not None
+    assert foreground_loss is not None
+    assert background_ratio is not None
+    assert foreground_ratio is not None
+    assert torch.isnan(background_loss)
+    assert torch.allclose(background_ratio, torch.tensor(0.0))
+    assert torch.allclose(foreground_loss, torch.tensor(2.0))
+    assert torch.allclose(foreground_ratio, torch.tensor(1.0))
 
 
 def test_fcmae_dataset_skips_empty_image_files(tmp_path: Path) -> None:
