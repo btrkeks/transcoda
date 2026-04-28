@@ -14,6 +14,7 @@ from src.pretraining.fcmae.config import (
     FCMAETrainingConfig,
 )
 from src.pretraining.fcmae.data import FCMAEImageDataset, compute_patch_ink_density
+from src.pretraining.fcmae.data import pad_to_patch_multiple
 from src.pretraining.fcmae.lightning_module import (
     FCMAEPretrainer,
     compute_patch_ink_density_batched,
@@ -193,6 +194,7 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     assert output.masked_background_patch_ratio is not None
     assert output.masked_foreground_patch_ratio is not None
     assert model.mask_token.shape == (1, 4, 1, 1)
+    assert isinstance(model.decoder_upsample, torch.nn.Identity)
     assert model.pred.weight.stride() == torch.empty_like(
         model.pred.weight,
         memory_format=torch.channels_last,
@@ -223,6 +225,79 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     assert module._latest_preview is not None
     assert "pred_patches" in module._latest_preview
     assert module._latest_preview["norm_pix_loss"] is True
+
+
+def test_fcmae_patch16_uses_learned_decoder_upsample(tmp_path: Path) -> None:
+    image_dir = tmp_path / "images"
+    image_dir.mkdir()
+    _write_image(image_dir / "a.png", (80, 120))
+    _write_image(image_dir / "b.png", (150, 60))
+
+    data_config = FCMAEDataConfig(
+        image_dir=str(image_dir),
+        image_height=130,
+        image_width=98,
+    )
+    dataset = FCMAEImageDataset(data_config, patch_size=16, encoder_stride=32)
+    batch = [dataset[0], dataset[1]]
+    pixel_values = torch.stack([item["pixel_values"] for item in batch])
+    valid_patch_mask = torch.stack([item["valid_patch_mask"] for item in batch])
+    ink_density = compute_patch_ink_density_batched(pixel_values, patch_size=16)
+
+    assert pixel_values.shape == (2, 3, 160, 128)
+    assert valid_patch_mask.shape == (2, 10, 8)
+    assert not valid_patch_mask[:, -2:, :].any()
+    assert not valid_patch_mask[:, :, -2:].any()
+    assert ink_density.shape == (2, 10, 8)
+
+    model_config = FCMAEModelConfig(
+        patch_size=16,
+        encoder_stride=32,
+        mask_ratio=0.6,
+        decoder_dim=16,
+        decoder_depth=1,
+        norm_pix_loss=True,
+        ink_bias_strength=0.3,
+    )
+    model = DenseMaskedImageModelingConvNeXtV2(
+        model_config,
+        encoder=TinyEncoder(out_channels=8),
+        encoder_output_dim=8,
+        encoder_stride=32,
+    )
+    assert isinstance(model.decoder_upsample, torch.nn.ConvTranspose2d)
+
+    output = model(
+        pixel_values,
+        valid_patch_mask=valid_patch_mask,
+        ink_density=ink_density,
+    )
+
+    assert torch.isfinite(output.loss)
+    assert output.pred_patches.shape == (2, 10 * 8, 16 * 16 * 3)
+    assert output.target_patches.shape == output.pred_patches.shape
+    assert output.mask.shape == (2, 10, 8)
+    output.loss.backward()
+    assert model.decoder_upsample.weight.grad is not None
+    assert torch.isfinite(model.decoder_upsample.weight.grad).all()
+
+
+def test_pad_to_patch_multiple_can_align_to_encoder_stride() -> None:
+    pixel_values = torch.zeros(3, 130, 98)
+    valid_pixel_mask = torch.ones(130, 98, dtype=torch.bool)
+
+    padded_pixels, padded_valid = pad_to_patch_multiple(
+        pixel_values,
+        valid_pixel_mask,
+        patch_size=16,
+        alignment_multiple=32,
+    )
+
+    assert padded_pixels.shape == (3, 160, 128)
+    assert padded_valid.shape == (160, 128)
+    assert padded_valid[:130, :98].all()
+    assert not padded_valid[130:, :].any()
+    assert not padded_valid[:, 98:].any()
 
 
 def test_fcmae_freezes_unused_encoder_head_for_ddp() -> None:

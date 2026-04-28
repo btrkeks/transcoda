@@ -20,6 +20,7 @@ class FCMAEModelConfig(BaseModel):
 
     encoder_model_name_or_path: str = "facebook/convnextv2-base-22k-224"
     patch_size: int = 32
+    encoder_stride: int = 32
     mask_ratio: float = 0.6
     decoder_dim: int = 512
     decoder_depth: int = 2
@@ -114,6 +115,10 @@ class FCMAEConfig(BaseModel):
             raise ValueError("data.image_height and data.image_width must be positive")
         if self.model.patch_size <= 0:
             raise ValueError("model.patch_size must be positive")
+        if self.model.encoder_stride <= 0:
+            raise ValueError("model.encoder_stride must be positive")
+        if self.model.encoder_stride % self.model.patch_size != 0:
+            raise ValueError("model.encoder_stride must be divisible by model.patch_size")
         if not 0 < self.model.mask_ratio < 1:
             raise ValueError("model.mask_ratio must satisfy 0 < mask_ratio < 1")
         if self.model.ink_bias_strength < 0:

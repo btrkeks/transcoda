@@ -29,6 +29,8 @@ def test_fcmae_logging_defaults_keep_wandb_off() -> None:
     config = FCMAEConfig.model_validate(_base_config())
     assert config.data.image_height == 1485
     assert config.data.image_width == 1050
+    assert config.model.patch_size == 32
+    assert config.model.encoder_stride == 32
     assert config.model.ink_bias_strength == 0.3
     assert config.logging.wandb_enabled is False
     assert config.logging.project == "SMT-FCMAE"
@@ -61,6 +63,24 @@ def test_fcmae_training_config_rejects_bad_ddp_settings(
 ) -> None:
     payload = _base_config()
     payload["training"] = training
+    with pytest.raises(ValueError, match=match):
+        FCMAEConfig.model_validate(payload)
+
+
+@pytest.mark.parametrize(
+    ("model", "match"),
+    [
+        ({"patch_size": 0}, "model.patch_size"),
+        ({"encoder_stride": 0}, "model.encoder_stride"),
+        ({"patch_size": 24, "encoder_stride": 32}, "encoder_stride"),
+    ],
+)
+def test_fcmae_model_config_rejects_bad_patch_stride_settings(
+    model: dict[str, object],
+    match: str,
+) -> None:
+    payload = _base_config()
+    payload["model"] = model
     with pytest.raises(ValueError, match=match):
         FCMAEConfig.model_validate(payload)
 

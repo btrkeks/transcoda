@@ -139,6 +139,7 @@ def main() -> None:
     datamodule = FCMAEDataModule(
         config.data,
         patch_size=config.model.patch_size,
+        encoder_stride=config.model.encoder_stride,
         batch_size=config.training.batch_size,
         num_workers=config.training.num_workers,
     )

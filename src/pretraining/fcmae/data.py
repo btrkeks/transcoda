@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import math
 from pathlib import Path
 from typing import Any
 
@@ -108,21 +109,28 @@ def pad_to_patch_multiple(
     pixel_values: torch.Tensor,
     valid_pixel_mask: torch.Tensor,
     patch_size: int,
+    alignment_multiple: int | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """Right/bottom pad pixels and validity mask to a patch-aligned canvas."""
+    """Right/bottom pad pixels and validity mask to a patch/stride-aligned canvas."""
     if pixel_values.ndim != 3:
         raise ValueError("pixel_values must have shape (C, H, W)")
     if valid_pixel_mask.ndim != 2:
         raise ValueError("valid_pixel_mask must have shape (H, W)")
     if patch_size <= 0:
         raise ValueError("patch_size must be positive")
+    if alignment_multiple is None:
+        alignment_multiple = patch_size
+    if alignment_multiple <= 0:
+        raise ValueError("alignment_multiple must be positive")
+    if alignment_multiple % patch_size != 0:
+        raise ValueError("alignment_multiple must be divisible by patch_size")
 
     height, width = pixel_values.shape[-2:]
     if valid_pixel_mask.shape != (height, width):
         raise ValueError("valid_pixel_mask shape must match pixel_values spatial dimensions")
 
-    padded_height = ((height + patch_size - 1) // patch_size) * patch_size
-    padded_width = ((width + patch_size - 1) // patch_size) * patch_size
+    padded_height = ((height + alignment_multiple - 1) // alignment_multiple) * alignment_multiple
+    padded_width = ((width + alignment_multiple - 1) // alignment_multiple) * alignment_multiple
     pad_h = padded_height - height
     pad_w = padded_width - width
     if pad_h == 0 and pad_w == 0:
@@ -156,9 +164,17 @@ def compute_patch_ink_density(pixel_values: torch.Tensor, patch_size: int) -> to
 
 
 class FCMAEImageDataset(Dataset[dict[str, Any]]):
-    def __init__(self, config: FCMAEDataConfig, *, patch_size: int) -> None:
+    def __init__(
+        self,
+        config: FCMAEDataConfig,
+        *,
+        patch_size: int,
+        encoder_stride: int | None = None,
+    ) -> None:
         self.config = config
         self.patch_size = patch_size
+        self.encoder_stride = encoder_stride or patch_size
+        self.alignment_multiple = math.lcm(self.patch_size, self.encoder_stride)
         self.paths = _collect_image_paths(config)
         if not self.paths:
             source = config.image_dir if config.image_dir is not None else config.manifest_path
@@ -179,6 +195,7 @@ class FCMAEImageDataset(Dataset[dict[str, Any]]):
             pixel_values,
             valid_pixel_mask,
             self.patch_size,
+            self.alignment_multiple,
         )
         valid_patch_mask = valid_pixel_mask_to_patch_mask(valid_pixel_mask, self.patch_size)
         return {
@@ -194,19 +211,25 @@ class FCMAEDataModule(L.LightningDataModule):
         data_config: FCMAEDataConfig,
         *,
         patch_size: int,
+        encoder_stride: int,
         batch_size: int,
         num_workers: int,
     ) -> None:
         super().__init__()
         self.data_config = data_config
         self.patch_size = patch_size
+        self.encoder_stride = encoder_stride
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.train_set: FCMAEImageDataset | None = None
 
     def setup(self, stage: str | None = None) -> None:
         if self.train_set is None:
-            self.train_set = FCMAEImageDataset(self.data_config, patch_size=self.patch_size)
+            self.train_set = FCMAEImageDataset(
+                self.data_config,
+                patch_size=self.patch_size,
+                encoder_stride=self.encoder_stride,
+            )
 
     def train_dataloader(self) -> DataLoader:
         if self.train_set is None:

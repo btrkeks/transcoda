@@ -14,6 +14,7 @@ from dataclasses import dataclass
 
 import torch
 from torch import nn
+from torch.nn import Identity
 from transformers import AutoModel, ConvNextV2Config
 from transformers.models.convnextv2.modeling_convnextv2 import ConvNextV2Layer
 
@@ -115,6 +116,7 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
         super().__init__()
         self.config = config
         self.patch_size = int(config.patch_size)
+        self.encoder_stride = int(config.encoder_stride)
         self.mask_ratio = float(config.mask_ratio)
         self.norm_pix_loss = bool(config.norm_pix_loss)
         self.ink_bias_strength = float(config.ink_bias_strength)
@@ -122,27 +124,37 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
         if encoder is None:
             self.encoder = AutoModel.from_pretrained(config.encoder_model_name_or_path)
             self.encoder_output_dim = _detect_encoder_output_dim(self.encoder)
-            self.encoder_stride = int(encoder_stride or self.patch_size)
+            self.encoder_stride = int(encoder_stride or config.encoder_stride)
         else:
-            if encoder_output_dim is None or encoder_stride is None:
-                raise ValueError(
-                    "encoder_output_dim and encoder_stride are required when encoder is injected"
-                )
+            if encoder_output_dim is None:
+                raise ValueError("encoder_output_dim is required when encoder is injected")
             self.encoder = encoder
             self.encoder_output_dim = int(encoder_output_dim)
-            self.encoder_stride = int(encoder_stride)
+            self.encoder_stride = int(encoder_stride or config.encoder_stride)
 
         self.encoder.train()
         _freeze_unused_feature_masking_parameters(self.encoder)
 
-        if self.encoder_stride != self.patch_size:
-            raise ValueError("v1 requires encoder_stride to equal patch_size")
+        if self.encoder_stride <= 0:
+            raise ValueError("encoder_stride must be positive")
+        if self.encoder_stride % self.patch_size != 0:
+            raise ValueError("encoder_stride must be divisible by patch_size")
 
         self.encoder_embedding_dim = _detect_encoder_embedding_dim(self.encoder)
         self.mask_token = nn.Parameter(torch.empty(1, self.encoder_embedding_dim, 1, 1))
         nn.init.normal_(self.mask_token, std=0.02)
 
         self.proj = nn.Conv2d(self.encoder_output_dim, config.decoder_dim, kernel_size=1)
+        upsample_scale = self.encoder_stride // self.patch_size
+        if upsample_scale == 1:
+            self.decoder_upsample: nn.Module = Identity()
+        else:
+            self.decoder_upsample = nn.ConvTranspose2d(
+                config.decoder_dim,
+                config.decoder_dim,
+                kernel_size=upsample_scale,
+                stride=upsample_scale,
+            )
         decoder_config = ConvNextV2Config(
             hidden_sizes=[config.decoder_dim],
             depths=[config.decoder_depth],
@@ -162,8 +174,9 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
         self._set_conv_head_memory_format()
 
     def _set_conv_head_memory_format(self) -> None:
-        for head in (self.proj, self.pred):
-            head.to(memory_format=torch.channels_last)
+        for head in (self.proj, self.decoder_upsample, self.pred):
+            if isinstance(head, (nn.Conv2d, nn.ConvTranspose2d)):
+                head.to(memory_format=torch.channels_last)
 
     def _encode_with_feature_mask(self, pixel_values: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
         embeddings = getattr(self.encoder, "embeddings", None)
@@ -193,12 +206,21 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
         )
 
     def _decode_features(self, features: torch.Tensor, grid_h: int, grid_w: int) -> torch.Tensor:
-        if features.shape[-2:] != (grid_h, grid_w):
+        stride_scale = self.encoder_stride // self.patch_size
+        expected_feature_shape = (grid_h // stride_scale, grid_w // stride_scale)
+        if features.shape[-2:] != expected_feature_shape:
             raise ValueError(
                 "encoder feature map shape does not match patch grid: "
-                f"{tuple(features.shape[-2:])} vs {(grid_h, grid_w)}"
+                f"{tuple(features.shape[-2:])} vs expected encoder grid {expected_feature_shape} "
+                f"for patch grid {(grid_h, grid_w)}"
             )
         x = self.proj(features)
+        x = self.decoder_upsample(x)
+        if x.shape[-2:] != (grid_h, grid_w):
+            raise ValueError(
+                "decoder upsample shape does not match patch grid: "
+                f"{tuple(x.shape[-2:])} vs {(grid_h, grid_w)}"
+            )
         x = self.decoder(x)
         pred = self.pred(x)
         pred = pred.reshape(pred.shape[0], pred.shape[1], grid_h * grid_w)
@@ -297,6 +319,8 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
         batch_size, _channels, height, width = pixel_values.shape
         if height % self.patch_size != 0 or width % self.patch_size != 0:
             raise ValueError("pixel_values height and width must be divisible by patch_size")
+        if height % self.encoder_stride != 0 or width % self.encoder_stride != 0:
+            raise ValueError("pixel_values height and width must be divisible by encoder_stride")
 
         grid_h = height // self.patch_size
         grid_w = width // self.patch_size
