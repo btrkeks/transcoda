@@ -123,10 +123,27 @@ get_forwarded_override_value() {
   return 1
 }
 
+get_auto_forwarded_override_value() {
+  local key="$1"
+  local arg
+  for arg in "${AUTO_FORWARDED_ARGS[@]}"; do
+    arg="${arg#--}"
+    if [[ "${arg}" == "${key}="* ]]; then
+      printf '%s' "${arg#${key}=}"
+      return 0
+    fi
+  done
+  return 1
+}
+
 resolve_effective_config_value() {
   local key="$1"
   local value=""
   if value="$(get_forwarded_override_value "${key}")"; then
+    printf '%s' "${value}"
+    return 0
+  fi
+  if value="$(get_auto_forwarded_override_value "${key}")"; then
     printf '%s' "${value}"
     return 0
   fi
@@ -430,6 +447,19 @@ if [ "${GPUS}" -gt 1 ]; then
   if [ "${CPUS_PER_TASK}" -eq "${DEFAULT_CPUS_PER_TASK}" ]; then
     CPUS_PER_TASK=$((DEFAULT_CPUS_PER_TASK * GPUS))
     echo "[pretrain_fcmae.sh] auto-scaled --cpus-per-task to ${CPUS_PER_TASK} for ${GPUS} GPUs (DDP)" >&2
+  fi
+  if ! has_forwarded_override "training.accumulate_grad_batches"; then
+    ACCUMULATE_GRAD_BATCHES="$(resolve_effective_config_value "training.accumulate_grad_batches")"
+    SCALED_ACCUMULATE_GRAD_BATCHES=$((ACCUMULATE_GRAD_BATCHES / GPUS))
+    if [ "${SCALED_ACCUMULATE_GRAD_BATCHES}" -lt 1 ]; then
+      SCALED_ACCUMULATE_GRAD_BATCHES=1
+    fi
+    AUTO_FORWARDED_ARGS+=("training.accumulate_grad_batches=${SCALED_ACCUMULATE_GRAD_BATCHES}")
+    if [ $((ACCUMULATE_GRAD_BATCHES % GPUS)) -eq 0 ]; then
+      echo "[pretrain_fcmae.sh] auto-scaled training.accumulate_grad_batches to ${SCALED_ACCUMULATE_GRAD_BATCHES} for ${GPUS} GPUs" >&2
+    else
+      echo "[pretrain_fcmae.sh] auto-scaled training.accumulate_grad_batches to ${SCALED_ACCUMULATE_GRAD_BATCHES} for ${GPUS} GPUs (rounded down from ${ACCUMULATE_GRAD_BATCHES}/${GPUS})" >&2
+    fi
   fi
 fi
 

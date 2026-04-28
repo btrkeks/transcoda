@@ -223,7 +223,9 @@ def test_pretrain_fcmae_submit_dry_run_auto_forwards_ddp_for_multi_gpu() -> None
     assert "--cpus-per-task=16" in result.stdout
     assert "training.devices=2" in result.stdout
     assert "training.strategy=ddp" in result.stdout
+    assert "training.accumulate_grad_batches=32" in result.stdout
     assert "auto-scaled --cpus-per-task to 16" in result.stderr
+    assert "auto-scaled training.accumulate_grad_batches to 32" in result.stderr
 
 
 def test_pretrain_fcmae_submit_dry_run_preserves_explicit_ddp_overrides() -> None:
@@ -238,6 +240,7 @@ def test_pretrain_fcmae_submit_dry_run_preserves_explicit_ddp_overrides() -> Non
             "--",
             "training.devices=1",
             "training.strategy=auto",
+            "training.accumulate_grad_batches=64",
         ],
         cwd=ROOT,
         text=True,
@@ -247,5 +250,7 @@ def test_pretrain_fcmae_submit_dry_run_preserves_explicit_ddp_overrides() -> Non
 
     assert "training.devices=1" in result.stdout
     assert "training.strategy=auto" in result.stdout
+    assert "training.accumulate_grad_batches=64" in result.stdout
     assert "training.devices=2" not in result.stdout
     assert "training.strategy=ddp" not in result.stdout
+    assert "training.accumulate_grad_batches=32" not in result.stdout
