@@ -33,6 +33,7 @@ FORWARDED_ARGS=()
 AUTO_FORWARDED_ARGS=()
 CHECKPOINT_DIR=""
 EXPORT_DIR=""
+RESOLVED_RUN_ID=""
 
 usage() {
   cat <<'EOF'
@@ -122,6 +123,26 @@ get_forwarded_override_value() {
   return 1
 }
 
+resolve_effective_config_value() {
+  local key="$1"
+  local value=""
+  if value="$(get_forwarded_override_value "${key}")"; then
+    printf '%s' "${value}"
+    return 0
+  fi
+  resolve_config_value "${CONFIG}" "${key}"
+}
+
+slugify_identifier() {
+  local s="$1"
+  s="$(printf '%s' "${s}" | tr '[:upper:]' '[:lower:]')"
+  s="$(printf '%s' "${s}" | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//; s/-+/-/g')"
+  if [ -z "${s}" ]; then
+    s="run"
+  fi
+  printf '%s' "${s}"
+}
+
 has_forwarded_override() {
   local key="$1"
   local arg
@@ -143,6 +164,58 @@ has_forwarded_override() {
 append_override() {
   local arg="$1"
   FORWARDED_ARGS+=("${arg#--}")
+}
+
+prepare_submit_run_identity() {
+  local configured_checkpoint_dir=""
+  local configured_run_name=""
+  local checkpoint_basename=""
+  local checkpoint_parent=""
+  local run_seed=""
+  local timestamp=""
+  local export_on_train_end=""
+
+  if [ "${COMMAND}" != "submit" ]; then
+    return 0
+  fi
+
+  if configured_checkpoint_dir="$(get_forwarded_override_value "checkpoint.dirpath")"; then
+    CHECKPOINT_DIR="$(normalize_path_to_root "${configured_checkpoint_dir}")"
+    RESOLVED_RUN_ID="${CHECKPOINT_DIR##*/}"
+  else
+    configured_checkpoint_dir="$(resolve_config_value "${CONFIG}" "checkpoint.dirpath")"
+    CHECKPOINT_DIR="$(normalize_path_to_root "${configured_checkpoint_dir}")"
+    checkpoint_basename="${CHECKPOINT_DIR##*/}"
+    checkpoint_parent="${CHECKPOINT_DIR%/*}"
+    if [ -z "${checkpoint_parent}" ] || [ "${checkpoint_parent}" = "${CHECKPOINT_DIR}" ]; then
+      checkpoint_parent="${ROOT_DIR}"
+    fi
+
+    if configured_run_name="$(resolve_effective_config_value "logging.run_name")" && [ -n "${configured_run_name}" ]; then
+      run_seed="$(slugify_identifier "${configured_run_name}")"
+    else
+      run_seed="$(slugify_identifier "${checkpoint_basename}")"
+    fi
+    timestamp="$(date +%Y%m%d-%H%M%S)"
+    RESOLVED_RUN_ID="${run_seed}-${timestamp}"
+    CHECKPOINT_DIR="${checkpoint_parent}/${RESOLVED_RUN_ID}"
+    AUTO_FORWARDED_ARGS+=("checkpoint.dirpath=${CHECKPOINT_DIR}")
+
+    if ! get_forwarded_override_value "logging.run_name" >/dev/null; then
+      AUTO_FORWARDED_ARGS+=("logging.run_name=${RESOLVED_RUN_ID}")
+    fi
+  fi
+
+  if EXPORT_DIR="$(get_forwarded_override_value "export.output_dir")"; then
+    EXPORT_DIR="$(normalize_path_to_root "${EXPORT_DIR}")"
+    return 0
+  fi
+
+  if export_on_train_end="$(resolve_effective_config_value "export.export_on_train_end")" \
+    && [ "${export_on_train_end}" = "true" ]; then
+    EXPORT_DIR="${CHECKPOINT_DIR}/exported_encoder"
+    AUTO_FORWARDED_ARGS+=("export.output_dir=${EXPORT_DIR}")
+  fi
 }
 
 write_last_run_state() {
@@ -360,14 +433,18 @@ if [ "${GPUS}" -gt 1 ]; then
   fi
 fi
 
-if ! CHECKPOINT_DIR="$(get_forwarded_override_value "checkpoint.dirpath")"; then
-  CHECKPOINT_DIR="$(resolve_config_value "${CONFIG}" "checkpoint.dirpath" || true)"
-fi
-if [ -n "${CHECKPOINT_DIR}" ]; then
-  CHECKPOINT_DIR="$(normalize_path_to_root "${CHECKPOINT_DIR}")"
-fi
-if EXPORT_DIR="$(get_forwarded_override_value "export.output_dir")"; then
-  EXPORT_DIR="$(normalize_path_to_root "${EXPORT_DIR}")"
+prepare_submit_run_identity
+
+if [ "${COMMAND}" = "local" ]; then
+  if ! CHECKPOINT_DIR="$(get_forwarded_override_value "checkpoint.dirpath")"; then
+    CHECKPOINT_DIR="$(resolve_config_value "${CONFIG}" "checkpoint.dirpath" || true)"
+  fi
+  if [ -n "${CHECKPOINT_DIR}" ]; then
+    CHECKPOINT_DIR="$(normalize_path_to_root "${CHECKPOINT_DIR}")"
+  fi
+  if EXPORT_DIR="$(get_forwarded_override_value "export.output_dir")"; then
+    EXPORT_DIR="$(normalize_path_to_root "${EXPORT_DIR}")"
+  fi
 fi
 
 PY_CMD=(python -m scripts.pretrain_fcmae "${CONFIG}")

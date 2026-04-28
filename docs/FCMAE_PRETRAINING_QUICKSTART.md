@@ -21,10 +21,12 @@ mkdir -p data/fcmae_images
 ```bash
 ./pretrain_fcmae.sh submit --time 01:00:00 -- \
   data.image_dir=data/fcmae_images \
-  checkpoint.dirpath=weights/fcmae-smoke \
   training.max_steps=10 \
   logging.wandb_enabled=false
 ```
+
+By default, `submit` creates a fresh directory under `weights/` using the configured run name plus
+a timestamp, matching the main `train.sh` launcher.
 
 4. Watch it:
 
@@ -38,10 +40,8 @@ mkdir -p data/fcmae_images
 ```bash
 ./pretrain_fcmae.sh submit --time 48:00:00 -- \
   data.image_dir=data/fcmae_images \
-  checkpoint.dirpath=weights/fcmae-real-scans \
   training.max_steps=200000 \
-  logging.wandb_enabled=true \
-  logging.run_name=fcmae-real-scans
+  logging.wandb_enabled=true
 ```
 
 For a manifest instead of a folder:
@@ -49,17 +49,21 @@ For a manifest instead of a folder:
 ```bash
 ./pretrain_fcmae.sh submit --time 48:00:00 --mem 64G -- \
   data.image_dir=null \
-  data.manifest_path=data/raw/fcmae/real-scans/manifest.txt \
-  checkpoint.dirpath=weights/fcmae-real-scans
+  data.manifest_path=data/raw/fcmae/real-scans/manifest.txt
 ```
 
 6. Resume if needed:
 
 ```bash
 ./pretrain_fcmae.sh submit --resume weights/fcmae-real-scans/last.ckpt -- \
-  data.image_dir=data/fcmae_images \
-  checkpoint.dirpath=weights/fcmae-real-scans
+  data.image_dir=data/fcmae_images
 ```
+
+That resumes from the checkpoint but writes into a new timestamped run directory. To continue writing
+into the same directory, pass `checkpoint.dirpath=weights/fcmae-real-scans` explicitly.
+
+If you set `export.export_on_train_end=true`, the wrapper defaults `export.output_dir` to
+`exported_encoder` inside the generated checkpoint directory.
 
 7. Export the encoder:
 

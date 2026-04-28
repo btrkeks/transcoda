@@ -1,9 +1,13 @@
 import json
+import re
 import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "pretrain_fcmae.sh"
+
+
+RUN_ID_RE = r"fcmae-real-scan-\d{8}-\d{6}"
 
 
 def test_pretrain_fcmae_help_lists_required_commands() -> None:
@@ -48,6 +52,10 @@ def test_pretrain_fcmae_submit_dry_run_renders_bash_lc_and_bare_overrides() -> N
     assert "training.max_steps=10" in result.stdout
     assert "logging.wandb_enabled=true" in result.stdout
     assert "training.resume_from_checkpoint=weights/fcmae/last.ckpt" in result.stdout
+    assert re.search(
+        rf"checkpoint\.dirpath={re.escape(str(ROOT))}/weights/{RUN_ID_RE}",
+        result.stdout,
+    )
 
 
 def test_pretrain_fcmae_submit_dry_run_uses_real_scan_defaults() -> None:
@@ -74,9 +82,59 @@ def test_pretrain_fcmae_submit_dry_run_uses_real_scan_defaults() -> None:
 
     assert "--job-name=fcmae-pretrain" in result.stdout
     assert "config/pretrain_fcmae_base.json" in result.stdout
+    match = re.search(
+        rf"checkpoint\.dirpath={re.escape(str(ROOT))}/weights/({RUN_ID_RE})",
+        result.stdout,
+    )
+    assert match is not None
+    assert f"logging.run_name={match.group(1)}" in result.stdout
     assert "checkpoint.dirpath=weights/fcmae-real-scans" not in result.stdout
     assert "logging.wandb_enabled=true" not in result.stdout
-    assert "logging.run_name=fcmae-real-scan" not in result.stdout
+
+
+def test_pretrain_fcmae_submit_dry_run_preserves_explicit_checkpoint_dir() -> None:
+    result = subprocess.run(
+        [
+            str(SCRIPT),
+            "submit",
+            "--dry-run",
+            "--no-sync",
+            "--",
+            "checkpoint.dirpath=weights/fcmae-smoke",
+            "logging.wandb_enabled=false",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    assert "checkpoint.dirpath=weights/fcmae-smoke" in result.stdout
+    assert not re.search(RUN_ID_RE, result.stdout)
+
+
+def test_pretrain_fcmae_submit_dry_run_preserves_explicit_run_name() -> None:
+    result = subprocess.run(
+        [
+            str(SCRIPT),
+            "submit",
+            "--dry-run",
+            "--no-sync",
+            "--",
+            "logging.run_name=custom-fcmae",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    assert "logging.run_name=custom-fcmae" in result.stdout
+    assert "logging.run_name=custom-fcmae-" not in result.stdout
+    assert re.search(
+        rf"checkpoint\.dirpath={re.escape(str(ROOT))}/weights/custom-fcmae-\d{{8}}-\d{{6}}",
+        result.stdout,
+    )
 
 
 def test_pretrain_fcmae_local_dry_run_strips_double_dash_override_prefix() -> None:
@@ -96,6 +154,53 @@ def test_pretrain_fcmae_local_dry_run_strips_double_dash_override_prefix() -> No
 
     assert "training.max_steps=1" in result.stdout
     assert "--training.max_steps=1" not in result.stdout
+    assert not re.search(RUN_ID_RE, result.stdout)
+
+
+def test_pretrain_fcmae_submit_dry_run_defaults_export_output_dir() -> None:
+    result = subprocess.run(
+        [
+            str(SCRIPT),
+            "submit",
+            "--dry-run",
+            "--no-sync",
+            "--",
+            "export.export_on_train_end=true",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    match = re.search(
+        rf"checkpoint\.dirpath=({re.escape(str(ROOT))}/weights/{RUN_ID_RE})",
+        result.stdout,
+    )
+    assert match is not None
+    assert f"export.output_dir={match.group(1)}/exported_encoder" in result.stdout
+    assert "export.export_on_train_end=true" in result.stdout
+
+
+def test_pretrain_fcmae_submit_dry_run_preserves_explicit_export_output_dir() -> None:
+    result = subprocess.run(
+        [
+            str(SCRIPT),
+            "submit",
+            "--dry-run",
+            "--no-sync",
+            "--",
+            "export.export_on_train_end=true",
+            "export.output_dir=weights/custom-export",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    assert "export.output_dir=weights/custom-export" in result.stdout
+    assert "/exported_encoder" not in result.stdout
 
 
 def test_pretrain_fcmae_submit_dry_run_auto_forwards_ddp_for_multi_gpu() -> None:
