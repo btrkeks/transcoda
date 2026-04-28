@@ -40,6 +40,12 @@ class TinyEncoder(torch.nn.Module):
         return self.encoder(self.embeddings(x))
 
 
+class TinyEncoderWithUnusedHead(TinyEncoder):
+    def __init__(self, embed_channels: int = 4, out_channels: int = 8) -> None:
+        super().__init__(embed_channels=embed_channels, out_channels=out_channels)
+        self.layernorm = torch.nn.LayerNorm(out_channels)
+
+
 def _write_image(path: Path, size: tuple[int, int]) -> None:
     width, height = size
     image = np.full((height, width, 3), 255, dtype=np.uint8)
@@ -276,6 +282,37 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     assert module._latest_preview is not None
     assert "pred_patches" in module._latest_preview
     assert module._latest_preview["norm_pix_loss"] is True
+
+
+def test_fcmae_freezes_unused_encoder_head_for_ddp() -> None:
+    model_config = FCMAEModelConfig(
+        patch_size=32,
+        mask_ratio=0.6,
+        decoder_dim=16,
+        decoder_depth=1,
+    )
+    encoder = TinyEncoderWithUnusedHead(out_channels=8)
+    encoder.eval()
+    model = DenseMaskedImageModelingConvNeXtV2(
+        model_config,
+        encoder=encoder,
+        encoder_output_dim=8,
+        encoder_stride=32,
+    )
+
+    assert model.encoder.training
+    assert not any(param.requires_grad for param in model.encoder.layernorm.parameters())
+
+    pixel_values = torch.randn(2, 3, 64, 96)
+    output = model(pixel_values)
+    output.loss.backward()
+
+    missing_grads = [
+        name
+        for name, param in model.named_parameters()
+        if param.requires_grad and param.grad is None
+    ]
+    assert missing_grads == []
 
 
 def test_fcmae_masked_ink_bin_diagnostics_use_masked_valid_patches_only() -> None:

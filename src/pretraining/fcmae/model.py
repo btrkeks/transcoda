@@ -13,8 +13,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import torch
-from torch import nn
 import torch.nn.functional as F
+from torch import nn
 from transformers import AutoModel, ConvNextV2Config
 from transformers.models.convnextv2.modeling_convnextv2 import ConvNextV2Layer
 
@@ -94,6 +94,16 @@ def _detect_encoder_embedding_dim(encoder: nn.Module) -> int:
     raise ValueError("encoder embedding dimension could not be detected")
 
 
+def _freeze_unused_feature_masking_parameters(encoder: nn.Module) -> None:
+    """Freeze top-level encoder modules that FCMAE feature masking bypasses."""
+    used_child_names = {"embeddings", "encoder"}
+    for child_name, child in encoder.named_children():
+        if child_name in used_child_names:
+            continue
+        for param in child.parameters():
+            param.requires_grad = False
+
+
 def _extract_feature_map(encoder_output: object, *, expected_channels: int) -> torch.Tensor:
     features = getattr(encoder_output, "last_hidden_state", encoder_output)
     if isinstance(features, tuple):
@@ -139,6 +149,9 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             self.encoder = encoder
             self.encoder_output_dim = int(encoder_output_dim)
             self.encoder_stride = int(encoder_stride)
+
+        self.encoder.train()
+        _freeze_unused_feature_masking_parameters(self.encoder)
 
         if self.encoder_stride != self.patch_size:
             raise ValueError("v1 requires encoder_stride to equal patch_size")
