@@ -13,12 +13,7 @@
     "decoder_dim": 512,
     "decoder_depth": 1,
     "norm_pix_loss": true,
-    "ink_bias_strength": 0.5,
-    "foreground_mask_ratio": 0.6,
-    "medium_mask_ratio": 0.25,
-    "background_mask_ratio": 0.15,
-    "ink_loss_weight_alpha": 3.0,
-    "ink_loss_weight_target_density": 0.05
+    "ink_bias_strength": 0.5
   },
   "training": {
     "batch_size": 4,

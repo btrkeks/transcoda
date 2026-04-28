@@ -30,11 +30,6 @@ def test_fcmae_logging_defaults_keep_wandb_off() -> None:
     assert config.data.image_height == 1485
     assert config.data.image_width == 1050
     assert config.model.ink_bias_strength == 0.3
-    assert config.model.foreground_mask_ratio == 0.60
-    assert config.model.medium_mask_ratio == 0.25
-    assert config.model.background_mask_ratio == 0.15
-    assert config.model.ink_loss_weight_alpha == 3.0
-    assert config.model.ink_loss_weight_target_density == 0.05
     assert config.logging.wandb_enabled is False
     assert config.logging.project == "SMT-FCMAE"
     assert config.logging.log_model is False
@@ -66,39 +61,6 @@ def test_fcmae_training_config_rejects_bad_ddp_settings(
 ) -> None:
     payload = _base_config()
     payload["training"] = training
-    with pytest.raises(ValueError, match=match):
-        FCMAEConfig.model_validate(payload)
-
-
-@pytest.mark.parametrize(
-    ("model", "match"),
-    [
-        (
-            {
-                "foreground_mask_ratio": 0.5,
-                "medium_mask_ratio": 0.25,
-                "background_mask_ratio": 0.15,
-            },
-            "sum to 1.0",
-        ),
-        (
-            {
-                "foreground_mask_ratio": -0.1,
-                "medium_mask_ratio": 0.5,
-                "background_mask_ratio": 0.6,
-            },
-            "foreground_mask_ratio",
-        ),
-        ({"ink_loss_weight_alpha": -1.0}, "ink_loss_weight_alpha"),
-        ({"ink_loss_weight_target_density": 0.0}, "ink_loss_weight_target_density"),
-    ],
-)
-def test_fcmae_model_config_rejects_bad_foreground_objective_settings(
-    model: dict[str, object],
-    match: str,
-) -> None:
-    payload = _base_config()
-    payload["model"] = model
     with pytest.raises(ValueError, match=match):
         FCMAEConfig.model_validate(payload)
 

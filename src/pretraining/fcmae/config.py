@@ -25,32 +25,6 @@ class FCMAEModelConfig(BaseModel):
     decoder_depth: int = 2
     norm_pix_loss: bool = True
     ink_bias_strength: float = 0.3
-    foreground_mask_ratio: float = 0.60
-    medium_mask_ratio: float = 0.25
-    background_mask_ratio: float = 0.15
-    ink_loss_weight_alpha: float = 3.0
-    ink_loss_weight_target_density: float = 0.05
-
-    @model_validator(mode="after")
-    def validate_foreground_objective(self) -> FCMAEModelConfig:
-        quota_sum = (
-            self.foreground_mask_ratio
-            + self.medium_mask_ratio
-            + self.background_mask_ratio
-        )
-        if self.foreground_mask_ratio < 0:
-            raise ValueError("model.foreground_mask_ratio must be >= 0")
-        if self.medium_mask_ratio < 0:
-            raise ValueError("model.medium_mask_ratio must be >= 0")
-        if self.background_mask_ratio < 0:
-            raise ValueError("model.background_mask_ratio must be >= 0")
-        if abs(quota_sum - 1.0) > 1.0e-6:
-            raise ValueError("model foreground/medium/background mask ratios must sum to 1.0")
-        if self.ink_loss_weight_alpha < 0:
-            raise ValueError("model.ink_loss_weight_alpha must be >= 0")
-        if self.ink_loss_weight_target_density <= 0:
-            raise ValueError("model.ink_loss_weight_target_density must be > 0")
-        return self
 
 
 class FCMAETrainingConfig(BaseModel):
