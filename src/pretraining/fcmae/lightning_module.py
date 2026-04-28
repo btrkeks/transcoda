@@ -103,6 +103,8 @@ class FCMAEPretrainer(L.LightningModule):
         )
         if output.masked_ink_density is not None:
             self._log_if_attached("train/masked_ink_density", output.masked_ink_density)
+        if output.loss_weight_mean_masked is not None:
+            self._log_if_attached("train/loss_weight_mean_masked", output.loss_weight_mean_masked)
         if output.masked_background_loss is not None:
             self._log_if_attached(
                 "train/loss_background_heavy_masked_patches",

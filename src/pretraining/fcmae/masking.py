@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import torch
 
+BACKGROUND_HEAVY_INK_DENSITY_THRESHOLD = 0.01
+FOREGROUND_HEAVY_INK_DENSITY_THRESHOLD = 0.03
+
 
 def patchify(imgs: torch.Tensor, patch_size: int) -> torch.Tensor:
     """Convert images to flattened rectangular patch vectors.
@@ -62,12 +65,18 @@ def random_patch_mask(
     valid_patch_mask: torch.Tensor | None = None,
     patch_weights: torch.Tensor | None = None,
     bias_strength: float = 0.0,
+    foreground_mask_ratio: float | None = None,
+    medium_mask_ratio: float | None = None,
+    background_mask_ratio: float | None = None,
+    background_threshold: float = BACKGROUND_HEAVY_INK_DENSITY_THRESHOLD,
+    foreground_threshold: float = FOREGROUND_HEAVY_INK_DENSITY_THRESHOLD,
 ) -> torch.Tensor:
     """Return a boolean mask where True marks selected reconstruction patches.
 
-    With ``bias_strength > 0`` and ``patch_weights`` in ``[0, 1]``, sampling is
-    biased toward higher-weighted patches via ``noise = rand - bias * weight``
-    before argsort. ``bias_strength=0`` recovers the original uniform sampling.
+    With quota ratios and ``patch_weights`` in ``[0, 1]``, sampling first draws
+    from foreground/medium/background ink-density bins, then backfills from
+    remaining valid patches. Without quota ratios, ``bias_strength > 0`` keeps
+    the legacy weighted random sampler via ``noise = rand - bias * weight``.
 
     Ported from: docs/external/ConvNeXt-V2/models/fcmae.py:119-135.
     Adapted for rectangular grids, optional valid-patch sampling, and weighted
@@ -81,6 +90,33 @@ def random_patch_mask(
         raise ValueError("mask_ratio must satisfy 0 < mask_ratio < 1")
     if bias_strength < 0:
         raise ValueError("bias_strength must be >= 0")
+    quota_values = (foreground_mask_ratio, medium_mask_ratio, background_mask_ratio)
+    use_quotas = any(value is not None for value in quota_values)
+    if use_quotas:
+        if patch_weights is None:
+            raise ValueError("patch_weights are required for foreground-aware quota masking")
+        if any(value is None for value in quota_values):
+            raise ValueError("all foreground/medium/background mask ratios are required")
+        quota_sum = (
+            float(foreground_mask_ratio)
+            + float(medium_mask_ratio)
+            + float(background_mask_ratio)
+        )
+        if (
+            min(
+                float(foreground_mask_ratio),
+                float(medium_mask_ratio),
+                float(background_mask_ratio),
+            )
+            < 0
+        ):
+            raise ValueError("foreground/medium/background mask ratios must be >= 0")
+        if abs(quota_sum - 1.0) > 1.0e-6:
+            raise ValueError("foreground/medium/background mask ratios must sum to 1.0")
+        if background_threshold < 0 or foreground_threshold < 0:
+            raise ValueError("ink-density thresholds must be >= 0")
+        if background_threshold >= foreground_threshold:
+            raise ValueError("background_threshold must be less than foreground_threshold")
 
     num_patches = grid_h * grid_w
     if valid_patch_mask is None:
@@ -95,13 +131,15 @@ def random_patch_mask(
 
     mask = torch.zeros(batch_size, num_patches, dtype=torch.bool, device=device)
     noise = torch.rand(batch_size, num_patches, device=device)
-    if bias_strength > 0 and patch_weights is not None:
+    weights = None
+    if patch_weights is not None:
         if patch_weights.shape != (batch_size, grid_h, grid_w):
             raise ValueError(
                 "patch_weights must have shape "
                 f"{(batch_size, grid_h, grid_w)}, got {tuple(patch_weights.shape)}"
             )
         weights = patch_weights.to(device=device, dtype=noise.dtype).reshape(batch_size, num_patches)
+    if bias_strength > 0 and weights is not None and not use_quotas:
         noise = noise - bias_strength * weights
     noise = noise.masked_fill(~valid, float("inf"))
 
@@ -110,7 +148,44 @@ def random_patch_mask(
         if num_valid == 0:
             continue
         num_mask = max(1, int(round(mask_ratio * num_valid)))
-        candidate_ids = torch.argsort(noise[sample_idx])[:num_mask]
+        if use_quotas:
+            assert weights is not None
+            sample_weights = weights[sample_idx]
+            sample_valid = valid[sample_idx]
+            selected = torch.zeros(num_patches, dtype=torch.bool, device=device)
+            fg_target = int(round(num_mask * float(foreground_mask_ratio)))
+            medium_target = int(round(num_mask * float(medium_mask_ratio)))
+            background_target = max(0, num_mask - fg_target - medium_target)
+            bins = [
+                (sample_valid & (sample_weights >= foreground_threshold), fg_target),
+                (
+                    sample_valid
+                    & (sample_weights >= background_threshold)
+                    & (sample_weights < foreground_threshold),
+                    medium_target,
+                ),
+                (sample_valid & (sample_weights < background_threshold), background_target),
+            ]
+            for bin_mask, target in bins:
+                if target <= 0:
+                    continue
+                available = bin_mask & ~selected
+                ids = torch.nonzero(available, as_tuple=False).flatten()
+                if ids.numel() == 0:
+                    continue
+                order = torch.argsort(noise[sample_idx, ids])
+                selected[ids[order[:target]]] = True
+
+            shortfall = num_mask - int(selected.sum().item())
+            if shortfall > 0:
+                remaining = sample_valid & ~selected
+                ids = torch.nonzero(remaining, as_tuple=False).flatten()
+                if ids.numel() > 0:
+                    order = torch.argsort(noise[sample_idx, ids])
+                    selected[ids[order[:shortfall]]] = True
+            candidate_ids = torch.nonzero(selected, as_tuple=False).flatten()
+        else:
+            candidate_ids = torch.argsort(noise[sample_idx])[:num_mask]
         mask[sample_idx, candidate_ids] = True
 
     return mask.reshape(batch_size, grid_h, grid_w)

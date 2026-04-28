@@ -18,10 +18,12 @@ from transformers import AutoModel, ConvNextV2Config
 from transformers.models.convnextv2.modeling_convnextv2 import ConvNextV2Layer
 
 from src.pretraining.fcmae.config import FCMAEModelConfig
-from src.pretraining.fcmae.masking import patchify, random_patch_mask
-
-BACKGROUND_HEAVY_INK_DENSITY_THRESHOLD = 0.01
-FOREGROUND_HEAVY_INK_DENSITY_THRESHOLD = 0.03
+from src.pretraining.fcmae.masking import (
+    BACKGROUND_HEAVY_INK_DENSITY_THRESHOLD,
+    FOREGROUND_HEAVY_INK_DENSITY_THRESHOLD,
+    patchify,
+    random_patch_mask,
+)
 
 
 @dataclass
@@ -38,6 +40,7 @@ class MaskedImageModelingOutput:
     masked_foreground_loss: torch.Tensor | None
     masked_background_patch_ratio: torch.Tensor | None
     masked_foreground_patch_ratio: torch.Tensor | None
+    loss_weight_mean_masked: torch.Tensor | None
 
 
 @dataclass
@@ -48,6 +51,7 @@ class ReconstructionLossOutput:
     loss_mask: torch.Tensor
     denominator: torch.Tensor
     samples_skipped_no_valid_patches: torch.Tensor
+    loss_weight_mean_masked: torch.Tensor | None
 
 
 def _detect_encoder_output_dim(encoder: nn.Module) -> int:
@@ -192,6 +196,7 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
         pred: torch.Tensor,
         mask: torch.Tensor,
         valid_patch_mask: torch.Tensor | None,
+        ink_density: torch.Tensor | None,
     ) -> ReconstructionLossOutput:
         """Compute masked patch reconstruction loss.
 
@@ -218,15 +223,31 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
                 dtype=loss.dtype,
             )
         loss_mask = flat_mask * flat_valid
-        denominator = loss_mask.sum().clamp_min(1.0)
+        if ink_density is None:
+            patch_loss_weight = torch.ones_like(loss_mask)
+            loss_weight_mean_masked: torch.Tensor | None = None
+        else:
+            ink = ink_density.to(device=loss.device, dtype=loss.dtype).reshape(loss_mask.shape)
+            patch_loss_weight = 1.0 + self.config.ink_loss_weight_alpha * (
+                ink / self.config.ink_loss_weight_target_density
+            ).clamp(0.0, 1.0)
+            weighted_mask_total = loss_mask.sum()
+            loss_weight_mean_masked = torch.where(
+                weighted_mask_total > 0,
+                (patch_loss_weight * loss_mask).sum() / weighted_mask_total.clamp_min(1.0),
+                torch.ones((), device=loss.device, dtype=loss.dtype),
+            )
+        weighted_loss_mask = loss_mask * patch_loss_weight
+        denominator = weighted_loss_mask.sum().clamp_min(1.0)
         skipped = (flat_valid.sum(dim=1) == 0).sum()
         return ReconstructionLossOutput(
-            loss=(loss * loss_mask).sum() / denominator,
+            loss=(loss * weighted_loss_mask).sum() / denominator,
             target_patches=target,
             per_patch_loss=loss,
             loss_mask=loss_mask,
             denominator=denominator,
             samples_skipped_no_valid_patches=skipped,
+            loss_weight_mean_masked=loss_weight_mean_masked,
         )
 
     def _masked_ink_bin_diagnostics(
@@ -291,6 +312,13 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             valid_patch_mask=valid_patch_mask,
             patch_weights=ink_density,
             bias_strength=self.ink_bias_strength,
+            foreground_mask_ratio=(
+                self.config.foreground_mask_ratio if ink_density is not None else None
+            ),
+            medium_mask_ratio=self.config.medium_mask_ratio if ink_density is not None else None,
+            background_mask_ratio=(
+                self.config.background_mask_ratio if ink_density is not None else None
+            ),
         )
         features = self._encode_with_feature_mask(pixel_values, mask)
         pred = self._decode_features(features, grid_h, grid_w)
@@ -299,6 +327,7 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             pred,
             mask,
             valid_patch_mask,
+            ink_density,
         )
         (
             masked_background_loss,
@@ -341,4 +370,5 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             masked_foreground_loss=masked_foreground_loss,
             masked_background_patch_ratio=masked_background_patch_ratio,
             masked_foreground_patch_ratio=masked_foreground_patch_ratio,
+            loss_weight_mean_masked=reconstruction.loss_weight_mean_masked,
         )

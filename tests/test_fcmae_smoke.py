@@ -120,6 +120,58 @@ def test_random_patch_mask_prefers_high_weight_patches() -> None:
     assert biased_share > uniform_share + 0.4
 
 
+def test_random_patch_mask_uses_foreground_medium_background_quotas() -> None:
+    grid_h, grid_w = 1, 20
+    weights = torch.full((1, grid_h, grid_w), 0.02)
+    weights[0, 0, :8] = 0.04
+    weights[0, 0, 14:] = 0.0
+
+    torch.manual_seed(0)
+    mask = random_patch_mask(
+        1,
+        grid_h,
+        grid_w,
+        0.5,
+        torch.device("cpu"),
+        patch_weights=weights,
+        foreground_mask_ratio=0.6,
+        medium_mask_ratio=0.25,
+        background_mask_ratio=0.15,
+    )
+
+    assert mask.sum().item() == 10
+    selected = mask[0, 0]
+    assert selected[:8].sum().item() == 6
+    assert selected[8:14].sum().item() == 2
+    assert selected[14:].sum().item() == 2
+
+
+def test_random_patch_mask_quota_backfills_and_respects_valid_patch_mask() -> None:
+    grid_h, grid_w = 1, 10
+    weights = torch.zeros(1, grid_h, grid_w)
+    weights[0, 0, 0] = FOREGROUND_HEAVY_INK_DENSITY_THRESHOLD
+    valid = torch.ones(1, grid_h, grid_w, dtype=torch.bool)
+    valid[0, 0, -1] = False
+
+    torch.manual_seed(0)
+    mask = random_patch_mask(
+        1,
+        grid_h,
+        grid_w,
+        0.6,
+        torch.device("cpu"),
+        valid_patch_mask=valid,
+        patch_weights=weights,
+        foreground_mask_ratio=0.6,
+        medium_mask_ratio=0.25,
+        background_mask_ratio=0.15,
+    )
+
+    assert mask.sum().item() == 5
+    assert (mask & ~valid).sum().item() == 0
+    assert mask[0, 0, 0]
+
+
 def test_upsample_mask_rectangular_shape() -> None:
     mask = torch.zeros(2, 3, 5, dtype=torch.bool)
     upsampled = upsample_mask(mask, scale=4)
@@ -186,6 +238,8 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     assert output.masked_foreground_loss is not None
     assert output.masked_background_patch_ratio is not None
     assert output.masked_foreground_patch_ratio is not None
+    assert output.loss_weight_mean_masked is not None
+    assert torch.isfinite(output.loss_weight_mean_masked)
     assert model.mask_token.shape == (1, 4, 1, 1)
 
     module = FCMAEPretrainer(
@@ -254,6 +308,43 @@ def test_fcmae_masked_ink_bin_diagnostics_use_masked_valid_patches_only() -> Non
     assert torch.allclose(foreground_loss, torch.tensor(3.0))
     assert torch.allclose(background_ratio, torch.tensor(1.0 / 3.0))
     assert torch.allclose(foreground_ratio, torch.tensor(1.0 / 3.0))
+
+
+def test_fcmae_reconstruction_loss_uses_ink_weighted_denominator() -> None:
+    model_config = FCMAEModelConfig(
+        patch_size=1,
+        mask_ratio=0.5,
+        decoder_dim=16,
+        decoder_depth=1,
+        norm_pix_loss=False,
+        ink_loss_weight_alpha=3.0,
+        ink_loss_weight_target_density=0.05,
+    )
+    model = DenseMaskedImageModelingConvNeXtV2(
+        model_config,
+        encoder=TinyEncoder(out_channels=8),
+        encoder_output_dim=8,
+        encoder_stride=1,
+    )
+    imgs = torch.zeros(1, 3, 1, 3)
+    pred = torch.tensor([[[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0, 3.0, 3.0]]])
+    mask = torch.ones(1, 1, 3, dtype=torch.bool)
+    ink_density = torch.tensor([[[0.0, 0.025, 0.05]]])
+
+    output = model._reconstruction_loss(
+        imgs,
+        pred,
+        mask,
+        valid_patch_mask=None,
+        ink_density=ink_density,
+    )
+
+    per_patch = torch.tensor([1.0, 4.0, 9.0])
+    weights = torch.tensor([1.0, 2.5, 4.0])
+    expected = (per_patch * weights).sum() / weights.sum()
+    assert torch.allclose(output.loss, expected)
+    assert output.loss_weight_mean_masked is not None
+    assert torch.allclose(output.loss_weight_mean_masked, weights.mean())
 
 
 def test_fcmae_masked_ink_bin_diagnostics_report_nan_for_empty_bins() -> None:
