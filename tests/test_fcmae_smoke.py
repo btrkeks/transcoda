@@ -258,6 +258,10 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     assert output.loss_weight_mean_masked is not None
     assert torch.isfinite(output.loss_weight_mean_masked)
     assert model.mask_token.shape == (1, 4, 1, 1)
+    assert model.ink_pred.weight.stride() == torch.empty_like(
+        model.ink_pred.weight,
+        memory_format=torch.channels_last,
+    ).stride()
 
     module = FCMAEPretrainer(
         model_config,
@@ -276,6 +280,8 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     loss.backward()
     assert model.mask_token.grad is not None
     assert torch.isfinite(model.mask_token.grad).all()
+    assert model.ink_pred.weight.grad is not None
+    assert model.ink_pred.weight.grad.stride() == model.ink_pred.weight.stride()
     grads = [param.grad for param in module.parameters() if param.grad is not None]
     assert grads
     assert any(torch.isfinite(grad).all() for grad in grads)

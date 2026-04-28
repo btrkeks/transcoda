@@ -182,6 +182,11 @@ class DenseMaskedImageModelingConvNeXtV2(nn.Module):
             self.patch_size * self.patch_size,
             kernel_size=1,
         )
+        self._set_conv_head_memory_format()
+
+    def _set_conv_head_memory_format(self) -> None:
+        for head in (self.proj, self.pred, self.ink_pred):
+            head.to(memory_format=torch.channels_last)
 
     def _encode_with_feature_mask(self, pixel_values: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
         embeddings = getattr(self.encoder, "embeddings", None)
