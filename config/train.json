@@ -45,8 +45,8 @@
     "auto_resume": false
   },
   "generation": {
-    "strategy": "beam",
-    "num_beams": 4,
+    "strategy": "greedy",
+    "num_beams": 1,
     "repetition_penalty": 1.3
   },
   "training": {
