@@ -18,7 +18,7 @@
   "training": {
     "batch_size": 4,
     "num_workers": 8,
-    "max_steps": 30000,
+    "max_steps": 10000,
     "accumulate_grad_batches": 64,
     "base_learning_rate": 0.00064,
     "weight_decay": 0.05,
