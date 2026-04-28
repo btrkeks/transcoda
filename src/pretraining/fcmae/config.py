@@ -40,6 +40,25 @@ class FCMAETrainingConfig(BaseModel):
     precision: str = "bf16-mixed"
     seed: int = 0
     resume_from_checkpoint: str | None = None
+    devices: int = 1
+    strategy: str = "auto"
+    num_nodes: int = 1
+
+    @model_validator(mode="after")
+    def validate_ddp(self) -> FCMAETrainingConfig:
+        if self.devices < 1:
+            raise ValueError("training.devices must be >= 1")
+        if self.num_nodes < 1:
+            raise ValueError("training.num_nodes must be >= 1")
+        if self.strategy == "ddp_spawn":
+            raise ValueError(
+                "training.strategy='ddp_spawn' is not supported; use 'ddp' instead. "
+                "ddp_spawn re-pickles the datamodule per subprocess and is fragile "
+                "with this setup."
+            )
+        if self.devices * self.num_nodes > 1 and self.strategy == "auto":
+            self.strategy = "ddp"
+        return self
 
 
 class FCMAECheckpointConfig(BaseModel):

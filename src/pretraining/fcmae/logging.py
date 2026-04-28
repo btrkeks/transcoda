@@ -43,6 +43,8 @@ class FCMAEReconstructionLogger(L.Callback):
         batch: Any,
         batch_idx: int,
     ) -> None:
+        if not getattr(trainer, "is_global_zero", True):
+            return
         logger = trainer.logger
         if not isinstance(logger, WandbLogger):
             return

@@ -20,7 +20,8 @@ CONFIG="${ROOT_DIR}/config/pretrain_fcmae_base.json"
 PARTITION="gpu"
 GPUS=1
 GPU_TYPE=""
-CPUS_PER_TASK=8
+DEFAULT_CPUS_PER_TASK=8
+CPUS_PER_TASK=${DEFAULT_CPUS_PER_TASK}
 MEMORY=""
 TIME_LIMIT="24:00:00"
 JOB_NAME="fcmae-pretrain"
@@ -29,6 +30,7 @@ NO_SYNC=false
 DRY_RUN=false
 SLURM_EXTRA_ARGS=()
 FORWARDED_ARGS=()
+AUTO_FORWARDED_ARGS=()
 CHECKPOINT_DIR=""
 EXPORT_DIR=""
 
@@ -114,6 +116,24 @@ get_forwarded_override_value() {
     arg="${arg#--}"
     if [[ "${arg}" == "${key}="* ]]; then
       printf '%s' "${arg#${key}=}"
+      return 0
+    fi
+  done
+  return 1
+}
+
+has_forwarded_override() {
+  local key="$1"
+  local arg
+  for arg in "${FORWARDED_ARGS[@]}"; do
+    arg="${arg#--}"
+    if [[ "${arg}" == "${key}="* ]]; then
+      return 0
+    fi
+  done
+  for arg in "${AUTO_FORWARDED_ARGS[@]}"; do
+    arg="${arg#--}"
+    if [[ "${arg}" == "${key}="* ]]; then
       return 0
     fi
   done
@@ -324,6 +344,22 @@ CONFIG="$(normalize_path_to_root "${CONFIG}")"
 if [ -n "${RESUME_PATH}" ]; then
   append_override "training.resume_from_checkpoint=${RESUME_PATH}"
 fi
+
+# Multi-GPU defaults: mirror the main SFT launcher by selecting Lightning DDP
+# unless the caller explicitly forwards trainer settings.
+if [ "${GPUS}" -gt 1 ]; then
+  if ! has_forwarded_override "training.devices"; then
+    AUTO_FORWARDED_ARGS+=("training.devices=${GPUS}")
+  fi
+  if ! has_forwarded_override "training.strategy"; then
+    AUTO_FORWARDED_ARGS+=("training.strategy=ddp")
+  fi
+  if [ "${CPUS_PER_TASK}" -eq "${DEFAULT_CPUS_PER_TASK}" ]; then
+    CPUS_PER_TASK=$((DEFAULT_CPUS_PER_TASK * GPUS))
+    echo "[pretrain_fcmae.sh] auto-scaled --cpus-per-task to ${CPUS_PER_TASK} for ${GPUS} GPUs (DDP)" >&2
+  fi
+fi
+
 if ! CHECKPOINT_DIR="$(get_forwarded_override_value "checkpoint.dirpath")"; then
   CHECKPOINT_DIR="$(resolve_config_value "${CONFIG}" "checkpoint.dirpath" || true)"
 fi
@@ -335,6 +371,9 @@ if EXPORT_DIR="$(get_forwarded_override_value "export.output_dir")"; then
 fi
 
 PY_CMD=(python -m scripts.pretrain_fcmae "${CONFIG}")
+if [ ${#AUTO_FORWARDED_ARGS[@]} -gt 0 ]; then
+  PY_CMD+=("${AUTO_FORWARDED_ARGS[@]}")
+fi
 if [ ${#FORWARDED_ARGS[@]} -gt 0 ]; then
   PY_CMD+=("${FORWARDED_ARGS[@]}")
 fi

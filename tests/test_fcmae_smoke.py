@@ -320,6 +320,31 @@ def test_reconstruction_logger_logs_once_per_global_step(monkeypatch) -> None:
     assert callback._logged_batches == 2
 
 
+def test_reconstruction_logger_skips_non_global_zero(monkeypatch) -> None:
+    class FakeExperiment:
+        def __init__(self) -> None:
+            self.logs = []
+
+        def log(self, payload: dict[str, object], *, step: int) -> None:
+            self.logs.append((payload, step))
+
+    class FakeWandbLogger:
+        def __init__(self) -> None:
+            self.experiment = FakeExperiment()
+
+    monkeypatch.setattr("src.pretraining.fcmae.logging.WandbLogger", FakeWandbLogger)
+
+    logger = FakeWandbLogger()
+    trainer = SimpleNamespace(logger=logger, global_step=500, is_global_zero=False)
+    pl_module = SimpleNamespace(_latest_preview={"payload": object()})
+    callback = FCMAEReconstructionLogger(every_n_steps=500, max_batches=2, max_images=1)
+
+    callback.on_train_batch_end(trainer, pl_module, outputs=None, batch=None, batch_idx=0)
+
+    assert logger.experiment.logs == []
+    assert callback._logged_batches == 0
+
+
 def test_pretrainer_accepts_checkpoint_hparam_dicts() -> None:
     model_config = FCMAEModelConfig(patch_size=32, decoder_dim=16, decoder_depth=1)
     training_config = FCMAETrainingConfig(batch_size=2, num_workers=0, max_steps=1)

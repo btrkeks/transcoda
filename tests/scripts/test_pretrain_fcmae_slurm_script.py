@@ -1,3 +1,4 @@
+import json
 import subprocess
 from pathlib import Path
 
@@ -49,6 +50,35 @@ def test_pretrain_fcmae_submit_dry_run_renders_bash_lc_and_bare_overrides() -> N
     assert "training.resume_from_checkpoint=weights/fcmae/last.ckpt" in result.stdout
 
 
+def test_pretrain_fcmae_submit_dry_run_uses_real_scan_defaults() -> None:
+    config = json.loads((ROOT / "config/pretrain_fcmae_base.json").read_text())
+
+    assert config["data"]["image_dir"] == "data/fcmae_images"
+    assert config["data"]["manifest_path"] is None
+    assert config["checkpoint"]["dirpath"] == "weights/fcmae-real-scans"
+    assert config["logging"]["wandb_enabled"] is True
+    assert config["logging"]["run_name"] == "fcmae-real-scan"
+
+    result = subprocess.run(
+        [
+            str(SCRIPT),
+            "submit",
+            "--dry-run",
+            "--no-sync",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    assert "--job-name=fcmae-pretrain" in result.stdout
+    assert "config/pretrain_fcmae_base.json" in result.stdout
+    assert "checkpoint.dirpath=weights/fcmae-real-scans" not in result.stdout
+    assert "logging.wandb_enabled=true" not in result.stdout
+    assert "logging.run_name=fcmae-real-scan" not in result.stdout
+
+
 def test_pretrain_fcmae_local_dry_run_strips_double_dash_override_prefix() -> None:
     result = subprocess.run(
         [
@@ -66,3 +96,51 @@ def test_pretrain_fcmae_local_dry_run_strips_double_dash_override_prefix() -> No
 
     assert "training.max_steps=1" in result.stdout
     assert "--training.max_steps=1" not in result.stdout
+
+
+def test_pretrain_fcmae_submit_dry_run_auto_forwards_ddp_for_multi_gpu() -> None:
+    result = subprocess.run(
+        [
+            str(SCRIPT),
+            "submit",
+            "--dry-run",
+            "--no-sync",
+            "--gpus",
+            "2",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    assert "--gres=gpu:2" in result.stdout
+    assert "--cpus-per-task=16" in result.stdout
+    assert "training.devices=2" in result.stdout
+    assert "training.strategy=ddp" in result.stdout
+    assert "auto-scaled --cpus-per-task to 16" in result.stderr
+
+
+def test_pretrain_fcmae_submit_dry_run_preserves_explicit_ddp_overrides() -> None:
+    result = subprocess.run(
+        [
+            str(SCRIPT),
+            "submit",
+            "--dry-run",
+            "--no-sync",
+            "--gpus",
+            "2",
+            "--",
+            "training.devices=1",
+            "training.strategy=auto",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    assert "training.devices=1" in result.stdout
+    assert "training.strategy=auto" in result.stdout
+    assert "training.devices=2" not in result.stdout
+    assert "training.strategy=ddp" not in result.stdout

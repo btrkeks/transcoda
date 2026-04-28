@@ -25,19 +25,22 @@
     "warmup_steps": 1000,
     "precision": "bf16-mixed",
     "seed": 0,
-    "resume_from_checkpoint": null
+    "resume_from_checkpoint": null,
+    "devices": 1,
+    "strategy": "auto",
+    "num_nodes": 1
   },
   "checkpoint": {
-    "dirpath": "weights/fcmae",
+    "dirpath": "weights/fcmae-real-scans",
     "filename": "fcmae-{step:06d}",
     "save_last": true,
     "save_top_k": -1,
     "every_n_train_steps": 1000
   },
   "logging": {
-    "wandb_enabled": false,
+    "wandb_enabled": true,
     "project": "SMT-FCMAE",
-    "run_name": null,
+    "run_name": "fcmae-real-scan",
     "group": null,
     "tags": [],
     "log_model": false,

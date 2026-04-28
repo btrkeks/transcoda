@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -65,6 +66,10 @@ def _slurm_config() -> dict[str, Any]:
     return {key: value for key, value in values.items() if value is not None}
 
 
+def _is_rank_zero() -> bool:
+    return int(os.environ.get("LOCAL_RANK", os.environ.get("RANK", "0"))) == 0
+
+
 def _setup_logger(config: FCMAEConfig, config_dict: dict[str, Any]) -> WandbLogger | bool:
     if not config.logging.wandb_enabled:
         return False
@@ -77,18 +82,23 @@ def _setup_logger(config: FCMAEConfig, config_dict: dict[str, Any]) -> WandbLogg
         log_model=config.logging.log_model,
     )
     logger.log_hyperparams(config_dict)
-    effective_batch_size = config.training.batch_size * config.training.accumulate_grad_batches
-    resolved_lr = config.training.base_learning_rate * effective_batch_size / 256
-    logger.experiment.config.update(
-        {
-            "scale/effective_batch_size": effective_batch_size,
-            "optimization/base_learning_rate": config.training.base_learning_rate,
-            "optimization/resolved_initial_learning_rate": resolved_lr,
-            "data/pixels_per_sample": config.data.image_height * config.data.image_width * 3,
-            **_slurm_config(),
-        },
-        allow_val_change=True,
+    world_size = config.training.devices * config.training.num_nodes
+    effective_batch_size = (
+        config.training.batch_size * config.training.accumulate_grad_batches * world_size
     )
+    resolved_lr = config.training.base_learning_rate * effective_batch_size / 256
+    if _is_rank_zero():
+        logger.experiment.config.update(
+            {
+                "scale/effective_batch_size": effective_batch_size,
+                "scale/world_size": world_size,
+                "optimization/base_learning_rate": config.training.base_learning_rate,
+                "optimization/resolved_initial_learning_rate": resolved_lr,
+                "data/pixels_per_sample": config.data.image_height * config.data.image_width * 3,
+                **_slurm_config(),
+            },
+            allow_val_change=True,
+        )
     return logger
 
 
@@ -110,7 +120,7 @@ def _log_dataset_size(datamodule: FCMAEDataModule, logger: WandbLogger | bool) -
         raise RuntimeError("FCMAE datamodule did not initialize a train dataset")
     image_count = len(datamodule.train_set)
     print(f"FCMAE pretraining images used: {image_count}", flush=True)
-    if isinstance(logger, WandbLogger):
+    if isinstance(logger, WandbLogger) and _is_rank_zero():
         logger.experiment.config.update({"data/num_images_used": image_count}, allow_val_change=True)
     return image_count
 
@@ -150,7 +160,9 @@ def main() -> None:
     trainer = L.Trainer(
         max_steps=config.training.max_steps,
         accelerator="auto",
-        devices="auto",
+        devices=config.training.devices,
+        strategy=config.training.strategy,
+        num_nodes=config.training.num_nodes,
         precision=config.training.precision,
         accumulate_grad_batches=config.training.accumulate_grad_batches,
         callbacks=callbacks,
@@ -164,7 +176,7 @@ def main() -> None:
         ckpt_path=config.training.resume_from_checkpoint,
     )
 
-    if config.export.export_on_train_end:
+    if config.export.export_on_train_end and trainer.is_global_zero:
         checkpoint_path = Path(config.checkpoint.dirpath) / "last.ckpt"
         export_fcmae_encoder(
             checkpoint_path=checkpoint_path,
