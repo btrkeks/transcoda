@@ -227,6 +227,25 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     assert module._latest_preview["norm_pix_loss"] is True
 
 
+def test_fcmae_dataset_skips_unreadable_image_files(tmp_path: Path) -> None:
+    image_dir = tmp_path / "images"
+    image_dir.mkdir()
+    (image_dir / "bad.webp").write_bytes(b"not a real webp image")
+    _write_image(image_dir / "good.png", (80, 120))
+
+    data_config = FCMAEDataConfig(
+        image_dir=str(image_dir),
+        image_height=130,
+        image_width=98,
+    )
+    dataset = FCMAEImageDataset(data_config, patch_size=32)
+
+    sample = dataset[0]
+
+    assert sample["path"].endswith("good.png")
+    assert sample["pixel_values"].shape == (3, 160, 128)
+
+
 def test_fcmae_patch16_uses_learned_decoder_upsample(tmp_path: Path) -> None:
     image_dir = tmp_path / "images"
     image_dir.mkdir()

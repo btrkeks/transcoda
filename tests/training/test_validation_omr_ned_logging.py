@@ -42,6 +42,8 @@ class _TrainerStub:
         self.val_metrics_by_set = {"synth": _MetricCollectionStub()}
         self._val_batches_seen_by_set = {"synth": 0}
         self._val_runaway_tracker_by_set = None
+        self._validation_metric_prefix = "val"
+        self._validation_example_logging_override = None
         self._compute_omr_ned = True
         self._omr_ned_tracker = OMRNEDTracker()
         self._omr_ned_tracker._enabled = True
@@ -59,6 +61,15 @@ class _TrainerStub:
     def _generate_with_grammar(self, pixel_values, image_sizes, max_length):
         del pixel_values, image_sizes, max_length
         return torch.tensor([[1, 3, 2, 0], [1, 4, 2, 0]])
+
+    def _validation_set_metric_name(self, set_name, metric_name):
+        return SMTTrainer._validation_set_metric_name(self, set_name, metric_name)
+
+    def _validation_aggregate_metric_name(self, metric_name):
+        return SMTTrainer._validation_aggregate_metric_name(self, metric_name)
+
+    def should_log_validation_examples(self):
+        return SMTTrainer.should_log_validation_examples(self)
 
 
 def test_validation_logs_canonical_omr_ned_metrics(monkeypatch):

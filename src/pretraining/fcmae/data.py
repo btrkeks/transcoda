@@ -176,6 +176,7 @@ class FCMAEImageDataset(Dataset[dict[str, Any]]):
         self.encoder_stride = encoder_stride or patch_size
         self.alignment_multiple = math.lcm(self.patch_size, self.encoder_stride)
         self.paths = _collect_image_paths(config)
+        self._warned_unreadable_paths: set[Path] = set()
         if not self.paths:
             source = config.image_dir if config.image_dir is not None else config.manifest_path
             raise ValueError(f"no images found for FCMAE pretraining source: {source}")
@@ -184,13 +185,25 @@ class FCMAEImageDataset(Dataset[dict[str, Any]]):
         return len(self.paths)
 
     def __getitem__(self, index: int) -> dict[str, Any]:
-        path = self.paths[index]
-        with Image.open(path) as image:
-            pixel_values, valid_pixel_mask = fit_image_to_canvas(
-                image,
-                image_height=self.config.image_height,
-                image_width=self.config.image_width,
-            )
+        last_error: Exception | None = None
+        for offset in range(len(self.paths)):
+            path = self.paths[(index + offset) % len(self.paths)]
+            try:
+                with Image.open(path) as image:
+                    pixel_values, valid_pixel_mask = fit_image_to_canvas(
+                        image,
+                        image_height=self.config.image_height,
+                        image_width=self.config.image_width,
+                    )
+                break
+            except (OSError, ValueError) as exc:
+                last_error = exc
+                if path not in self._warned_unreadable_paths:
+                    self._warned_unreadable_paths.add(path)
+                    log.warning("Skipping unreadable FCMAE image file %s: %s", path, exc)
+        else:
+            raise RuntimeError("all FCMAE image files are unreadable") from last_error
+
         pixel_values, valid_pixel_mask = pad_to_patch_multiple(
             pixel_values,
             valid_pixel_mask,

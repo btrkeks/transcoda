@@ -90,7 +90,7 @@ class Training(BaseModel):
     # Provides semantically-aware music notation comparison. Parse failures count
     # as 100.0 in the aggregate score and are tracked separately.
     # Install dependencies with: uv sync --group omr-ned
-    compute_omr_ned: bool = False
+    compute_omr_ned: bool = True
     # Grammar-constrained decoding during validation.
     # Ensures syntactically valid **kern output but adds overhead.
     # Disable during training for faster validation; enable for final evaluation.
