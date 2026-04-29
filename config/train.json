@@ -25,14 +25,14 @@
   },
   "optimizer": {
     "learning_rate": 0.001,
-    "encoder_lr_factor": 0.1,
+    "encoder_lr_factor": 0.5,
     "weight_decay": 0.01,
-    "warmup_steps": 1000,
+    "warmup_steps": 2000,
     "cosine_eta_min_factor": 0.05,
     "lr_scheduler": "cosine",
     "cosine_restart_period": 5000,
     "cosine_restart_mult": 2,
-    "layerwise_decay_gamma": 0.8,
+    "layerwise_decay_gamma": 0.95,
     "layerwise_target": "encoder"
   },
   "checkpoint": {
