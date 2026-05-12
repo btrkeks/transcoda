@@ -1,0 +1,6 @@
+!! expected_failure_line=5
+*clefF4	*clefG2
+*k[f#]	*k[f#]
+4AA	4cc) 4aa
+4E 4A 4c	4b 4dd
+.	8gg[L

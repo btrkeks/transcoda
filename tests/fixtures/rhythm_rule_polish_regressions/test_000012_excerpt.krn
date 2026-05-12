@@ -1,0 +1,8 @@
+!! expected_failure_line=7
+*clefF4	*clefG2
+*k[f#c#]	*k[f#c#]
+4AAA#	8A 8c#L
+.	8f#
+4AA#	8.d#
+.	8f#J
+4BBBn	8F#( 8BL

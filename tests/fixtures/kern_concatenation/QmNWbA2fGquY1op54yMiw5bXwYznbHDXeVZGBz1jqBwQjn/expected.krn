@@ -1,0 +1,154 @@
+*clefGv2
+*k[]
+*M2/4
+*^
+4c	2C
+4c	.
+=	=
+4g	4E
+4g	4C
+=	=
+4a	4F
+4a	4C
+=	=
+4g	4E
+4g	4C
+=	=
+4f	4D
+4f	4BB
+=	=
+4e	4C
+4e	4AA
+=	=
+4d	4FF
+4d	4GG
+=	=
+2c	2C
+=:|!	=:|!
+4g	4E
+4g	4GG
+=	=
+4f	4D
+4f	4GG
+=	=
+4e	4C
+4e	4GG
+=	=
+2d	2BB
+=	=
+4e 4g	4C
+4e 4g	4C#
+=	=
+4d 4f	4C
+4d 4f	4AA
+=	=
+4c 4e	4C
+4c 4e	4F#
+=	=
+2B 2d	2G
+=	=
+4c	2C 2E
+4c	.
+=	=
+4c 4g	4E
+4g	4C
+=	=
+4c 4a	4F
+4a	4C
+=	=
+2c 2e 2g	2C
+=	=
+4f	4G 4B
+4f	4G# 4B
+=	=
+4c 4e	4A
+4e	4E
+=	=
+4d 4e	4F
+4B 4d	4G
+=	=
+2c	2C 2E
+=||	=||
+4.c	8r
+.	8C
+.	8E
+8c	8r
+=	=
+4.g	8r
+.	8E
+.	8C
+8g	8r
+=	=
+4.a	8r
+.	8F
+.	8C
+8a	8r
+=	=
+4.g	8r
+.	8E
+.	8C
+8e 8g	8r
+=	=
+8r	4D
+8d 8e 8f	.
+8r	4BB
+8d 8f	.
+=	=
+8r	4C
+8d 8e	.
+8r	4AA
+8c 8e	.
+=	=
+8r	4F
+8c 8d	.
+8r	4G
+8B 8d	.
+=	=
+2c	4E
+.	4C
+=||	=||
+4.g	8r
+.	8E
+.	8C
+8g	8r
+=	=
+4.f#	8r
+.	8D
+.	8BB
+8fn	8r
+=	=
+4.e	8r
+.	8C
+.	8AA
+8e-	8r
+=	=
+4.d	8r
+.	8BB
+.	4GG
+8G	.
+=	=
+4.g	8r
+.	8E
+.	8C
+16gLL	8r
+16f#JJ	.
+=	=
+4.e-	8r
+.	8D
+.	8BB
+16fLL	8r
+16e-JJ	.
+=	=
+4.e-	8r
+.	8C
+.	8GG
+16f#LL	8r
+16gJJ	.
+=	=
+4d	8r
+.	8BB
+8r	8GG
+16fnLL	8r
+16dJJ	.
+*v	*v
+=||
