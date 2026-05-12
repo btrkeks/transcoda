@@ -1,0 +1,107 @@
+"""Crash-artifact helpers for terminal worker failures."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from scripts.dataset_generation.dataset_generation.recipe import ProductionRecipe
+from scripts.dataset_generation.dataset_generation.render_transcription import (
+    materialize_render_transcription,
+)
+from scripts.dataset_generation.dataset_generation.renderer import prepare_sample_render_context
+from scripts.dataset_generation.dataset_generation.run_context import RunContext
+from scripts.dataset_generation.dataset_generation.truncation import build_prefix_candidates
+from scripts.dataset_generation.dataset_generation.types_domain import SamplePlan
+
+
+def write_crash_artifact(
+    *,
+    run_context: RunContext,
+    recipe: ProductionRecipe,
+    plan: SamplePlan,
+    sample_idx: int,
+    event_type: str,
+    retry_count: int,
+    will_retry: bool,
+    queue_wait_ms: float,
+    dropped_pending_tasks: int,
+    target_bucket: int | None,
+    planned_line_count: int | None,
+    candidate_in_target_range: bool | None,
+    exception_payload: dict[str, object] | None,
+    last_worker_stage_event: dict[str, object] | None,
+) -> tuple[Path, int]:
+    crash_dir = run_context.crash_samples_dir / plan.sample_id
+    crash_dir.mkdir(parents=True, exist_ok=True)
+
+    repro_entries: list[dict[str, object]] = []
+    render_context = prepare_sample_render_context(
+        plan.label_transcription,
+        recipe,
+        seed=plan.seed,
+    )
+
+    full_render_path = crash_dir / f"{sample_idx:08d}_full.krn"
+    full_render_path.write_text(
+        materialize_render_transcription(
+            plan.label_transcription,
+            recipe,
+            augmentation_plan=render_context.augmentation_plan,
+            source_line_indices=tuple(range(len(plan.label_transcription.splitlines()))),
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    repro_entries.append(
+        {
+            "stage": "full",
+            "seed": plan.seed,
+            "render_transcription_path": str(full_render_path),
+        }
+    )
+
+    for idx, candidate in enumerate(build_prefix_candidates(plan.label_transcription, recipe), start=1):
+        candidate_seed = (plan.seed + candidate.chunk_count * 17) & 0xFFFFFFFF
+        candidate_path = crash_dir / f"{sample_idx:08d}_truncation_{idx:02d}.krn"
+        candidate_path.write_text(
+            materialize_render_transcription(
+                candidate.transcription,
+                recipe,
+                augmentation_plan=render_context.augmentation_plan,
+                source_line_indices=candidate.origin_line_indices,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        repro_entries.append(
+            {
+                "stage": "truncation_candidate",
+                "seed": candidate_seed,
+                "chunk_count": candidate.chunk_count,
+                "total_chunks": candidate.total_chunks,
+                "ratio": candidate.ratio,
+                "render_transcription_path": str(candidate_path),
+            }
+        )
+
+    artifact = {
+        "event_type": event_type,
+        "sample_id": plan.sample_id,
+        "sample_idx": sample_idx,
+        "retry_count": retry_count,
+        "will_retry": will_retry,
+        "queue_wait_ms": queue_wait_ms,
+        "dropped_pending_tasks": dropped_pending_tasks,
+        "source_paths": [str(segment.path.resolve()) for segment in plan.segments],
+        "target_bucket": target_bucket,
+        "planned_line_count": planned_line_count,
+        "candidate_in_target_range": candidate_in_target_range,
+        "stage_unknown_due_to_timeout": event_type == "timeout",
+        "last_worker_stage_event": last_worker_stage_event,
+        "exception": exception_payload,
+        "repro_entries": repro_entries,
+    }
+    artifact_path = crash_dir / f"{sample_idx:08d}_{event_type}.json"
+    artifact_path.write_text(json.dumps(artifact, indent=2), encoding="utf-8")
+    return artifact_path, len(repro_entries)

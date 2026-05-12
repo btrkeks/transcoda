@@ -1,0 +1,373 @@
+*clefX
+*k[]
+*M4/4
+*^
+4gg	4r
+8.ggL	4d
+16ggJk	.
+4gg	4r
+8.ggL	4d
+16ggJk	.
+*v	*v
+=
+1r
+=
+*^
+4gg	4f
+8.ggL	4d 4f
+16ggJk	.
+4gg	4f
+8.ggL	4d 4f
+16ggJk	.
+*v	*v
+=
+1r
+=
+*^
+4gg	4r
+8.ggL	4d
+16ggJk	.
+4gg	4r
+8.ggL	4d
+16ggJk	.
+*v	*v
+=
+1r
+=
+*^
+*	*^
+4gg	4r	4cc
+*	*v	*v
+8.ggL	4d
+16ggJk	.
+*	*^
+4gg	4r	4cc
+*	*v	*v
+8.ggL	4d
+16ggJk	.
+=	=
+4gg	4r
+*	*^
+8.ggL	4d	4cc
+16ggJk	.	.
+*	*v	*v
+4gg	4r
+*	*^
+8.ggL	4d	4cc
+16ggJk	.	.
+=	=	=
+4gg	4r	4cc
+8.ggL	4d	4cc
+16ggJk	.	.
+*	*v	*v
+4gg	4r
+8.ggL	4d
+16ggJk	.
+=	=
+*	*^
+4gg	4r	4cc
+8.ggL	4d	4cc
+16ggJk	.	.
+4gg	4r	4cc
+8.ggL	4d	4cc
+16ggJk	.	.
+=	=	=
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	4r
+16ggJk	.	.
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	4r
+16ggJk	.	.
+=	=	=
+4gg	4r	4r
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	4r
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+=	=	=
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	2r
+8.ggL	4d	.
+16ggJk	.	.
+=	=	=
+4gg	4r	4r
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	4r
+16ggJk	.	.
+=	=	=
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+=	=	=
+4gg	4r	4.cc
+8.ggL	4d	.
+.	.	8cc
+16ggJk	.	.
+4gg	4r	2r
+8.ggL	4d	.
+16ggJk	.	.
+=	=	=
+4gg	4r	4r
+8.ggL	4d	4.cc
+16ggJk	.	.
+4gg	4r	.
+.	.	8cc
+8.ggL	4d	4r
+16ggJk	.	.
+=	=	=
+4gg	4r	4.cc
+8.ggL	4d	.
+.	.	8cc
+16ggJk	.	.
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	4r
+16ggJk	.	.
+*	*v	*v
+=	=
+4gg	4r
+8.ggL	4d
+16ggJk	.
+4gg	4r
+8.ggL	4d
+16ggJk	.
+=	=
+*	*^
+4gg	4r	4r
+8.ggL	4d	4.cc
+16ggJk	.	.
+4gg	4r	.
+.	.	8cc
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+=	=	=
+4gg	4r	4.cc
+8.ggL	4d	.
+.	.	8cc
+16ggJk	.	.
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+=	=	=
+4gg	4r	8ccL
+.	.	8ccJ
+8.ggL	4d	4r
+16ggJk	.	.
+4gg	4r	8ccL
+.	.	8ccJ
+8.ggL	4d	4r
+16ggJk	.	.
+=	=	=
+4gg	4r	4r
+8.ggL	4d	8ccL
+.	.	8ccJ
+16ggJk	.	.
+4gg	4r	4r
+8.ggL	4d	8ccL
+.	.	8ccJ
+16ggJk	.	.
+=	=	=
+4gg	8r	8ccL
+.	8r	8cc
+8.ggL	4d	8cc
+.	.	8ccJ
+16ggJk	.	.
+4gg	4r	2r
+8.ggL	4d	.
+16ggJk	.	.
+=	=	=
+4gg	4r	8r
+.	.	8r
+8.ggL	4d	8ccL
+.	.	8ccJ
+16ggJk	.	.
+4gg	4r	8ccL
+.	.	8ccJ
+8.ggL	4d	4r
+16ggJk	.	.
+=	=	=
+4gg	4r	8ccL
+.	.	8cc
+8.ggL	4d	8cc
+.	.	8ccJ
+16ggJk	.	.
+4gg	4r	8ccL
+.	.	8cc
+8.ggL	4d	8cc
+.	.	8ccJ
+16ggJk	.	.
+=	=	=
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	4cc
+16ggJk	.	.
+4gg	4r	4cc
+8.ggL	4d	4r
+16ggJk	.	.
+=	=	=
+4gg	4r	4r
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	4cc
+8.ggL	4d	4cc
+16ggJk	.	.
+=	=	=
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	4cc
+8.ggL	4d	4cc
+16ggJk	.	.
+=	=	=
+4gg	4r	4cc
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	4cc
+16ggJk	.	.
+=	=	=
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	4cc
+16ggJk	.	.
+=	=	=
+4gg	4r	8r
+.	.	8ccL
+8.ggL	4d	8cc
+.	.	8ccJ
+16ggJk	.	.
+4gg	4r	4r
+8.ggL	4d	4cc
+16ggJk	.	.
+=	=	=
+4gg	4r	4cc
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	8ccL
+.	.	8ccJ
+8.ggL	4d	4r
+16ggJk	.	.
+=	=	=
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	8ccL
+.	.	8ccJ
+8.ggL	4d	4r
+16ggJk	.	.
+=	=	=
+4gg	4r	4r
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	8r
+.	.	8ccL
+8.ggL	4d	8cc
+.	.	8ccJ
+16ggJk	.	.
+=	=	=
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	8r
+.	.	8ccL
+8.ggL	4d	8cc
+.	.	8ccJ
+16ggJk	.	.
+=	=	=
+4gg	4r	8ccL
+.	.	8ccJ
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	4cc
+8.ggL	4d	4cc
+16ggJk	.	.
+=	=	=
+4gg	4r	8ccL
+.	.	8ccJ
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	4cc
+8.ggL	4d	4cc
+16ggJk	.	.
+=	=	=
+4gg	4r	8ccL
+.	.	8ccJ
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	4cc
+16ggJk	.	.
+=	=	=
+4gg	4r	4cc
+8.ggL	4d	8ccL
+.	.	8ccJ
+16ggJk	.	.
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	4cc
+16ggJk	.	.
+=	=	=
+4gg	4r	4cc
+8.ggL	4d	8ccL
+.	.	8ccJ
+16ggJk	.	.
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+=	=	=
+4gg	4r	8r
+.	.	8cc
+8.ggL	4d	8r
+.	.	8cc
+16ggJk	.	.
+4gg	4r	8ccL
+.	.	8ccJ
+8.ggL	4d	4cc
+16ggJk	.	.
+*v	*v	*v
+==

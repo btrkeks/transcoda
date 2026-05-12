@@ -1,0 +1,9 @@
+[package]
+name = "spine_checker"
+version = "0.1.0"
+edition = "2021"
+description = "Checks strict canonical spine correctness for Humdrum **kern snippets"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+thiserror = "1"
