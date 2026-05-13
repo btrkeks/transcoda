@@ -1,0 +1,236 @@
+*clefF4	*clefG2
+*k[f#c#g#d#a#]	*k[f#c#g#d#a#]
+*met(c|)	*met(c|)
+1r	2r
+.	4.F# 4.f#
+.	8F# 8f#
+=	=
+1r	1F#[ 1f#[
+=	=
+1r	2F#] 2f#]
+.	4.F# 4.f#
+.	8F# 8f#
+=	=
+1r	1F#[ 1f#[
+=	=
+*	*^
+12BBBL	2f#]	12F#]L
+12BB	.	12d#
+12FF#J	.	12BJ
+12BBBL	.	12F#L
+12BB	.	12d#
+12FF#J	.	12BJ
+12BBBL	2b[	12BL
+12BB	.	12f#
+12FF#J	.	12d#J
+12BBBL	.	12BL
+12BB	.	12f#
+12FF#J	.	12d#J
+=	=	=
+12BBBL	4B] 4b]	12BL
+12BB	.	12f#
+12FF#J	.	12d#J
+12BBBL	4c#( 4cc#(	12c#L
+12FF#	.	12f#
+12BBJ	.	12eJ
+12BBL	4e 4ee	12eL
+12c#	.	12a#
+12F#J	.	12f#J
+12BBL	4d#) 4dd#)	12d#L
+12B	.	12b
+12F#J	.	12f#J
+=	=	=
+12EEL	4r	4r
+12E	.	.
+12C#J	.	.
+12DD#L	4G#( 4g#(	12G#L
+12E	.	12e
+12C#J	.	12c#J
+12CC#L	4A# 4a#	12A#L
+12C#	.	12f#
+12FF#J	.	12eJ
+12BBBL	4B 4b	12BL
+12BB	.	12f#
+12FF#J	.	12eJ
+=	=	=
+12AAA#L	2cc#)	12c#L
+12FF#	.	12f#
+12AA#J	.	12eJ
+12AA#L	.	12c#L
+12A#	.	12f#
+12F#J	.	12eJ
+12AA#L	2f#[	12F#L
+12AA#	.	12e
+12FF#J	.	12c#J
+12AAA#L	.	12F#L
+12AA#	.	12e
+12FF#J	.	12c#J
+=	=	=
+12BBBL	2f#]	12F#L
+12FF#	.	12d#
+12BBJ	.	12BJ
+12BBBL	.	12F#L
+12FF#	.	12d#
+12BBJ	.	12BJ
+12AAnL	2b[	12BL
+12A#	.	12f#
+12F#J	.	12d#J
+12AAL	.	12BL
+12A#	.	12f#
+12F#J	.	12d#J
+=	=	=
+12GG#L	4B] 4b]	12BL
+12G#	.	12f#
+12F#J	.	12dnJ
+12GG#L	4B 4b	12BL
+12F#	.	12f#
+12G#J	.	12dJ
+12BL	4g# 4gg#	12g#L
+12dn	.	12ddn
+12BJ	.	12bJ
+12AnL	4f#[ 4ff#[	12f#L
+12d	.	12dd
+12AJ	.	12bJ
+=	=	=
+12G#L	4f#] 4ff#]	12f#L
+12dn	.	12b
+12G#J	.	12g#J
+8C#	4e# 4ee#	12e#L
+.	.	12b
+8r	.	.
+.	.	12g#J
+12r	4B 4b	12BL
+12C#(L	.	12g#
+12GG#J	.	12e#J
+12CC#L	4dn[ 4ddn[	12dnL
+12C#	.	12b
+12GG#J	.	12g#J
+=	=	=
+12EE#L	4dn] 4dd]	12dnL
+12E#	.	12b
+12C#J	.	12g#J
+12EE#L	4d 4ddn	12dL
+12E#	.	12b
+12C#J	.	12g#J
+12EE#L	4c# 4cc#	12c#L
+12E#	.	12b
+12C#J	.	12g#J
+12EE#L	4B 4b	12BL
+12E#	.	12g#
+12C#J	.	12dJ
+=	=	=
+12EEnL	4r	4r
+12C#	.	.
+12E)J	.	.
+4r	4F#~( 4f#~(	12F#L
+.	.	12c#
+.	.	12A#J
+*	*clefF4	*
+4BB#~ 4B#~	12r	4r
+.	12F#L	.
+.	12EJ	.
+4r	4c#~	12C#L
+.	.	12F#
+.	.	12E)J
+*	*v	*v
+=	=
+12r	2.F#[ 2.B[ 2.f#[
+12DD#(L	.
+12BBJ	.
+12D#L	.
+12F#	.
+12BJ	.
+12d#L	.
+12B	.
+12F#J	.
+12D#L	8F#] 8B] 8f#]
+12BB	.
+.	8r
+12FF#)J	.
+=	=
+*	*^
+12EE(L	4r	4r
+12C#	.	.
+12E)J	.	.
+*	*clefG2	*
+4r	4F#~ 4f#~	12F#(L
+.	.	12c#
+.	.	12A#J
+*clefG2	*	*
+4B# 4b#	12r	4r
+.	12f#L	.
+.	12eJ	.
+4r	4cc#~	12c#L
+.	.	12f#
+.	.	12e)J
+*	*v	*v
+*clefF4	*
+=	=
+12r	2.g#[ 2.b[ 2.gg#[
+12DDn(L	.
+12BBJ	.
+12DnL	.
+12F#	.
+12BJ	.
+12dnL	.
+12B	.
+12F#J	.
+12DL	4f#] 4b] 4gg#]
+12BB	.
+12FF#)J	.
+=	=
+*	*^
+12CC#(L	4r	4r
+12C#	.	.
+12AA#J	.	.
+8CC#)	4A#( 4a#(	12A#L
+.	.	12f#
+8r	.	.
+.	.	12c#J
+12r	4d# 4dd#	12d#L
+12A#L	.	12a#
+12F#J	.	12f#J
+12C#(L	4c# 4cc#	12c#L
+12A#	.	12a#
+12F#J	.	12f#J
+=	=	=
+8C#)	4B# 4b#	12B#L
+.	.	12g#
+8r	.	.
+.	.	12f#J
+12r	4Bn 4bn	12BnL
+12C#(L	.	12g#
+12GG#J	.	12f#J
+12CC#L	4A# 4a#	12A#L
+12C#	.	12e#
+12AA#J	.	12c#J
+12CC#L	4G#) 4g#)	12G#L
+12C#	.	12e#
+12BB)J	.	12c#J
+=	=	=
+4AA#(	1FF#[	12F#( 12f#(L
+.	.	12A#
+.	.	12c#J
+4C#~	.	12f#L
+.	.	12a#
+.	.	12cc#J
+4G#~	.	12ff#L
+.	.	12aa#
+.	.	12ccc#J
+4F#~	.	12fff#L
+.	.	12ccc#
+.	.	12aa#J
+=	=	=
+4E~	2FF#]	12ff#L
+.	.	12cc#
+.	.	12a#J
+4C#~	.	12f#L
+.	.	12a#
+.	.	12ff#J
+4GG#~	2FF#	12f#L
+.	.	12b
+.	.	12ff#J
+4AA#~)	.	12f#L
+.	.	12cc#
+.	.	12ff#)J
+=	=	=

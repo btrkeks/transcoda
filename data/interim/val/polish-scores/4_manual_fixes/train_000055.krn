@@ -1,0 +1,265 @@
+*clefF4	*clefG2
+*k[b-e-]	*k[b-e-]
+*met(c)	*met(c)
+8BB-(L	1r
+8en	.
+8f	.
+8AJ	.
+8B-L	.
+8f#	.
+8g	.
+8BnJ	.
+=	=
+8cL	1r
+8d	.
+8e-	.
+8E-J	.
+8FL	.
+8Bn	.
+8c	.
+8FF)J	.
+=	=
+8BB-(L	4r
+8en	.
+8f	2dd
+8AJ	.
+8B-L	.
+8f#	.
+8g	4dd[
+8BnJ	.
+=	=
+*	*^
+8cL	12dd(]L	2.r
+.	12ee-	.
+8d	.	.
+.	12ffJ	.
+8e-	12ggL	.
+.	12bn	.
+8E-J	.	.
+.	12ccJ	.
+8FL	12ddL	.
+.	12ee-	.
+8Bn	.	.
+.	12gJ	.
+8c	12aL	4e-
+.	12b-	.
+8FF)J	.	.
+.	12ccJ	.
+=	=	=
+8BB-L	4f)	4d
+8en	.	.
+8f	2dd	2.r
+8AJ	.	.
+8B-L	.	.
+8e	.	.
+8f	4dd[	.
+8A-J	.	.
+=	=	=
+8GL	12dd(]L	2.r
+.	12ee-	.
+8d	.	.
+.	12ffJ	.
+8e-	12ggL	.
+.	12bn	.
+8G-J	.	.
+.	12ccJ	.
+8FL	12ddL	.
+.	12ee-	.
+8Bn	.	.
+.	12gJ	.
+8c	12aL	4e-
+.	12b-	.
+8FFJ	.	.
+.	12ccJ	.
+*	*v	*v
+=	=
+8GGL	4d) 4b-)
+8B-	.
+8e-	4bb-([
+8dJ	.
+8c#L	12bb-]L
+.	12aa
+8en	.
+.	12dd#J
+8a	12eenL
+.	12ff
+8c#J	.
+.	12gg[J
+=	=
+*^	*
+8dL	2r	12gg]L
+.	.	12ff
+8en	.	.
+.	.	12a#J
+8f	.	12bnL
+.	.	12cc
+8DJ	.	.
+.	.	12dd[J
+8E-L	4E-(	12dd]L
+.	.	12cc
+8c	.	.
+.	.	12f#J
+8d-	4En)	12gL
+.	.	12an
+8cJ	.	.
+.	.	12bJ
+=	=	=
+8FL	4F(	4a)
+8A	.	.
+8e-	4F#)	4ccc([
+8dJ	.	.
+8GL	2r	12ccc]L
+.	.	12bb-
+8a	.	.
+.	.	12cc#J
+8b-	.	12ddL
+.	.	12een
+8GJ	.	.
+.	.	12ff)J
+=	=	=
+8CL	4aa([	4r
+8d#	.	.
+8en	12aa]L	4b-(
+.	12gg	.
+8CJ	.	.
+.	12ffJ	.
+8FFL	4ff)	4a)
+8C	.	.
+8F	4r	4e-(
+8cJ	.	.
+=	=	=
+*^	*	*
+12BB-L	2r	4r	4d)
+12F	.	.	.
+12dJ	.	.	.
+12enL	.	2dd	2.r
+12g	.	.	.
+12fJ	.	.	.
+12BnL	2Bn	.	.
+12d	.	.	.
+12fJ	.	.	.
+12f#L	.	4dd([	.
+12a-	.	.	.
+12gJ	.	.	.
+=	=	=	=
+4c	2c	12dd]L	2.r
+.	.	12ee-	.
+.	.	12ffJ	.
+4e- 4g	.	12ggL	.
+.	.	12bn	.
+.	.	12ccJ	.
+4FF	2r	12ddL	.
+.	.	12ee-	.
+.	.	12gJ	.
+4F 4c	.	12aL	4e-
+.	.	12b-	.
+.	.	12ccJ	.
+*	*	*v	*v
+=	=	=
+12BB-L	2r	4d) 4f)
+12F	.	.
+12dJ	.	.
+12enL	.	2dd
+12g	.	.
+12fJ	.	.
+12A-L	2A-	.
+12d	.	.
+12e-J	.	.
+12enL	.	4dd[
+12g	.	.
+12fJ	.	.
+=	=	=
+*	*	*^
+4G	2G	12dd(]L	2.r
+.	.	12ee-	.
+.	.	12ffJ	.
+4B- 4e-	.	12ggL	.
+.	.	12bn	.
+.	.	12ccJ	.
+4FF	2r	12ddL	.
+.	.	12ee-	.
+.	.	12gJ	.
+4F 4c	.	12aL	4e-
+.	.	12b-	.
+.	.	12ccJ	.
+*	*	*v	*v
+=	=	=
+12GGL	2r	4d) 4b-)
+12D	.	.
+12GJ	.	.
+12B-L	.	4bb-([
+12e-	.	.
+12dJ	.	.
+*clefG2	*	*
+4c#	2c#	12bb-]L
+.	.	12aa
+.	.	12dd#J
+4en[ 4a[	.	12eenL
+.	.	12ff
+.	.	12gg[J
+=	=	=
+4a]	2d	12gg]L
+.	.	12ff
+.	.	12a#J
+4f	.	12bnL
+.	.	12cc
+.	.	12dd[J
+*clefF4	*	*
+4EEn	2r	12dd]L
+.	.	12cc
+.	.	12f#J
+4En 4B- 4c	.	12gL
+.	.	12an
+.	.	12b-)J
+=	=	=
+12FFL	4r	4a
+12C	.	.
+12FJ	.	.
+12AL	4F#(	4ccc([
+12e-	.	.
+12dJ	.	.
+4B-(	2G)	12ccc]L
+.	.	12bb-
+.	.	12cc#J
+4b-)	.	12ddL
+.	.	12een
+.	.	12ffJ
+=	=	=
+4CC	4aa	4r
+4c 4en	12aaL	4b-(
+.	12gg	.
+.	12ffJ	.
+12FFL	4ff)	4a)
+12C	.	.
+12FJ	.	.
+12AL	4r	4r
+12c	.	.
+12dJ	.	.
+=	=	=
+*^	*	*
+4e-	2e-	8r	4r
+.	.	8bnL	.
+4f	.	8cc	4cc
+.	.	8cccJ	.
+4d	2d[	2ff	12cc(L
+.	.	.	12dd
+.	.	.	12ccJ
+4f	.	.	12b-L
+.	.	.	12a
+.	.	.	12a-J
+*v	*v	*	*
+=	=	=
+12d(]L	4b-	2.g)
+12e-	.	.
+12dJ	.	.
+12cL	4ee-	.
+12e-	.	.
+12cJ	.	.
+12AL	4cc	.
+12e-	.	.
+12AJ	.	.
+12DL	8b-L	4f#
+12d	.	.
+.	8aJ	.
+12C)J	.	.
+=	=	=

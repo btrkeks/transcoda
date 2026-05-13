@@ -1,0 +1,263 @@
+*clefF4	*clefG2
+*k[]	*k[]
+16G(	16g[
+=!|:	=!|:
+8CC)[ 8C)[L	32g]L
+.	64r
+.	64g([K
+.	32e)] 32g)] 32ee)]
+.	64r
+.	64d# 64g 64dd#Jk
+32CC] 32C]Jk	32e 32g 32eeKL
+32r	32r
+16CC( 16C(L	16G[ 16e[ 16g[
+32BBB) 32BB)Jk	32G] 32d#] 32g]K
+32r	32r
+16BBB-( 16BB-(KL	16G[ 16c#[ 16g[J
+=	=
+8AAA)[ 8AA)[	32G] 32c#] 32g]L
+.	64r
+.	64f[K
+.	32c#] 32f] 32cc]
+.	64r
+.	64B 64f 64bJk
+32AAA] 32AA]Jk	32c# 32f 32ccKL
+32r	32r
+16AAA-( 16AA-(L	16F[ 16c#[ 16f[
+32GGG) 32GG)K	32F] 32B] 32f]K
+32r	32r
+16GGG- 16GG-J	16E[ 16B-[ 16e[J
+=	=
+16.FFF 16.FFL	32E] 32B-] 32e]L
+.	64r
+.	64dJK
+.	16A[ 16a[J
+32FFF 32FFJk	.
+16EEE 16EEL	32A] 32a]L
+.	32G 32g
+16EE[ 16E[J	32c 32cc
+.	32e 32eeJ
+32EE] 32E]L	8g[ 8gg[J
+32GG 32G	.
+32EE 32E	.
+32CC 32CJ	.
+=	=
+*	*^
+16BBB 16BBL	16g] 16gg]L	16r
+32BB 32GL	16g[ 16dd[J	32fL
+32BB 32GJ	.	32f 32gJ
+16BB 16GL	32dd]L	32f 32g
+.	32f	16.f
+16BB 16G	32g	.
+.	32dd#J	.
+16BB 16G	16.eeL	32eeKL
+.	.	16e[
+16BB 16G#J	.	.
+.	32ddnJk	32e_Jk
+*	*v	*v
+=	=
+8AA 8A	32e] 32cc]L
+.	64r
+.	64ee([K
+.	32cc)] 32ee)] 32ccc)]
+.	64r
+.	64b 64ee 64bbJK
+*clefG2	*
+32.r	8cc 8ee 8cccJ
+64G#( 64g#(KL	.
+32B) 32b)	.
+64r	.
+64A( 64a(Jk	.
+16E- 16e-L	16g([ 16cc([ 16gg([L
+=	=
+16D) 16d)J	32f#)] 32cc)] 32ff#)]Jk
+.	64r
+.	64ff#(KL
+16r	32b) 32bb)
+.	64r
+.	64a 64aaJk
+*clefF4	*
+32.r	8g 8ggJ
+64D#( 64d#(KL	.
+32F#) 32f#)	.
+64r	.
+64E( 64e(Jk	.
+8BB- 8B-L	16r
+.	16d( 16g( 16dd(L
+=	=
+*	*^
+32AA) 32A)J	32c#) 32g) 32cc#)Jk	8.r
+32r	32r	.
+16A 16eL	8g 8cc# 8gg	.
+16DDJ	.	.
+16D[ 16A[ 16d[L	32ff#(L	16f#[ 16ccn[
+.	32eeJ	.
+32D] 32A] 32d]Jk	32f#)] 32cc)] 32dd)]L	8r
+32r	32c# 32cc	.
+16r	32B 32b	.
+.	32A 32aJ	.
+*	*v	*v
+=	=
+16r	16ddL
+32GG 32D 32F#L	32c 32d 32aL
+32GG 32D 32F#J	32c 32d 32bJ
+16GG 16D 16G	16B 16d 16gL
+32GL	32gL
+32GJ	32gJ
+16G	16g
+16GJ	16gJ
+=:|!|:	=:|!|:
+16GG	32.r
+.	64b-( 64dd(KL
+16r	32a) 32cc#)
+.	64r
+.	64b-([ 64dd([Jk
+*clefG2	*
+16r	8b-] 8ee]L
+16g(L	.
+16c#	8a) 8ff)J
+16d)J	.
+=	=
+*	*^
+32e(L	16g: 16cc: 16gg:L	8r
+32d	.	.
+32c	16g#: 16cc: 16gg#:J	.
+32B-J	.	.
+*clefF4	*	*
+32AL	16.aa:L	16.a: 16.cc:
+32C	.	.
+32FF)J	.	.
+32r	32ee(Jk	32r
+8r	32ggnL	8r
+.	32ff	.
+.	32cc	.
+.	32aJ	.
+*	*v	*v
+=	=
+8r	32f)L
+.	64r
+.	64f( 64a(K
+.	32e) 32g#)
+.	64r
+.	64f([ 64a([Jk
+*clefG2	*
+16r	8f] 8b]L
+16d(L	.
+16G#	8e) 8cc)J
+16A)J	.
+*clefF4	*
+=	=
+*	*^
+32B(L	16d: 16gn: 16dd:L	8r
+32A	.	.
+32G	16d#: 16g: 16dd#:J	.
+32FJ	.	.
+32EL	16.ee:L	16.e: 16.g:
+32GG	.	.
+32CC)J	.	.
+32r	32b(Jk	32r
+8r	32ddnL	8r
+.	32cc	.
+.	32g	.
+.	32eJ	.
+=	=	=
+8r	8.r	32c)L
+.	.	64r
+.	.	64e( 64ee(K
+.	.	32d#) 32dd#)
+.	.	64r
+.	.	64e 64eeJk
+8r	.	8.b[ 8.dd#( 8.gg( 8.bb[L
+.	16AAA 16AAKL	.
+16B( 16d#( 16g(L	8AJ	.
+16f#J	.	16b_ 16dd#) 16ff#) 16bb_Jk
+=	=	=
+16G) 16B) 16e)	8r	32b] 32ee 32bb]L
+.	.	64r
+.	.	64e( 64ee(K
+16r	.	32d#) 32dd#)
+.	.	64r
+.	.	64e 64eeJk
+16r	16r	8.a([ 8.cc#([ 8.ffn([ 8.aa([L
+16r	16GGG 16GGKL	.
+16A([ 16c#([ 16fn([L	8GJ	.
+16eJ	.	16a)_ 16cc#)_ 16ee)_ 16aa)_Jk
+=	=	=
+32d)L	32F] 32A]	32a] 32dd] 32aa]L
+32r	16.r	32aa 32aaa
+32a	.	32ff 32fff
+32gJ	.	32ee 32eeeJ
+32fL	4r	32dd 32dddL
+32e	.	32ccn 32cccn
+32d	.	32b 32bb
+32cJ	.	32a 32aaJ
+32BL	.	32g 32ggL
+32A	.	32f 32ff
+32G	.	32e 32ee
+32FJ	.	32d 32ddJ
+*v	*v	*
+=	=
+16r	16ggL
+32C 32G 32BL	32f 32g 32ddL
+32C 32G 32BJ	32f 32g 32eeJ
+16C 16G 16c	16e 16g 16ccL
+32GL	32gL
+32GJ	32gJ
+16G	16g
+16GJ	16gJ
+=:|!	=:|!
+16r	16ggL
+32C 32G 32BL	32f 32g 32ddL
+32C 32G 32BJ	32f 32g 32eeJ
+16C 16G 16cJ	16e 16g 16ccJ
+16r	16r
+*	*clefF4
+8GG[	8G[
+=||	=||
+*k[b-e-a-]	*k[b-e-a-]
+*^	*^
+4.GG]	8CCL	4.G]	8E-L
+.	8BBBn	.	8D
+.	8CC[J	.	8E-J
+*v	*v	*	*
+=	=	=
+8CC] 8AA-]L	4.C[ 4.c[	8FL
+8GG	.	8E-
+8FFJ	.	8A-J
+=	=	=
+8EE-L	8C] 8G] 8c]	8r
+8DD	4F 4d	8c(L
+8GGGJ	.	8BnJ
+=	=	=
+8.CCL	8E- 8e-	16dL
+.	.	16c)J
+*	*clefG2	*
+.	8.fL	8.A-[ 8.e-[L
+16CC-K	.	.
+8BBB-J	.	.
+.	16f#Jk	16A-] 16d]Jk
+*	*v	*v
+=	=
+8EE-L	8G[ 8B-[ 8g[L
+8DD	8F#] 8B-] 8f#]
+8EE-[J	8G 8B- 8gJ
+=	=
+8EE-]L	8GG[ 8G[L
+8DD	8AAn] 8G] 8An]
+8DD-J	8BBn 8F 8BnJ
+=	=
+*	*^
+16CCL	8C[ 8c(L	16EnL
+16BBB-	.	16GJ
+16AAAn	8C_ 8F 8d)[	4r
+16BBB-	.	.
+16CC	8C] 8F# 8d]J	.
+16DDJ	.	.
+*	*v	*v
+=	=
+8GGGL	8C 8G[ 8d[L
+16GGJk	16BBn 16G] 16d]Jk
+16r	16r
+*	*clefF4
+8GG[	8G[
+=	=

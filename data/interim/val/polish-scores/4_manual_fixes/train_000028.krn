@@ -1,0 +1,153 @@
+*clefF4	*clefG2
+*k[b-e-a-d-]	*k[b-e-a-d-]
+*M6/8	*M6/8
+4.F	4.f
+8GL	8gL
+8A-	8a-
+8GJ	8gJ
+=	=
+8FL	8fL
+8D-J	8d-J
+2C	2c
+=	=
+2.DD- 2.D-	2.F 2.B-
+=	=
+2.CC 2.C	2.En 2.c
+=	=
+2.DD- 2.D-	2.F 2.B- 2.g
+=	=
+2.CC 2.C	4.En[ 4.c[ 4.g[
+.	4E;] 4c;] 4g;]
+.	8c
+=||	=||
+8FFL	4f(
+8F 8A-	.
+8F 8A-J	8e-
+8F 8A-L	4d-
+8F 8A-	.
+8F 8A-J	8c)
+=	=
+8D- 8F 8GL	4.c(
+8D- 8F 8G	.
+8D- 8F 8GJ	.
+8D- 8F 8GL	4.B-)
+8D- 8F 8G	.
+8D- 8F 8GJ	.
+=	=
+8CC 8CL	8gL
+8C 8En	8G
+8C 8FJ	8A-J
+8C 8GL	8B-L
+.	32qqcL
+.	32qqB-J
+16C 16FL	16A-L
+16G	16B-
+16C 16A-	16c
+16EJ	16GJ
+=	=
+8FFL	4.A-
+8F 8A-	.
+8F 8A-J	.
+8F 8A-L	4r
+8F 8A-	.
+8F 8A-J	8r
+=	=
+8DD-L	4G
+8D- 8F 8G	.
+8D- 8F 8GJ	8B-
+8D- 8F 8GL	4.f[
+8D- 8F 8G	.
+8D- 8F 8GJ	.
+=	=
+8DD-L	8f]L
+8D- 8G 8B-	8g
+8D- 8G 8B-J	8fJ
+8CCL	8enL
+8C 8G 8B-	8f
+8C 8G 8B-J	8gJ
+=	=
+8FF 8FL	4A- 4a-
+8F 8A- 8c	.
+8F 8A- 8cJ	8c 8cc
+8F 8A- 8cL	4.f[ 4.ff[
+8F 8A- 8c	.
+8F 8A- 8cJ	.
+=	=
+8DD- 8D-L	8f] 8ff]L
+8D- 8F 8G 8B-	8g 8gg
+8D- 8F 8G 8B-J	8f 8ffJ
+8CC 8CL	8en 8eenL
+8C 8G 8B-	8f 8ff
+8C 8G 8B-J	8g 8ggJ
+=	=
+8FFL	4a- 4aa-
+8F 8A- 8c	.
+8F 8A- 8cJ	16b- 16bb-L
+.	16a- 16aa-J
+8F 8A- 8cL	4g 4gg
+8F 8A- 8c	.
+8F 8A- 8cJ	8f 8ff
+=	=
+8BBB- 8BB-L	4.ff 4.fff
+8F 8G 8B- 8d-	.
+8F 8G 8B- 8d-J	.
+8F 8G 8B- 8d-L	4b- 4bb-
+8F 8G 8B- 8d-	.
+8F 8G 8B- 8d-J	8dd- 8ddd-
+=	=
+8CL	4cc( 4ccc(
+8c 8a-J	.
+8r	8dd-) 8ddd-)
+8CL	4b-( 4bb-(
+8c 8gJ	.
+8r	8cc) 8ccc)
+=	=
+8CL	4a-( 4aa-(
+8c 8fJ	.
+8r	8b-) 8bb-)
+8CL	4g( 4gg(
+8c 8enJ	.
+8r	8cc;) 8ccc;)
+=	=
+8FFL	4f 4ff
+8F 8A-	.
+8F 8A-J	8e- 8ee-
+8F 8A-L	4d- 4dd-
+8F 8A-	.
+8F 8A-J	8c 8cc
+=	=
+8D- 8F 8GL	4.c 4.cc
+8D- 8F 8G	.
+8D- 8F 8GJ	.
+8D- 8F 8GL	4.B- 4.b-
+8D- 8F 8G	.
+8D- 8F 8GJ	.
+=	=
+8BBB- 8BB-L	4b- 4bb-
+8D- 8F 8G	.
+8D- 8F 8GJ	8g[ 8gg[
+8D- 8F 8G 8B-L	8g] 8gg]L
+8D- 8F 8G 8B-	8f 8ff
+8D- 8F 8G 8B-J	8g 8ggJ
+=	=
+8CL	4.en 4.een
+8G 8B- 8c	.
+8G 8B- 8cJ	.
+8AAnL	4f 4ff
+8F 8cJ	.
+8r	8e- 8ee-
+=	=
+8BB-L	4.d-[ 4.dd-[
+8D- 8F 8G	.
+8D- 8F 8GJ	.
+8D- 8F 8G	8d-] 8dd-]L
+4r	8G 8g
+.	8A- 8a-J
+=	=
+8D- 8F 8GL	4.B- 4.b-
+8D- 8F 8G	.
+8D- 8F 8GJ	.
+8C 8G 8B-L	4.c 4.cc
+8C 8G 8B-	.
+8C 8G 8B-J	.
+=	=
