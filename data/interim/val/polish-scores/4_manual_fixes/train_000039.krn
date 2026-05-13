@@ -1,0 +1,217 @@
+*clefF4	*clefG2
+*k[b-e-a-d-]	*k[b-e-a-d-]
+8FL	4cc 4ccc
+8f 8an	.
+8cJ	4ff 4fff
+8E-L	.
+8c 8e-	8.een 8.eeenL
+8AnJ	.
+.	16ff 16fffJk
+=	=
+8D-L	4gg- 4ggg-
+8d- 8f	.
+8B-J	4ff 4fff
+8D-L	.
+8d- 8f	8.een 8.eeenL
+8B-J	.
+.	16ff 16fffJk
+=	=
+8CL	4gg- 4ggg-
+8An 8e-	.
+8FJ	4ff 4fff
+8CL	.
+8A 8e-	8.een 8.eeenL
+8FJ	.
+.	16ff 16fffJk
+=	=
+8BB-L	2.ddd-;[ 2.dddd-;[
+8B- 8d-	.
+8F	.
+8d-	.
+8B-	.
+8FJ	.
+=	=
+8BB-L	4ddd-] 4dddd-]
+8B- 8d-	.
+8FJ	4bb- 4bbb-
+8d-L	.
+8B-	8.gg 8.gggL
+8FJ	.
+.	16ff 16fffJk
+=	=
+8BB-L	4dd- 4ddd-
+8G 8d-	.
+8FJ	4b- 4bb-
+8d-L	.
+8B-	8.g 8.ggL
+8GJ	.
+.	16f 16ffJk
+=	=
+8CL	4en 4een
+8B- 8c	.
+8GJ	4cc 4ccc
+8CL	.
+8B- 8c	8.g 8.ggL
+8GJ	.
+.	16a- 16aa-Jk
+=	=
+8FFL	2.f[ 2.ff[
+8F 8A-	.
+8CJ	.
+8FFL	.
+8F 8A-	.
+8CJ	.
+=	=
+8FFL	4f] 4ff]
+8G 8B-	.
+8CJ	4c 4cc
+8FFL	.
+8G 8B-	8.a- 8.aa-L
+8CJ	.
+.	16g 16ggJk
+=	=
+8FFL	2.f 2.ff
+8F 8A-	.
+8CJ	.
+8FFL	.
+8F 8A-	.
+8CJ	.
+=	=
+8FFL	2.ff 2.fff
+8F 8A-	.
+8CJ	.
+8FFL	.
+8F 8A-	.
+8CJ	.
+=	=
+*^	*
+8FFL	8FF	2.r
+8F 8A-	4r	.
+8CJ	.	.
+8EE-L	8EE-	.
+8F 8A-	4r	.
+8CJ	.	.
+=	=	=
+8DD-L	8DD-	2.r
+8F 8A-	4r	.
+8D-J	.	.
+8CCL	8CC	.
+8F 8A-	4r	.
+8CJ	.	.
+*v	*v	*
+=	=
+*M3/4	*M3/4
+4BBn 4F 4A- 4dn	8ff 8fffL
+.	8aaa-J
+*clefG2	*
+8eenL	8eeenL
+8ff	8fff
+8gg	8ggg
+8ffJ	8fffJ
+=	=
+12c 12g 12b- 12eenL	12eeenL
+12gg	12ggg
+12dd-J	12ddd-J
+12ccL	12cccL
+12ee	12eee
+12b-J	12bb-J
+12a-L	12aa-L
+12cc	12ccc
+12gJ	12ggJ
+=	=
+8A- 8Bn 8d- 8fL	8ffL
+8a-J	8aa-
+8enL	8een
+8f	8ff
+8g	8gg
+8fJ	8ffJ
+=	=
+12C 12G 12B- 12enL	12eenL
+12g	12gg
+12d-J	12dd-J
+12cL	12ccL
+12en	12ee
+12B-J	12b-J
+*clefF4	*
+12A-L	12a-L
+12c	12cc
+12GJ	12gJ
+=	=
+12D-L	12gL
+12F	12d-
+12A-J	12fJ
+12d-L	12a-(L
+12A-	12dd-
+12FJ	12ffJ
+12D-L	12ffL
+12F	12gg
+12A-J	12aa-)J
+=	=
+12CL	12g(L
+12F	12c
+12A-J	12enJ
+12cL	12fL
+12A-	12a-
+12FJ	12ccJ
+12CL	12ffL
+12F	12gg
+12A-J	12aa-)J
+=	=
+12BBnL	12g(L
+12F	12dn
+12A-J	12fJ
+12d-L	12a-L
+12A-	12bn
+12FJ	12dd-J
+12BBnL	12ffL
+12F	12gg
+12A-J	12aa-)J
+=	=
+12CL	12g(L
+12F	12c
+12A-J	12enJ
+12cL	12fL
+12A-	12a-
+12FJ	12ccJ
+12CL	12ffL
+12F	12gg
+12A-J	12aa-)J
+=	=
+4DD- 4D-	12g(L
+.	12d-
+.	12fJ
+4r	12a-L
+.	12dd-
+.	12ffJ
+4r	12aa-L
+.	12ddd-
+.	12fffJ
+=	=
+4r	12aaa-L
+.	12fff
+.	12ddd-J
+4r	12aa-L
+.	12ff
+.	12dd-J
+4r	12a-L
+.	12f
+.	12d-J
+=	=
+4r	12a-L
+.	12f
+.	12d-)J
+12A-(L	4r
+12F	.
+12D-J	.
+12AA-L	4r
+12FF	.
+12DD-)J	.
+=	=
+4DD-	4r
+4D- 4A- 4d-	4f( 4gg(
+4D- 4A- 4d-	4f) 4ff)
+=	=
+4BB-	4r
+4F 4G 4d-	4f( 4ee-(
+4F 4G 4d-	4f) 4dd-)
+=	=

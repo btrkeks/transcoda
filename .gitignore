@@ -62,6 +62,16 @@ output.log
 
 # Data, experiments, and generated artifacts
 /data/
+!/data/
+/data/*
+!/data/interim/
+/data/interim/*
+!/data/interim/val/
+/data/interim/val/*
+!/data/interim/val/polish-scores/
+/data/interim/val/polish-scores/*
+!/data/interim/val/polish-scores/4_manual_fixes/
+!/data/interim/val/polish-scores/4_manual_fixes/**
 outputs/
 analysis/
 reports/

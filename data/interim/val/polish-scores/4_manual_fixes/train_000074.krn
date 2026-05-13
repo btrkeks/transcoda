@@ -1,0 +1,395 @@
+*clefF4	*clefG2
+*k[]	*k[]
+*	*^
+32GGL	8.c 8.ddL	16aL
+32A	.	.
+32D	.	16b
+32GG	.	.
+32A	.	16f#J
+32DJ	.	.
+32GGL	8B 8gJ	4.r
+32G	.	.
+32D	.	.
+32GG	.	.
+32B	16r	.
+32GJ	.	.
+32DL	8.r	.
+32d	.	.
+32B	.	.
+32G	.	.
+32g	.	.
+32BJ	.	.
+*	*v	*v
+=!|:	=!|:
+32FL	16r
+32g	.
+32d	8gg[L
+32B	.
+32g	.
+32dJ	.
+32EL	16gg]L
+32g	.
+.	8aaq
+32c#	16gg(
+32B-	.
+32g	16ff#J
+32c#J	.
+32DL	16ggL
+32g	.
+32d	16aa
+32B-	.
+32g	16bb-[J
+32dJ	.
+=	=
+*	*^
+32C#L	16bb-]L	4.r
+32g	.	.
+32e	16aa	.
+32B-	.	.
+32g	16ggJ	.
+32eJ	.	.
+.	8aaq	.
+32AL	16ggL	.
+32g	.	.
+32e	16ff	.
+32A	.	.
+32g	16ee[J	.
+32eJ	.	.
+32DL	8.ff	16ee]L
+32f	.	.
+32d	.	16a
+32A	.	.
+32f	.	16dd)J
+32dJ	.	.
+*	*v	*v
+=	=
+32CL	16r
+32d	.
+32A	8dd[L
+32F	.
+32d	.
+32AJ	.
+32BBL	16dd]L
+32d	.
+.	8eeq
+32G#	16dd(
+32F	.
+32d	16cc#J
+32G#J	.
+32AAL	16dd)L
+32d	.
+32A	16ee( 16eee(
+32F	.
+32d	16ff)[ 16fff)[J
+32AJ	.
+=	=
+32GG#L	16ff] 16fff]L
+32d	.
+32B	16ff[ 16fff[
+32F	.
+32d	16ff] 16fff]J
+32BJ	.
+32EL	8ff( 8fff(L
+32d	.
+32B	.
+32E	.
+32d	16ee) 16eee)Jk
+32BJ	.
+32AAL	8.r
+32c	.
+32A	.
+32E	.
+32c	.
+32AJ	.
+=	=
+32BBL	16r
+32a	.
+32d#	16dd#(L
+32B	.
+32a	16aa[J
+32d#J	.
+32B-L	16aa)]L
+32g	.
+.	8aaq
+32dn	16gg(
+32B-	.
+32g	16ff#J
+32dJ	.
+32B-L	8ggL
+32g	.
+32d	.
+32B-	.
+32g	16ddn)Jk
+32dJ	.
+=	=
+32CL	16r
+32g	.
+32c#	16cc#(L
+32A	.
+32g	16gg[J
+32c#J	.
+32A-L	16gg)]L
+32f	.
+.	8ggq
+32cn	16ff
+32A-	.
+32f	16eeJ
+32cJ	.
+32A-L	8ffL
+32f	.
+32c	.
+32A-	.
+32f	16ccnJk
+32cJ	.
+=	=
+32GL	16r
+32b-	.
+32e	8ee[L
+32c#	.
+32b-	.
+32eJ	.
+32FL	16ee]L
+32a	.
+32d	16dd(
+32A	.
+32a	16aa[J
+32dJ	.
+32GGL	16aa)]L
+32f	.
+32B	16b(
+32G	.
+32f	16ddJ
+32BJ	.
+=	=
+*	*^
+32CL	8.f 8.ggL	16ddL
+32d	.	.
+32G	.	16ee
+32C	.	.
+32d	.	16bJ
+32GJ	.	.
+32CL	8e) 8cc)J	4.r
+32c	.	.
+32G	.	.
+32C	.	.
+32e	16r	.
+32cJ	.	.
+32GL	8.r	.
+32g	.	.
+32e	.	.
+32c	.	.
+32g	.	.
+32eJ	.	.
+=:|!	=:|!	=:|!
+32CL	8.f( 8.gg(L	16ddL
+32d	.	.
+32G	.	16ee
+32C	.	.
+32d	.	16bJ
+32GJ	.	.
+32CL	8e) 8cc)J	4.r
+32c	.	.
+32G	.	.
+32C	.	.
+32c	16r	.
+32GJ	.	.
+32CL	8.e-([ 8.a([	.
+32c	.	.
+32F#	.	.
+32C	.	.
+32c	.	.
+32F#J	.	.
+=	=	=
+32CL	4.b-)	8.e-]L
+32B-	.	.
+32G	.	.
+32C	.	.
+32B-	.	.
+32GJ	.	.
+32CL	.	8.d
+32B-	.	.
+32Fn	.	.
+32C	.	.
+32B-	.	.
+32FJ	.	.
+32CL	8.g(	8.d-[J
+32B-	.	.
+32E	.	.
+32C	.	.
+32B-	.	.
+32EJ	.	.
+=	=	=
+32CL	4.a)	8.d-]L
+32A	.	.
+32F	.	.
+32C	.	.
+32A	.	.
+32FJ	.	.
+32CL	.	8.c
+32A	.	.
+32F	.	.
+32C	.	.
+32A	.	.
+32FJ	.	.
+32CL	8.d-	8.A-[J
+32C	.	.
+32FF	.	.
+32CC	.	.
+32C	.	.
+32FFJ	.	.
+=	=	=
+32CCL	4.e	8.A-]L
+32C	.	.
+32GG	.	.
+32CC	.	.
+32C	.	.
+32GGJ	.	.
+32CCL	.	8.G
+32C	.	.
+32GG	.	.
+32CC	.	.
+32C	.	.
+32GGJ	.	.
+32CCL	8.B	8.FJ
+32C	.	.
+32AA-	.	.
+32CC	.	.
+32C	.	.
+32AA-J	.	.
+=	=	=
+32CCL	8.E[ 8.c[L	4.r
+32C	.	.
+32GG	.	.
+32CC	.	.
+32C	.	.
+32GGJ	.	.
+32CCL	16E] 16c]L	.
+32C	.	.
+32GG	16bb-(	.
+32CC	.	.
+32C	16b-J	.
+32GGJ	.	.
+32CCL	16d-)L	8.d-
+32C	.	.
+32GG	16g(	.
+32CC	.	.
+32C	16GJ	.
+32GGJ	.	.
+=	=	=
+32CCL	8.c)[ 8.a)[L	4.r
+32C	.	.
+32FF#	.	.
+32CC	.	.
+32C	.	.
+32FF#J	.	.
+32CCL	16c] 16a]L	.
+32C	.	.
+32FF#	16aa(	.
+32CC	.	.
+32C	16aJ	.
+32FF#J	.	.
+32CCL	16c)L	8.c
+32C	.	.
+32FF#	16f#(	.
+32CC	.	.
+32C	16F#J	.
+32FF#J	.	.
+=	=	=
+32CCL	8.B)[ 8.a-)[L	4.r
+32C	.	.
+32FFn	.	.
+32CC	.	.
+32C	.	.
+32GGJ	.	.
+32CCL	16B] 16a-]L	.
+32C	.	.
+32GG	16ff(	.
+32CC	.	.
+32C	16fJ	.
+32GGJ	.	.
+32CCL	16A-)L	8.A-
+32C	.	.
+32FF	16d(	.
+32CC	.	.
+32C	16DJ	.
+32FFJ	.	.
+=	=	=
+32CCL	8.G)[ 8.e)[L	4.r
+32C	.	.
+32GG	.	.
+32CC	.	.
+32C	.	.
+32GGJ	.	.
+32CCL	16G] 16e]L	.
+32C	.	.
+32GG	16g(	.
+32CC	.	.
+32C	16EJ	.
+32GGJ	.	.
+32CCL	16A-)L	8.A-
+32C	.	.
+32FF	16d(	.
+32CC	.	.
+32C	16DJ	.
+32FFJ	.	.
+=	=	=
+32CCL	8.G)[ 8.e)[L	4.r
+32C	.	.
+32GG	.	.
+32CC	.	.
+32C	.	.
+32GGJ	.	.
+32CCL	16G] 16e]L	.
+32C	.	.
+32GG	16g	.
+32CC	.	.
+32C	16EJ	.
+32GGJ	.	.
+32CCL	16A-L	8.A-
+32C	.	.
+32FF	16d	.
+32CC	.	.
+32C	16DJ	.
+32FFJ	.	.
+*	*v	*v
+=	=
+32CCL	8.G[ 8.e[L
+32C	.
+32GG	.
+32CC	.
+32C	.
+32GGJ	.
+32CCL	8G] 8e]J
+32C	.
+32GG	.
+32CC	.
+32AA	16r
+32GGJ	.
+32CCL	8.G( 8.e(L
+32C	.
+32GG	.
+32CC	.
+32C	.
+32GGJ	.
+=	=
+32CCL	8.E[ 8.c[
+32C	.
+32GG	.
+32CC	.
+32C	.
+32GGJ	.
+32CCL	8E)] 8c)]J
+32C	.
+32GG	.
+32CC	.
+32C	16r
+32GGJ	.
+32CCL	8.E 8.G 8.c
+32C	.
+32GG	.
+32CC	.
+32C	.
+32GGJ	.
+=	=
+4CC;	4E; 4G; 4c;
+==	==

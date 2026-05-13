@@ -1,0 +1,121 @@
+*clefF4	*clefG2
+*k[b-e-]	*k[b-e-]
+*M3/4	*M3/4
+8.B-L	8.f 8.ddL
+16B-(Jk	16f( 16dd(Jk
+4A)	4f) 4cc)
+8.r	8.r
+16F#	16a
+=	=
+8.GL	8.d 8.b-L
+16G(Jk	16d( 16b-(Jk
+4Fn)	4d) 4a)
+4r	16r
+.	16cc(L
+.	16b-
+.	16a)J
+=	=
+*	*^
+8E-L	8gL	2g
+8D	16cc(L	.
+.	16dd)J	.
+8C	8ee-L	.
+8D	8dd	.
+8E-	8g 8cc	8r
+8EnJ	8g 8b-J	8r
+*	*v	*v
+=	=
+8F	8f 8a
+4FF 4AA 4C 4F	4f 4a 4ff
+8F( 8A(L	8ff(L
+8G 8B-	8een
+8A) 8c)J	8ee-)J
+=||	=||
+8.B- 8.dL	8.f 8.ddL
+16B- 16dJk	16f 16ddJk
+4A 4c	16f( 16cc(L
+.	16ff
+.	16een
+.	16ggJ
+4r	16ffL
+.	16ee-
+.	16dd
+.	16cc)J
+=	=
+8.G 8.B-L	16b-(L
+.	16dd)
+.	16cc
+16G 16B-Jk	16b-J
+4F 4A	16a(L
+.	16dd
+.	16cc#
+.	16ee-J
+4r	16ddL
+.	16ccn
+.	16b-
+.	16a)J
+=	=
+8r	16gL
+.	16bn(
+8E- 8G 8c	16cc
+.	16bJ
+8E- 8G 8cL	16ddL
+.	16cc
+8E- 8G 8c	16ee-
+.	16ddJ
+8E- 8G 8c	16ffL
+.	16ee-
+8E- 8G 8cJ	16dd
+.	16cc)J
+=	=
+8F 8B- 8dL	16ff(L
+.	16dd
+8F 8A 8e-J	16ee-)
+.	16ccJ
+8r	4e-( 4cc(
+8FFL	.
+8BB-J	8d) 8b-)
+8r	8r
+=:|!	=:|!
+8c( 8e-(L	8ffL
+8F)J	32gg(L
+.	32ff
+.	32een
+.	32ff)J
+8c( 8e-(L	4.aa
+8F	.
+8c 8e-	.
+8F)J	8ff
+=	=
+.	8eenq
+8B-( 8d(L	8ffL
+8F)J	32gg(L
+.	32ff
+.	32ee-
+.	32ff)J
+8B-( 8d(L	4.bb-
+8F	.
+8B- 8d	.
+8F)J	8ff
+=	=
+8AL	8f 8ee-L
+8B-J	8f 8dd
+8E- 8G 8cL	8g 8cc
+8En 8G 8cJ	8g 8b-
+8F 8cL	8f 8a
+8G 8cJ	8en 8b-J
+=	=
+*	*^
+4F 4c	16b-(L	4f
+.	16a	.
+.	16g	.
+.	16fJ	.
+4r	16enL	2r
+.	16f	.
+.	16g	.
+.	16aJ	.
+4r	16b-L	.
+.	16bn	.
+.	16cc	.
+.	16cc#)J	.
+==	==	==

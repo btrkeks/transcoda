@@ -1,0 +1,211 @@
+*clefF4	*clefG2
+*k[b-e-]	*k[b-e-]
+*M3/4	*M3/4
+.	8fq(
+4CC	2.f) 2.dd) 2.ff)
+4F 4B- 4d	.
+4F 4B- 4d	.
+=	=
+.	8dq(
+4DD	2.d) 2.b-) 2.dd)
+4D 4F# 4B-	.
+4D 4F# 4B-	.
+=	=
+4EE-	8r
+.	8f#(L
+4E- 4B- 4c	8g
+.	8dd
+4E- 4B- 4c	8cc
+.	8f#J
+=	=
+4EE-	8gL
+.	8dd
+4E- 4B- 4c	8cc
+.	8aa
+4E- 4B- 4c	8gg
+.	8cc)J
+=	=
+.	8aq(
+4FF	2.a) 2.ee-) 2.aa)
+4F 4A 4e-	.
+4F 4A 4e-	.
+=	=
+.	8gq(
+4GG	2.g) 2.ee-) 2.gg)
+4G 4B- 4e-	.
+4G 4B- 4e-	.
+=	=
+4AA	8r
+.	8bn(L
+4F 4c 4e-	8cc
+.	8gg
+4F 4c 4e-	8ff
+.	8cc#J
+=	=
+4BBB-	8ddL
+.	8gg
+4F 4B- 4d	8ff
+.	8ddd
+4F 4B- 4d	8bb-
+.	8ff)J
+=	=
+*	*^
+.	.	8ffq(
+4GG	2.bb-	4.ff
+4G 4B- 4e-	.	.
+.	.	8ee-L
+4G 4B- 4e-	.	8dd
+.	.	8ee-)J
+=	=	=
+.	.	8ffq(
+4FF	2.bb-)	2dd(
+4F 4B- 4d	.	.
+4F 4B- 4d	.	8ccL
+.	.	8b-)J
+=	=	=
+.	.	8aq(
+4EE-	2dd)	4.a(
+4E- 4A 4c	.	.
+.	.	8f#L
+4E- 4A 4c	4cc[	8a
+.	.	8g)J
+=	=	=
+4DD	8cc]	8fL
+.	8r	8a(
+4D 4F 4B-	2r	8b-
+.	.	8dd
+4D 4F 4B-	.	8ff
+.	.	8bb-)J
+=	=	=
+.	.	8ddq(
+4GG	2ddd[	2dd 2bb-
+4G 4B- 4en	.	.
+4G 4B- 4e	8ddd]	8aaL
+.	8r	8gg)J
+=	=	=
+4AA	2.aa	8ff(L
+.	.	8een
+4A 4d 4f	.	8dd
+.	.	8cc#
+4A 4d 4f	.	8dd
+.	.	8ee)J
+=	=	=
+4AA	2.aa(	2ff(
+4A 4c# 4g	.	.
+4A 4c# 4g	.	8eenL
+.	.	8a)J
+=	=	=
+4DD	8dd)	8g#(L
+.	8r	8b-
+2F[ 2A[ 2d[	2r	8a
+.	.	8en
+.	.	8gn
+.	.	8fJ
+*	*v	*v
+=	=
+8F] 8A] 8d]	8enL
+8r	8g
+4r	8f)
+.	8e(
+4r	8g
+.	8f)J
+=	=
+4BBB- 4BB-	8r
+.	8f[
+4A 4d 4f	2f] 2dd] 2ff]
+4A 4d 4f	.
+=	=
+4DD 4D	8r
+.	8d([
+4D 4F# 4B-	4d)] 4b-)] 4dd)]
+4D 4F# 4B-	4d 4f# 4b- 4dd
+=	=
+4EE-	8r
+.	8f#(L
+4E- 4B- 4c	8g
+.	8bn
+4E- 4B- 4c	8cc
+.	8ddJ
+=	=
+4CC	8ee-L
+.	8aa
+4G 4B- 4e-	8gg
+.	8aaa
+4G 4B- 4e-	8ggg
+.	8ccc)J
+=	=
+4FF	8r
+.	8a([
+4F 4A 4e-	2a)] 2ee-)] 2aa)]
+4F 4A 4e-	.
+=	=
+4GG	8r
+.	8g([
+4G 4B- 4e-	4g)] 4ee-)] 4gg)]
+4G 4B- 4e-	4g 4ee- 4gg
+=	=
+4AA	8r
+.	8f(L
+4F 4c 4e-	8bn
+.	8cc
+4F 4c 4e-	8dd
+.	8ee-J
+=	=
+4BB-	8ddL
+.	8gg
+4F 4B- 4d	8ff
+.	8ggg
+4F 4B- 4d	8fff
+.	8bb-)J
+=	=
+*^	*
+4C-	4C-	8r
+.	.	4cc( 4ccc(
+4a-(	2c- 2d-	.
+.	.	8dd-) 8ddd-)L
+4f)	.	8ee- 8eee-
+.	.	8ff 8fffJ
+=	=	=
+4BB-	4BB-	4.aa- 4.aaa-
+4d-(	2B- 2d-	.
+.	.	8gg- 8ggg-L
+4g-)	.	8ff 8fff
+.	.	8ff- 8fff-J
+=	=	=
+4AA-	4AA-	4.ee- 4.eee-
+4f(	2A- 2c-	.
+.	.	8ee-- 8eee--L
+4d-)	.	8dd- 8ddd-
+.	.	8ccn 8ccc-J
+=	=	=
+4GG-	4GG-	4.cc- 4.ccc-
+4B-(	2G- 2B-	.
+.	.	8b- 8bb-L
+4d-)	.	8a- 8aa-
+.	.	8g- 8gg-J
+*v	*v	*
+=	=
+4EEn	8f 8ffL
+.	8g- 8gg-
+2En 2B- 2d-	8a-( 8aa-(
+.	8g-) 8gg-)
+.	8b- 8bb-
+.	8g- 8gg-J
+=	=
+4FF	4.f 4.ff
+4F 4B- 4dn	.
+.	8b-(L
+4F 4B- 4d	8cc
+.	8ddJ
+=	=
+4FF	8ee-)L
+.	8aa 8aaa
+4F 4A 4e-	8gg( 8ggg(
+.	8eee-)
+4F 4A 4e-	8g 8gg
+.	8a 8aaJ
+=	=
+4B- 4d	4b- 4dd 4bb-
+4BB-	4r
+4r	4d 4dd
+=	=
