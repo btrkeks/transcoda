@@ -211,6 +211,12 @@ docs/                    # Architecture, normalization, constraint docs
 
 The paper is in [`paper.pdf`](./paper.pdf).
 
+## License
+
+Transcoda is licensed under the GNU Affero General Public License v3.0. See
+[`LICENSE`](LICENSE) for details. Third-party components and vendored code are
+listed in [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md).
+
 ## Citation
 
 ```bibtex
