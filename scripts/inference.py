@@ -8,6 +8,7 @@ Usage:
 Requires xgrammar: uv sync --group grammar
 """
 
+import json
 import sys
 import tempfile
 import time
@@ -21,9 +22,9 @@ import torch
 from PIL import Image
 
 from src.artifacts import RunArtifact
-from src.grammar.constraint_factory import ConstrainedDecodingFactory
 from src.core.kern_postprocess import append_terminator_if_missing
 from src.data.preprocessing import LayoutNormalizationConfig, preprocess_pil_image
+from src.grammar.constraint_factory import ConstrainedDecodingFactory
 from src.grammar.provider import GrammarProvider
 from src.grammar.semantic_sequence_finalizer import finalize_generated_kern_sequence
 from src.model import TranscodaModelForCausalLM
@@ -151,10 +152,112 @@ def _save_debug_preprocessed_image(image_tensor: torch.Tensor, output_path: Path
     _log(f"Saved preprocessed model-input image: {output_path}")
 
 
+def _compute_greedy_transition_scores(
+    *,
+    sequences: torch.Tensor,
+    scores: tuple[torch.Tensor, ...],
+) -> torch.Tensor:
+    """Fallback selected-token logprobs for non-beam generation."""
+    selected_logprobs: list[torch.Tensor] = []
+    sequence = sequences[0]
+    for step_index, step_scores in enumerate(scores):
+        token_index = step_index + 1
+        if token_index >= sequence.numel():
+            break
+        token_id = int(sequence[token_index].item())
+        step_logprobs = torch.log_softmax(step_scores[0].detach().float().cpu(), dim=-1)
+        selected_logprobs.append(step_logprobs[token_id])
+    if not selected_logprobs:
+        return torch.empty(0, dtype=torch.float32)
+    return torch.stack(selected_logprobs)
+
+
+def _compute_generation_confidence(
+    *,
+    model: TranscodaModelForCausalLM,
+    generation_output,
+    token_ids: list[int],
+    i2w: dict[int, str],
+    pad_token_id: int | None,
+    eos_token_id: int | None,
+    finalized,
+    max_length: int,
+    use_grammar: bool,
+) -> dict[str, object]:
+    """Compute length-normalized confidence metrics from generate() scores."""
+    scores = tuple(getattr(generation_output, "scores", ()) or ())
+    if not scores:
+        selected_logprobs = torch.empty(0, dtype=torch.float32)
+    else:
+        beam_indices = getattr(generation_output, "beam_indices", None)
+        try:
+            transition_scores = model.compute_transition_scores(
+                generation_output.sequences,
+                scores,
+                beam_indices=beam_indices,
+                normalize_logits=True,
+            )
+            selected_logprobs = transition_scores[0].detach().float().cpu()
+        except Exception:
+            selected_logprobs = _compute_greedy_transition_scores(
+                sequences=generation_output.sequences,
+                scores=scores,
+            )
+
+    scored_token_ids = token_ids[1 : 1 + int(selected_logprobs.numel())]
+    keep_mask = torch.tensor(
+        [
+            token_id != pad_token_id and i2w.get(token_id) != "<bos>"
+            for token_id in scored_token_ids
+        ],
+        dtype=torch.bool,
+    )
+    if keep_mask.numel() == selected_logprobs.numel():
+        selected_logprobs = selected_logprobs[keep_mask]
+
+    if selected_logprobs.numel() == 0:
+        mean_logprob = None
+        mean_prob = None
+        min_prob = None
+        p05_prob = None
+        p10_prob = None
+    else:
+        probs = selected_logprobs.exp()
+        mean_logprob = float(selected_logprobs.mean().item())
+        mean_prob = float(probs.mean().item())
+        min_prob = float(probs.min().item())
+        p05_prob = float(torch.quantile(probs, 0.05).item())
+        p10_prob = float(torch.quantile(probs, 0.10).item())
+
+    return {
+        "num_scored_tokens": int(selected_logprobs.numel()),
+        "mean_logprob": mean_logprob,
+        "mean_prob": mean_prob,
+        "min_prob": min_prob,
+        "p05_prob": p05_prob,
+        "p10_prob": p10_prob,
+        "saw_eos": bool(
+            getattr(finalized, "saw_eos", False)
+            or (eos_token_id is not None and eos_token_id in token_ids)
+        ),
+        "hit_max_length": bool(
+            getattr(finalized, "hit_max_length", False)
+            or len(token_ids) >= int(max_length)
+        ),
+        "confidence_kind": (
+            "grammar_constrained_generation_scores"
+            if use_grammar
+            else "post_processor_generation_scores"
+        ),
+    }
+
+
 def inference(
     weights: str,
     image: str,
     output: str | None = None,
+    confidence_output: str | None = None,
+    print_confidence: bool = False,
     debug_preprocessed_image: str | None = None,
     use_grammar: bool = False,
     normalize_layout: bool = False,
@@ -175,6 +278,9 @@ def inference(
         weights: Path to a Lightning checkpoint or inference-only weights bundle.
         image: Path to input image.
         output: Path to output .krn file. If not specified, uses <image_name>.krn
+        confidence_output: Optional path for a confidence JSON sidecar. If omitted
+            while confidence printing is enabled, uses <output>.confidence.json.
+        print_confidence: Print confidence metrics and write the default sidecar.
         debug_preprocessed_image: Optional path for saving the exact model-input
             image after resize/pad/crop. Use "tmp" to write under the system temp dir.
         use_grammar: Enable grammar-constrained decoding. Defaults to False for
@@ -204,6 +310,12 @@ def inference(
         output_path = image_path.with_name(f"{image_path.stem}_pred.krn")
     else:
         output_path = Path(output)
+    confidence_requested = confidence_output is not None or print_confidence
+    confidence_output_path = (
+        Path(confidence_output)
+        if confidence_output is not None
+        else output_path.with_suffix(output_path.suffix + ".confidence.json")
+    )
 
     # Load model and grammar
     model, i2w, pad_token_id, grammar_provider, image_width, fixed_size, artifact = load_model_and_grammar(
@@ -218,14 +330,6 @@ def inference(
         repetition_penalty=repetition_penalty,
         early_stopping=early_stopping,
     )
-    safe_settings = enforce_grammar_safe_settings(generation_settings)
-    if safe_settings != generation_settings:
-        _log(
-            "Grammar-constrained decoding currently uses greedy mode for reliability; "
-            "overriding beam settings (num_beams=1)."
-        )
-    generation_settings = safe_settings
-
     layout_normalization = LayoutNormalizationConfig(
         enabled=normalize_layout,
         top_margin_px=normalize_layout_top_margin_px,
@@ -265,6 +369,13 @@ def inference(
     if use_grammar:
         if grammar_provider is None:
             raise RuntimeError("Grammar provider was not initialized.")
+        safe_settings = enforce_grammar_safe_settings(generation_settings)
+        if safe_settings != generation_settings:
+            _log(
+                "Grammar-constrained decoding currently uses greedy mode for reliability; "
+                "overriding beam settings (num_beams=1)."
+            )
+        generation_settings = safe_settings
         constraint_factory = ConstrainedDecodingFactory(
             grammar_provider=grammar_provider,
             i2w=i2w,
@@ -299,7 +410,13 @@ def inference(
         )
         if stopping_criteria is not None:
             generate_kwargs["stopping_criteria"] = stopping_criteria
-        predicted_ids = model.generate(**generate_kwargs)
+        if confidence_requested:
+            generate_kwargs["return_dict_in_generate"] = True
+            generate_kwargs["output_scores"] = True
+        generation_output = model.generate(**generate_kwargs)
+        predicted_ids = (
+            generation_output.sequences if confidence_requested else generation_output
+        )
     elapsed = time.perf_counter() - start_time
 
     # Count tokens (excluding special tokens)
@@ -323,6 +440,27 @@ def inference(
     output_path.write_text(kern_text)
 
     _log(f"Output: {output_path}")
+
+    if confidence_requested:
+        confidence = _compute_generation_confidence(
+            model=model,
+            generation_output=generation_output,
+            token_ids=token_ids,
+            i2w=i2w,
+            pad_token_id=pad_token_id,
+            eos_token_id=getattr(model.config, "eos_token_id", None),
+            finalized=finalized,
+            max_length=resolved_max_length,
+            use_grammar=use_grammar,
+        )
+        confidence_output_path.parent.mkdir(parents=True, exist_ok=True)
+        confidence_output_path.write_text(
+            json.dumps(confidence, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        _log(f"Confidence: {confidence_output_path}")
+        if print_confidence:
+            print(json.dumps(confidence, sort_keys=True))
 
 
 if __name__ == "__main__":
