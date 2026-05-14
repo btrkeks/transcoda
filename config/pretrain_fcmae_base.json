@@ -33,7 +33,9 @@
     "strategy": "auto",
     "num_nodes": 1,
     "validation_every_n_steps": 1000,
-    "validation_seed": 17
+    "validation_seed": 17,
+    "compile_model": false,
+    "compile_mode": "reduce-overhead"
   },
   "checkpoint": {
     "dirpath": "weights/fcmae-real-scans",

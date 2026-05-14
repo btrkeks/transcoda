@@ -231,6 +231,93 @@ def test_fcmae_dataset_and_forward_backward(tmp_path: Path) -> None:
     assert module._latest_preview["norm_pix_loss"] is True
 
 
+def test_fcmae_on_fit_start_compiles_when_enabled(monkeypatch) -> None:
+    model_config = FCMAEModelConfig(
+        patch_size=32,
+        mask_ratio=0.6,
+        decoder_dim=16,
+        decoder_depth=1,
+    )
+    model = DenseMaskedImageModelingConvNeXtV2(
+        model_config,
+        encoder=TinyEncoder(out_channels=8),
+        encoder_output_dim=8,
+        encoder_stride=32,
+    )
+    module = FCMAEPretrainer(
+        model_config,
+        FCMAETrainingConfig(compile_model=True, compile_mode="default"),
+        model=model,
+    )
+    compiled_sentinel = torch.nn.Identity()
+    compile_calls = []
+
+    def fake_compile(model_arg, mode):
+        compile_calls.append((model_arg, mode))
+        return compiled_sentinel
+
+    monkeypatch.setattr(torch, "compile", fake_compile)
+
+    module.on_fit_start()
+
+    assert module._compile_initialized is True
+    assert module._compiled_forward_model is compiled_sentinel
+    assert compile_calls == [(model, "default")]
+
+
+def test_fcmae_training_step_uses_compiled_forward_path() -> None:
+    class _ForwardStub(torch.nn.Module):
+        def __init__(self, loss_value: float) -> None:
+            super().__init__()
+            self.calls: list[dict[str, object]] = []
+            self.loss_value = loss_value
+
+        def forward(self, pixel_values, **kwargs):
+            self.calls.append({"pixel_values": pixel_values, **kwargs})
+            mask = kwargs["mask"]
+            return SimpleNamespace(
+                loss=torch.tensor(self.loss_value),
+                pred_patches=torch.zeros(
+                    pixel_values.shape[0],
+                    mask.numel() // pixel_values.shape[0],
+                    3,
+                ),
+                mask=mask,
+                valid_patch_mask=kwargs.get("valid_patch_mask"),
+                masked_foreground_ratio=torch.tensor(0.5),
+                samples_skipped_no_valid_patches=torch.tensor(0),
+                masked_ink_density=None,
+                masked_background_loss=None,
+                masked_foreground_loss=None,
+                masked_background_patch_ratio=None,
+                masked_foreground_patch_ratio=None,
+            )
+
+    model_config = FCMAEModelConfig(patch_size=32, mask_ratio=0.6)
+    module = FCMAEPretrainer(
+        model_config,
+        FCMAETrainingConfig(batch_size=2, num_workers=0, max_steps=1),
+        model=DenseMaskedImageModelingConvNeXtV2(
+            model_config,
+            encoder=TinyEncoder(out_channels=8),
+            encoder_output_dim=8,
+            encoder_stride=32,
+        ),
+    )
+    eager_model = _ForwardStub(loss_value=0.25)
+    compiled_model = _ForwardStub(loss_value=0.75)
+    module.model = eager_model  # type: ignore[assignment]
+    module._compiled_forward_model = compiled_model  # type: ignore[assignment]
+    pixel_values = torch.randn(2, 3, 160, 128)
+
+    loss = module.training_step({"pixel_values": pixel_values}, 0)
+
+    assert loss.item() == 0.75
+    assert len(compiled_model.calls) == 1
+    assert not eager_model.calls
+    assert compiled_model.calls[0]["mask"] is not None
+
+
 def test_fcmae_dataset_skips_unreadable_image_files(tmp_path: Path) -> None:
     image_dir = tmp_path / "images"
     image_dir.mkdir()

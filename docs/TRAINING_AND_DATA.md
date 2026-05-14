@@ -89,6 +89,11 @@ source .venv/bin/activate
 python scripts/pretrain_fcmae.py config/pretrain_fcmae_base.json training.max_steps=10
 ```
 
+`torch.compile` is available for the FCMAE forward path via
+`training.compile_model=true`. The default `training.compile_mode` is `reduce-overhead`; use
+`training.compile_mode=max-autotune-no-cudagraphs` if CUDA graph capture is unstable on a target
+GPU.
+
 On Slurm, use the dedicated wrapper and put config overrides after `--` as `key=value` tokens.
 New submit jobs auto-create a fresh timestamped checkpoint directory under the configured
 `checkpoint.dirpath` parent:

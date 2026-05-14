@@ -11,6 +11,13 @@ from src.pretraining.fcmae.config import FCMAEModelConfig, FCMAETrainingConfig
 from src.pretraining.fcmae.masking import random_patch_mask
 from src.pretraining.fcmae.model import DenseMaskedImageModelingConvNeXtV2
 
+_ALLOWED_COMPILE_MODES = {
+    "default",
+    "reduce-overhead",
+    "max-autotune",
+    "max-autotune-no-cudagraphs",
+}
+
 
 def compute_patch_ink_density_batched(pixel_values: torch.Tensor, patch_size: int) -> torch.Tensor:
     if pixel_values.ndim != 4:
@@ -57,6 +64,8 @@ class FCMAEPretrainer(L.LightningModule):
         self.model_config = model_config
         self.training_config = training_config
         self.model = model or DenseMaskedImageModelingConvNeXtV2(model_config)
+        self._compiled_forward_model: torch.nn.Module | None = None
+        self._compile_initialized = False
         self._latest_preview: dict[str, Any] | None = None
         self._latest_val_preview: dict[str, Any] | None = None
         self.full_config = full_config
@@ -69,6 +78,14 @@ class FCMAEPretrainer(L.LightningModule):
             },
             ignore=["model"],
         )
+
+    def _forward_model(self) -> torch.nn.Module:
+        return self._compiled_forward_model or self.model
+
+    def _status_print(self, message: str) -> None:
+        if self._trainer is None:
+            return
+        self.print(message)
 
     def _log_if_attached(self, name: str, value: Any, *, prog_bar: bool = False) -> None:
         if self._trainer is None:
@@ -133,10 +150,23 @@ class FCMAEPretrainer(L.LightningModule):
     def training_step(self, batch: dict[str, Any], batch_idx: int) -> torch.Tensor:
         pixel_values = batch["pixel_values"]
         ink_density = self._compute_ink_density(batch)
-        output = self.model(
+        grid_h = pixel_values.shape[-2] // self.model_config.patch_size
+        grid_w = pixel_values.shape[-1] // self.model_config.patch_size
+        mask = random_patch_mask(
+            pixel_values.shape[0],
+            grid_h,
+            grid_w,
+            self.model_config.mask_ratio,
+            pixel_values.device,
+            valid_patch_mask=batch.get("valid_patch_mask"),
+            patch_weights=ink_density,
+            bias_strength=self.model_config.ink_bias_strength,
+        )
+        output = self._forward_model()(
             pixel_values,
             valid_patch_mask=batch.get("valid_patch_mask"),
             ink_density=ink_density,
+            mask=mask,
         )
         self._log_if_attached("train/loss", output.loss, prog_bar=True)
         self._log_if_attached("train/mask_ratio", self.model_config.mask_ratio)
@@ -203,7 +233,7 @@ class FCMAEPretrainer(L.LightningModule):
             ink_density,
             batch_idx=batch_idx,
         )
-        output = self.model(
+        output = self._forward_model()(
             pixel_values,
             valid_patch_mask=valid_patch_mask,
             ink_density=ink_density,
@@ -257,6 +287,56 @@ class FCMAEPretrainer(L.LightningModule):
                 "norm_pix_loss": self.model_config.norm_pix_loss,
             }
         return output.loss
+
+    def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        compile_prefix = "_compiled_forward_model._orig_mod."
+        state_dict = checkpoint.get("state_dict", {})
+        if any(compile_prefix in key for key in state_dict):
+            checkpoint["state_dict"] = {
+                key: value for key, value in state_dict.items() if compile_prefix not in key
+            }
+            checkpoint["optimizer_states"] = []
+            checkpoint["lr_schedulers"] = []
+            self._status_print(
+                "Stripped torch.compile artifacts from checkpoint. "
+                "Optimizer and scheduler state reset (model weights preserved)."
+            )
+
+    def on_fit_start(self) -> None:
+        if self._compile_initialized:
+            return
+        self._compile_initialized = True
+
+        if not bool(self.training_config.compile_model):
+            return
+
+        compile_mode = self.training_config.compile_mode
+        if compile_mode not in _ALLOWED_COMPILE_MODES:
+            raise ValueError(
+                f"Invalid training.compile_mode='{compile_mode}'. "
+                f"Expected one of: {sorted(_ALLOWED_COMPILE_MODES)}."
+            )
+
+        disable_gc = getattr(self.model.encoder, "gradient_checkpointing_disable", None)
+        if callable(disable_gc):
+            disable_gc()
+            self._status_print(
+                "Disabled FCMAE encoder gradient checkpointing for torch.compile stability."
+            )
+
+        self._status_print(
+            f"Compiling FCMAE forward path with torch.compile(mode='{compile_mode}')..."
+        )
+        try:
+            self._compiled_forward_model = torch.compile(self.model, mode=compile_mode)
+        except Exception as exc:
+            raise RuntimeError(
+                "torch.compile initialization failed with "
+                f"training.compile_mode='{compile_mode}'. "
+                "Set training.compile_model=false to continue in eager mode."
+            ) from exc
+
+        self._status_print("torch.compile enabled for FCMAE training/validation forward path.")
 
     def _should_snapshot_preview(self) -> bool:
         if self._preview_cadence <= 0:

@@ -48,6 +48,8 @@ class FCMAETrainingConfig(BaseModel):
     num_nodes: int = 1
     validation_every_n_steps: int = 1000
     validation_seed: int = 17
+    compile_model: bool | None = None
+    compile_mode: str = "reduce-overhead"
 
     @model_validator(mode="after")
     def validate_ddp(self) -> FCMAETrainingConfig:
