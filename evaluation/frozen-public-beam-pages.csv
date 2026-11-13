@@ -1,0 +1,1490 @@
+sample_id,document_id,n_gt,near_empty_reference,density_tertile,status,omr_ned,renderable,renders_svg,renders_svg_without_error,has_error_diagnostic,render_error,error,termination_reason
+imslp__bach-minuet-in-g-major-bwv-anh-114-bach-johann-sebastian-imslp1012732__p0001,imslp:imslp1012732,267,False,low,scored,0.0,True,True,True,False,,,eos
+imslp__bach-minuet-in-g-major-bwv-anh-114-bach-johann-sebastian-imslp1012732__p0002,imslp:imslp1012732,271,False,low,scored,0.0145454545455,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 69
+Expected durationFromStart to be: 104/3 but found it to be 35
+Line: 4r	4a
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+",,eos
+imslp__bach-minuet-in-g-major-bwv-anh-114-bach-johann-sebastian-imslp532973__p0001,imslp:imslp532973,546,False,low,scored,0.0,True,True,True,False,,,eos
+imslp__beethoven-piano-sonata-no-17-op-31-no-2-beethoven-ludwig-van-imslp17__p0012,imslp:imslp17,1800,False,high,scored,0.172695131901,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 158
+Expected durationFromStart to be: 121/4 but found it to be 123/4
+Line: 16AALL	4.AA	8dd
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+",,eos
+imslp__beethoven-piano-sonata-no-17-op-31-no-2-beethoven-ludwig-van-imslp17__p0013,imslp:imslp17,2208,False,high,scored,0.00609343263372,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 192
+Expected durationFromStart to be: 77/2 but found it to be 39
+Line: 16EE	8a 8aaL
+
+",,eos
+imslp__beethoven-piano-sonata-no-17-op-31-no-2-beethoven-ludwig-van-imslp17__p0014,imslp:imslp17,1574,False,high,scored,0.0686528497409,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 194
+Expected durationFromStart to be: 36 but found it to be 143/4
+Line: 16r	8ff
+
+",,eos
+imslp__beethoven-piano-sonata-no-17-op-31-no-2-beethoven-ludwig-van-imslp17__p0015,imslp:imslp17,1616,False,high,scored,0.00742574257426,True,True,True,False,,,eos
+imslp__beethoven-piano-sonata-no-17-op-31-no-2-beethoven-ludwig-van-imslp17__p0016,imslp:imslp17,1538,False,medium,scored,0.0382728164868,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 115
+Expected durationFromStart to be: 45/2 but found it to be 89/4
+Line: 16cLL	4.c	8ee-
+
+",,eos
+imslp__beethoven-piano-sonata-no-17-op-31-no-2-beethoven-ludwig-van-imslp17__p0017,imslp:imslp17,1372,False,medium,scored,0.0327510917031,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 83
+Expected durationFromStart to be: 17 but found it to be 33/2
+Line: 16DLL	16D	8dd
+
+",,eos
+imslp__beethoven-piano-sonata-no-17-op-31-no-2-beethoven-ludwig-van-imslp17__p0018,imslp:imslp17,1526,False,medium,scored,0.347669074196,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 161
+Expected durationFromStart to be: 32 but found it to be 191/6
+Line: 8DL	8r	4.ryy
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+",,eos
+imslp__beethoven-piano-sonata-no-17-op-31-no-2-beethoven-ludwig-van-imslp17__p0019,imslp:imslp17,1800,False,high,scored,0.0118948824343,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 296
+Expected durationFromStart to be: 117/2 but found it to be 59
+Line: 2r	16ee-LL
+
+",,eos
+imslp__beethoven-piano-sonata-no-17-op-31-no-2-beethoven-ludwig-van-imslp17__p0020,imslp:imslp17,1645,False,high,scored,0.0432416087088,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 218
+Expected durationFromStart to be: 44 but found it to be 87/2
+Line: 16DLL	8D	8aa	8dd
+
+",,eos
+imslp__beethoven-piano-sonata-no14-op27-no2-beethoven-ludwig-van-imslp14__p0001,imslp:imslp14,1433,False,medium,scored,0.342750170184,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 83
+Expected durationFromStart to be: 24 but found it to be 23
+Line: 4G#	2CC# 2C#	2g#	12r
+
+",,eos
+imslp__beethoven-piano-sonata-no14-op27-no2-beethoven-ludwig-van-imslp14__p0002,imslp:imslp14,1773,False,high,scored,0.380322209436,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 310
+Expected durationFromStart to be: 89 but found it to be 266/3
+Line: 12EL	1CC# 1GG# 1C#	1ryy
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+",,eos
+imslp__beethoven-piano-sonata-no14-op27-no2-beethoven-ludwig-van-imslp14__p0003,imslp:imslp14,1858,False,high,scored,0.314953810624,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 13
+Expected durationFromStart to be: 3/2 but found it to be 2
+Line: 2r	8r	2F#	2FFF# 2FF#	2a	12r
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+",,eos
+imslp__beethoven-piano-sonata-no14-op27-no2-beethoven-ludwig-van-imslp14__p0005,imslp:imslp14,1733,False,high,scored,0.419060773481,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 273
+Expected durationFromStart to be: 311/6 but found it to be 155/3
+Line: 24AA#	12AA#	.
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+",,eos
+imslp__beethoven-piano-sonata-no14-op27-no2-beethoven-ludwig-van-imslp14__p0006,imslp:imslp14,1648,False,high,scored,0.0921014281551,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 62
+Expected durationFromStart to be: 40/3 but found it to be 13
+Line: 16BBLL	8g#L
+
+[Warning] octave 'obrh1ju' is not encoded in the measure of its start 'note-L85F2'. This may cause improper rendering.
+[Warning] octave 'xwfmqlr' is not encoded in the measure of its start 'chord-L116F2'. This may cause improper rendering.
+",,eos
+imslp__beethoven-piano-sonata-no14-op27-no2-beethoven-ludwig-van-imslp14__p0007,imslp:imslp14,2066,False,high,scored,0.246866606983,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 46
+Expected durationFromStart to be: 29/3 but found it to be 10
+Line: 4G#	8G#L	8d# 8bL
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+",,eos
+imslp__beethoven-piano-sonata-no14-op27-no2-beethoven-ludwig-van-imslp14__p0008,imslp:imslp14,1730,False,high,scored,0.292173913043,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 69
+Expected durationFromStart to be: 8 but found it to be 31/4
+Line: 16c#LL	8CC#L	.
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+",,eos
+imslp__beethoven-piano-sonata-no14-op27-no2-beethoven-ludwig-van-imslp14__p0009,imslp:imslp14,1658,False,high,scored,0.351973684211,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 35
+Expected durationFromStart to be: 6 but found it to be 73/12
+Line: 12GGL	16dd
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+",,eos
+imslp__beethoven-piano-sonata-no14-op27-no2-beethoven-ludwig-van-imslp14__p0010,imslp:imslp14,1728,False,high,scored,0.104854926745,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 55
+Expected durationFromStart to be: 34/3 but found it to be 11
+Line: 8AAA	.	8cc# 8ff# 8ccc#L
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+",,eos
+imslp__beethoven-piano-sonata-no14-op27-no2-beethoven-ludwig-van-imslp14__p0011,imslp:imslp14,1785,False,high,scored,0.0261235955056,True,True,True,False,,,eos
+imslp__beethoven-piano-sonata-no14-op27-no2-beethoven-ludwig-van-imslp14__p0012,imslp:imslp14,2124,False,high,scored,0.343894542091,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 288
+Expected durationFromStart to be: 561/8 but found it to be 70
+Line: 32c#JJJ	32FF##JJJ	.	.
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration3/8 quarter notes
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.724926)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1576
+[Warning] 	Drawing justifiable width: 25415
+",,eos
+imslp__beethoven-piano-sonata-no14-op27-no2-beethoven-ludwig-van-imslp14__p0013,imslp:imslp14,1402,False,medium,scored,0.228882833787,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 24
+Expected durationFromStart to be: 3 but found it to be 19/6
+Line: 12FF## 12FF#	4FFF#	4A# 4B# 4d# 4f# 4a#	2ryy
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+",,eos
+imslp__beethoven-piano-sonata-no8-op13-beethoven-ludwig-van-imslp1013043__p0011,imslp:imslp1013043,1738,False,high,scored,0.231239577543,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 239
+Expected durationFromStart to be: 185/4 but found it to be 46
+Line: 16FLL	16FLL
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+",,eos
+imslp__beethoven-piano-sonata-no8-op13-beethoven-ludwig-van-imslp1013043__p0012,imslp:imslp1013043,2255,False,high,scored,0.176291793313,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 100
+Expected durationFromStart to be: 59/3 but found it to be 58/3
+Line: 4C	4e-	16A-LL
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+",,eos
+imslp__beethoven-piano-sonata-no8-op13-beethoven-ludwig-van-imslp1013043__p0013,imslp:imslp1013043,2284,False,high,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: parse error: line 216: empty spine token at column 3,kern_parser lowering failed: parse error: line 216: empty spine token at column 3,eos
+imslp__beethoven-piano-sonata-no8-op13-beethoven-ludwig-van-imslp1013043__p0014,imslp:imslp1013043,2034,False,high,scored,0.163426317272,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 11
+Expected durationFromStart to be: 1 but found it to be 3/2
+Line: 16GLL	4D-	4b-	16B-LL
+
+",,eos
+imslp__beethoven-piano-sonata-no8-op13-beethoven-ludwig-van-imslp934109__p0002,imslp:imslp934109,88,False,low,scored,0.00571428571429,True,True,True,False,,,eos
+imslp__brahms-21-hungarian-dances-piano-woo-1-imslp1049231__p0018,imslp:imslp1049231,1067,False,low,scored,0.00467508181393,True,True,True,False,,,eos
+imslp__brahms-21-hungarian-dances-piano-woo-1-imslp1049231__p0019,imslp:imslp1049231,1472,False,medium,scored,0.0234056987788,True,True,True,False,,,eos
+imslp__brahms-21-hungarian-dances-piano-woo-1-imslp1049231__p0020,imslp:imslp1049231,1280,False,medium,scored,0.00970120294917,True,True,True,False,,,eos
+imslp__chopin-2-mazurkas-b-16-imslp136263__p0003,imslp:imslp136263,1045,False,low,scored,0.369202226345,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 120
+Expected durationFromStart to be: 215/4 but found it to be 54
+Line: 4CC	8.eee-L
+
+",,eos
+imslp__chopin-2-mazurkas-b-16-imslp137287__p0002,imslp:imslp137287,1319,False,medium,scored,0.0159878188047,True,True,True,False,,,eos
+imslp__chopin-2-mazurkas-b-16-imslp410927__p0005,imslp:imslp410927,331,False,low,scored,0.277124183007,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 13
+Expected durationFromStart to be: 9/4 but found it to be 5/2
+Line: 4D 4G 4B 4d	8a
+
+",,eos
+imslp__chopin-2-mazurkas-b-16-imslp410927__p0007,imslp:imslp410927,630,False,low,scored,0.000794281175536,True,True,True,False,,,eos
+imslp__chopin-3-ecossaises-op72-no3-imslp11073__p0003,imslp:imslp11073,56,False,low,scored,0.269503546099,True,True,True,False,,,eos
+imslp__chopin-3-nouvelles-etudes-b-130-imslp1002125__p0005,imslp:imslp1002125,91,False,low,scored,0.619047619048,True,True,True,False,,,eos
+imslp__chopin-3-nouvelles-etudes-b-130-imslp112348__p0006,imslp:imslp112348,1313,False,medium,scored,0.0795666791184,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 124
+Expected durationFromStart to be: 43 but found it to be 87/2
+Line: 4G 4c	8cc	8e
+
+",,eos
+imslp__chopin-3-nouvelles-etudes-b-130-imslp399450__p0006,imslp:imslp399450,897,False,low,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: parse error: line 5: empty spine token at column 2,kern_parser lowering failed: parse error: line 5: empty spine token at column 2,eos
+imslp__chopin-3-nouvelles-etudes-b-130-imslp534789__p0006,imslp:imslp534789,897,False,low,scored,0.182790224033,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 35
+Expected durationFromStart to be: 53/6 but found it to be 19/2
+Line: 4AA-	12b-L	8cL
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+",,eos
+imslp__chopin-3-nouvelles-etudes-b-130-imslp702091__p0009,imslp:imslp702091,814,False,low,scored,0.241046048891,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 32
+Expected durationFromStart to be: 53/6 but found it to be 19/2
+Line: 4AA-	12b-L	8cL
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+",,eos
+imslp__chopin-3-nouvelles-etudes-b-130-imslp865896__p0009,imslp:imslp865896,1069,False,low,scored,0.0219318712086,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 146
+Expected durationFromStart to be: 107/2 but found it to be 319/6
+Line: 6E 6c	4gg	8g
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+",,eos
+imslp__chopin-3-nouvelles-etudes-b-130-imslp951459__p0007,imslp:imslp951459,1069,False,low,scored,0.00937207122774,True,True,True,False,,,eos
+imslp__chopin-3-nouvelles-etudes-b-130-imslp971751__p0005,imslp:imslp971751,1592,False,high,scored,0.257343941248,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 27
+Expected durationFromStart to be: 49/6 but found it to be 17/2
+Line: 4GG-	12b-	8d-
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::removeBeam: Error removing beam
+[Warning]    Element stack: 
+[Warning]       2:	tuplet
+[Warning]       1:	beam
+[Warning]       0:	layer
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+",,eos
+imslp__chopin-andante-spianato-et-grande-polonaise-brillante-op22-imslp113190__p0006,imslp:imslp113190,1520,False,medium,scored,0.0219888414834,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 143
+Expected durationFromStart to be: 59 but found it to be 237/4
+Line: 8r	8ryy	8fff
+
+",,eos
+imslp__chopin-andante-spianato-et-grande-polonaise-brillante-op22-imslp113190__p0011,imslp:imslp113190,2680,False,high,scored,0.197084332903,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 209
+Expected durationFromStart to be: 245/8 but found it to be 247/8
+Line: 4E	16EEE 16EELL	24eLL
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration13/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration13/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration7/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration17/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration17/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration17/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration17/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration13/24 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration13/24 quarter notes
+[Warning] octave 't19nwr82' is not encoded in the measure of its start 'rest-L75F2'. This may cause improper rendering.
+",,eos
+imslp__chopin-andante-spianato-et-grande-polonaise-brillante-op22-imslp254779__p0002,imslp:imslp254779,356,False,low,scored,0.245862884161,True,True,True,False,,,eos
+imslp__chopin-andante-spianato-et-grande-polonaise-brillante-op22-imslp55552__p0001,imslp:imslp55552,2455,False,high,scored,0.168166849616,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 89
+Expected durationFromStart to be: 39/2 but found it to be 77/4
+Line: 16cJJ	8bb
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+",,eos
+imslp__chopin-andante-spianato-et-grande-polonaise-brillante-op22-imslp630__p0001,imslp:imslp630,1287,False,medium,scored,0.0674335581119,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 141
+Expected durationFromStart to be: 31 but found it to be 123/4
+Line: 16c	8gg#
+
+",,eos
+imslp__chopin-andante-spianato-et-grande-polonaise-brillante-op22-imslp72152__p0001,imslp:imslp72152,1287,False,medium,scored,0.0466507177033,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 153
+Expected durationFromStart to be: 133/4 but found it to be 33
+Line: 16GGLL	4.ggn
+
+",,eos
+imslp__chopin-andante-spianato-et-grande-polonaise-brillante-op22-imslp86604__p0001,imslp:imslp86604,1134,False,medium,scored,0.0858013937282,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 148
+Expected durationFromStart to be: 31 but found it to be 125/4
+Line: 16cJJ	24ccc
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+",,eos
+imslp__chopin-andante-spianato-et-grande-polonaise-brillante-op22-imslp86604__p0002,imslp:imslp86604,1217,False,medium,scored,0.0502909393184,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 20
+Expected durationFromStart to be: 13/4 but found it to be 3
+Line: 16GGLL	8bb
+
+",,eos
+imslp__chopin-andante-spianato-et-grande-polonaise-brillante-op22-imslp86604__p0003,imslp:imslp86604,2232,False,high,scored,0.149754135002,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 49
+Expected durationFromStart to be: 26/3 but found it to be 9
+Line: 16GGLL	2.eee	2.eee
+
+[Warning] In HumdrumInput::removeBeam: Error removing beam
+[Warning]    Element stack: 
+[Warning]       2:	tuplet
+[Warning]       1:	beam
+[Warning]       0:	layer
+[Warning] In HumdrumInput::removeBeam: Error removing beam
+[Warning]    Element stack: 
+[Warning]       2:	tuplet
+[Warning]       1:	beam
+[Warning]       0:	layer
+[Warning] In HumdrumInput::mergeTupletsCuttingBeam: Something strange happened (2)
+[Warning] In HumdrumInput::mergeTupletsCuttingBeam: Something strange happened (2)
+[Warning] In HumdrumInput::removeBeam: Error removing beam
+[Warning]    Element stack: 
+[Warning]       2:	tuplet
+[Warning]       1:	beam
+[Warning]       0:	layer
+[Warning] In HumdrumInput::removeBeam: Error removing beam
+[Warning]    Element stack: 
+[Warning]       2:	tuplet
+[Warning]       1:	beam
+[Warning]       0:	layer
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+",,eos
+imslp__chopin-andante-spianato-et-grande-polonaise-brillante-op22-imslp86604__p0004,imslp:imslp86604,1341,False,medium,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: parse error: line 124: empty spine token at column 4,kern_parser lowering failed: parse error: line 124: empty spine token at column 4,eos
+imslp__chopin-andante-spianato-et-grande-polonaise-brillante-op22-imslp86604__p0005,imslp:imslp86604,1397,False,medium,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: parse error: line 95: empty spine token at column 2,kern_parser lowering failed: parse error: line 95: empty spine token at column 2,eos
+imslp__chopin-ballade-no1-op23-imslp592488__p0004,imslp:imslp592488,1013,False,low,scored,0.303432494279,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 43
+Expected durationFromStart to be: 33/2 but found it to be 16
+Line: 1ryy	8ee-L	8.e-L
+
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.795568)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1223
+[Warning] 	Drawing justifiable width: 23602
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.772081)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1223
+[Warning] 	Drawing justifiable width: 24320
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.766221)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1223
+[Warning] 	Drawing justifiable width: 24506
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.762735)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1223
+[Warning] 	Drawing justifiable width: 24618
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.655667)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1223
+[Warning] 	Drawing justifiable width: 28638
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.664814)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1223
+[Warning] 	Drawing justifiable width: 28244
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.623034)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1223
+[Warning] 	Drawing justifiable width: 30138
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.596777)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1223
+[Warning] 	Drawing justifiable width: 31464
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.593270)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1223
+[Warning] 	Drawing justifiable width: 31650
+",,eos
+imslp__chopin-ballade-no1-op23-imslp731160__p0007,imslp:imslp731160,8,True,low,scored,0.0,True,True,True,False,,,eos
+imslp__chopin-ballade-no2-op38-imslp952266__p0002,imslp:imslp952266,833,False,low,scored,0.0161967606479,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 123
+Expected durationFromStart to be: 111/2 but found it to be 56
+Line: 4AA 4E	4c 4e 4a
+
+",,eos
+imslp__chopin-ballade-no2-op38-imslp952266__p0003,imslp:imslp952266,1170,False,medium,scored,0.0659013605442,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 160
+Expected durationFromStart to be: 76 but found it to be 151/2
+Line: 4A	2FF 2C 2F	4a	.
+
+",,eos
+imslp__chopin-ballade-no2-op38-imslp952266__p0004,imslp:imslp952266,1971,False,high,scored,0.0813894523327,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 221
+Expected durationFromStart to be: 49 but found it to be 295/6
+Line: 24DLL	8.A< 8.c 8.f 8.aL
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+",,eos
+imslp__chopin-ballade-no2-op38-imslp952266__p0005,imslp:imslp952266,1386,False,medium,scored,0.0922901633118,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 33
+Expected durationFromStart to be: 7 but found it to be 29/4
+Line: 16cnLL	2r
+
+",,eos
+imslp__chopin-ballade-no2-op38-imslp952266__p0006,imslp:imslp952266,1290,False,medium,scored,0.0688291139241,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 109
+Expected durationFromStart to be: 50 but found it to be 99/2
+Line: 4c-	2ryy	4ee-	4.f
+
+",,eos
+imslp__chopin-ballade-no2-op38-imslp952266__p0007,imslp:imslp952266,1290,False,medium,scored,0.0978348035285,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 15
+Expected durationFromStart to be: 7 but found it to be 13/2
+Line: 2.AA 2.B	2d 2f# 2b
+
+",,eos
+imslp__chopin-ballade-no2-op38-imslp952266__p0008,imslp:imslp952266,1478,False,medium,scored,0.0441126569393,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 22
+Expected durationFromStart to be: 7/2 but found it to be 9/2
+Line: 16GLL	16B-LL
+
+[Warning] octave 'a1ihpn02' is not encoded in the measure of its start 'chord-L5F2'. This may cause improper rendering.
+",,eos
+imslp__chopin-ballade-no2-op38-imslp952266__p0009,imslp:imslp952266,1658,False,high,scored,0.127261761158,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 162
+Expected durationFromStart to be: 73/2 but found it to be 36
+Line: 4C	4.CC	2.ryy
+
+",,eos
+imslp__chopin-ballade-no2-op38-imslp952266__p0010,imslp:imslp952266,1960,False,high,scored,0.315033996474,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 11
+Expected durationFromStart to be: 5/3 but found it to be 3/2
+Line: 8cc 8aaL	24eeLL	8aL
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+",,eos
+imslp__chopin-ballade-no2-op38-imslp952266__p0011,imslp:imslp952266,1718,False,high,normalization_failure,1.0,False,False,False,False,"kern_parser lowering failed: parse error: line 149: invalid spine token ""16qqb-#JJ"" at column 2: invalid note ""16qqb-#JJ"": character 7 '#'","kern_parser lowering failed: parse error: line 149: invalid spine token ""16qqb-#JJ"" at column 2: invalid note ""16qqb-#JJ"": character 7 '#'",eos
+imslp__chopin-cello-sonata-op65-imslp116248__p0001,imslp:imslp116248,1581,False,high,scored,0.877883310719,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 223
+Expected durationFromStart to be: 339/4 but found it to be 337/4
+Line: 8EEE- 8EE- 8GGGL	1b-
+
+",,eos
+imslp__chopin-cello-sonata-op65-imslp2120__p0003,imslp:imslp2120,1644,False,high,scored,0.86209129168,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 244
+Expected durationFromStart to be: 325/4 but found it to be 323/4
+Line: 2r	8r	8r
+
+",,eos
+imslp__chopin-cello-sonata-op65-imslp2138__p0002,imslp:imslp2138,1055,False,low,scored,0.842983316977,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 90
+Expected durationFromStart to be: 65/2 but found it to be 129/4
+Line: 8ryy	8ryy	.
+
+",,eos
+imslp__chopin-cello-sonata-op65-imslp2139__p0003,imslp:imslp2139,1644,False,high,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: parse error: line 179: empty spine token at column 3,kern_parser lowering failed: parse error: line 179: empty spine token at column 3,eos
+imslp__chopin-cello-sonata-op65-imslp2141__p0002,imslp:imslp2141,1170,False,medium,scored,0.295140436915,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 166
+Expected durationFromStart to be: 257/4 but found it to be 259/4
+Line: 2r	16r	8B- 8d 8b-	8B-L
+
+",,eos
+imslp__chopin-cello-sonata-op65-imslp252489__p0003,imslp:imslp252489,1286,False,medium,scored,0.86948930598,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 54
+Expected durationFromStart to be: 21 but found it to be 43/2
+Line: 16ff#LL	1r
+
+",,eos
+imslp__chopin-cello-sonata-op65-imslp399777__p0003,imslp:imslp399777,1644,False,high,normalization_failure,1.0,False,False,False,False,"kern_parser lowering failed: parse error: line 76: spine count mismatch; expected 6, found 7","kern_parser lowering failed: parse error: line 76: spine count mismatch; expected 6, found 7",max_length
+imslp__chopin-cello-sonata-op65-imslp70779__p0003,imslp:imslp70779,1170,False,medium,normalization_failure,1.0,False,False,False,False,"kern_parser lowering failed: parse error: line 97: mixed line types at column 2; expected data, found barline","kern_parser lowering failed: parse error: line 97: mixed line types at column 2; expected data, found barline",eos
+imslp__chopin-cello-sonata-op65-imslp775309__p0004,imslp:imslp775309,1582,False,high,scored,0.810994231422,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 34
+Expected durationFromStart to be: 17 but found it to be 16
+Line: 8DDL	1r
+
+",,eos
+imslp__chopin-cello-sonata-op65-imslp800130__p0007,imslp:imslp800130,1055,False,low,scored,0.431845597105,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 24
+Expected durationFromStart to be: 19/2 but found it to be 9
+Line: 4F# 4B	4BB-	4d	1r
+
+",,eos
+imslp__chopin-cello-sonata-op65-imslp852649__p0003,imslp:imslp852649,1054,False,low,scored,0.882144961697,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 14
+Expected durationFromStart to be: 12 but found it to be 43/4
+Line: 4.B-	4D 4F#	1r
+
+[Warning] Element 'beamSpan' with @xml:id 'fi9zcz4' and a @plist could not match the target 'rest-L34F1'.
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.760897)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1043
+[Warning] 	Drawing justifiable width: 24914
+",,eos
+imslp__chopin-cello-sonata-op65-imslp862268__p0001,imslp:imslp862268,1063,False,low,scored,0.832037325039,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 90
+Expected durationFromStart to be: 385/12 but found it to be 32
+Line: 16D	4ryy	.
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+",,eos
+imslp__chopin-etudes-op10-imslp105539__p0008,imslp:imslp105539,997,False,low,scored,0.23418638339,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 26
+Expected durationFromStart to be: 4 but found it to be 3
+Line: 1C	1CC 1C	16eeeeLL
+
+[Warning] octave 'aunh73x' is not encoded in the measure of its start 'note-L21F3'. This may cause improper rendering.
+[Warning] octave 'p1ypd1b3' is not encoded in the measure of its start 'note-L130F3'. This may cause improper rendering.
+[Warning] octave 'goaodg' is not encoded in the measure of its start 'note-L203F3'. This may cause improper rendering.
+[Warning] octave 'm1x23ood' is not encoded in the measure of its start 'note-L211F3'. This may cause improper rendering.
+",,eos
+imslp__chopin-etudes-op10-imslp105539__p0021,imslp:imslp105539,1421,False,medium,scored,0.0636678200692,True,True,True,False,,,eos
+imslp__chopin-etudes-op10-imslp105539__p0022,imslp:imslp105539,1488,False,medium,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: parse error: line 235: empty spine token at column 1,kern_parser lowering failed: parse error: line 235: empty spine token at column 1,eos
+imslp__chopin-etudes-op10-imslp105539__p0023,imslp:imslp105539,1473,False,medium,scored,0.0688102893891,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 53
+Expected durationFromStart to be: 31/3 but found it to be 32/3
+Line: 24f#LL	24ddLL	4a
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+",,eos
+imslp__chopin-etudes-op10-imslp105539__p0024,imslp:imslp105539,1209,False,medium,scored,0.0269168026101,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 115
+Expected durationFromStart to be: 70/3 but found it to be 23
+Line: 16dd#LL	1d#	16ddd#LL
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+",,eos
+imslp__chopin-etudes-op10-imslp105539__p0026,imslp:imslp105539,1474,False,medium,scored,0.088384693532,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 33
+Expected durationFromStart to be: 7 but found it to be 15/2
+Line: 16F#	4ee 4gg# 4ccc# 4eee	4ryy
+
+",,eos
+imslp__chopin-etudes-op10-imslp113278__p0002,imslp:imslp113278,1205,False,medium,scored,0.24468988955,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 25
+Expected durationFromStart to be: 6 but found it to be 4
+Line: 1CC 1C	16eeeeLL
+
+",,eos
+imslp__chopin-etudes-op10-imslp168185__p0001,imslp:imslp168185,1277,False,medium,scored,0.0420102080879,True,True,True,False,,,eos
+imslp__chopin-etudes-op10-imslp168185__p0005,imslp:imslp168185,1661,False,high,scored,0.159035491737,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 17
+Expected durationFromStart to be: 4/3 but found it to be 3/2
+Line: 8r	24ffLL	16f 16b 16dd
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+",,eos
+imslp__chopin-etudes-op10-imslp168185__p0006,imslp:imslp168185,1656,False,high,scored,0.0212765957447,True,True,True,False,,,eos
+imslp__chopin-etudes-op10-imslp168185__p0007,imslp:imslp168185,1420,False,medium,scored,0.0256776034237,True,True,True,False,,,eos
+imslp__chopin-etudes-op10-imslp168185__p0008,imslp:imslp168185,1619,False,high,scored,0.126535275636,True,True,True,False,,,eos
+imslp__chopin-etudes-op10-imslp232114__p0006,imslp:imslp232114,1079,False,low,scored,0.419555901831,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 22
+Expected durationFromStart to be: 8/3 but found it to be 2
+Line: 16GGGLL	8ryy
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] octave 'z59qzy6' is not encoded in the measure of its start 'note-L79F2'. This may cause improper rendering.
+[Warning] octave 't16xwewo' is not encoded in the measure of its start 'note-L190F2'. This may cause improper rendering.
+[Warning] Element 'beamSpan' with @xml:id 'g1w1lfih' and a @plist could not match the target 'rest-L147F1'.
+[Warning] Element 'beamSpan' with @xml:id 'g1w1lfih' and a @plist could not match the target 'rest-L149F1'.
+[Warning] Element 'beamSpan' with @xml:id 'g1w1lfih' and a @plist could not match the target 'rest-L151F1'.
+[Warning] Element 'beamSpan' with @xml:id 'g1w1lfih' and a @plist could not match the target 'rest-L153F1'.
+[Warning] Element 'beamSpan' with @xml:id 'g1w1lfih' and a @plist could not match the target 'rest-L155F1'.
+[Warning] Element 'beamSpan' with @xml:id 'g1w1lfih' and a @plist could not match the target 'rest-L157F1'.
+[Warning] Element 'beamSpan' with @xml:id 'g1w1lfih' and a @plist could not match the target 'rest-L159F1'.
+[Warning] Element 'beamSpan' with @xml:id 'g1w1lfih' and a @plist could not match the target 'rest-L264F1'.
+",,eos
+imslp__chopin-etudes-op10-imslp367492__p0006,imslp:imslp367492,1273,False,medium,scored,0.18090839107,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 25
+Expected durationFromStart to be: 4 but found it to be 3
+Line: 1ryy	1CC	1CC	16eeee-LL
+
+[Warning] octave 'pmidik3' is not encoded in the measure of its start 'note-L19F3'. This may cause improper rendering.
+[Warning] octave 'y1c7nd05' is not encoded in the measure of its start 'note-L63F3'. This may cause improper rendering.
+[Warning] octave 'zu57fun' is not encoded in the measure of its start 'note-L94F3'. This may cause improper rendering.
+[Warning] octave 'z1x9hlhr' is not encoded in the measure of its start 'note-L130F3'. This may cause improper rendering.
+[Warning] octave 'd1pyihua' is not encoded in the measure of its start 'note-L167F3'. This may cause improper rendering.
+[Warning] octave 'l1fb9o3h' is not encoded in the measure of its start 'note-L204F3'. This may cause improper rendering.
+[Warning] octave 'w495mx6' is not encoded in the measure of its start 'note-L240F3'. This may cause improper rendering.
+[Warning] octave 'r6721v' is not encoded in the measure of its start 'note-L277F3'. This may cause improper rendering.
+",,eos
+imslp__chopin-etudes-op10-imslp367492__p0039,imslp:imslp367492,1140,False,medium,scored,0.326130992573,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 24
+Expected durationFromStart to be: 7/2 but found it to be 5/2
+Line: 24c-LL	2.F	4.b-	2.e-
+
+[Warning] In HumdrumInput::removeBeam: Error removing beam
+[Warning]    Element stack: 
+[Warning]       2:	tuplet
+[Warning]       1:	beam
+[Warning]       0:	layer
+[Warning] Element 'beamSpan' with @xml:id 'ogpy06m' and a @plist could not match the target 'rest-L215F1'.
+[Warning] Element 'beamSpan' with @xml:id 'm18raop2' and a @plist could not match the target 'rest-L272F1'.
+",,eos
+imslp__chopin-etudes-op10-imslp37119__p0001,imslp:imslp37119,1205,False,medium,scored,0.232402674007,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 25
+Expected durationFromStart to be: 6 but found it to be 4
+Line: 1C	1CC 1C	16eeeLL
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+",,eos
+imslp__chopin-etudes-op10-imslp375545__p0003,imslp:imslp375545,1059,False,low,scored,0.0939379916705,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 26
+Expected durationFromStart to be: 6 but found it to be 4
+Line: 1ryy	1CC	16eeeeLL
+
+[Warning] octave 'm1s25w1p' is not encoded in the measure of its start 'note-L21F3'. This may cause improper rendering.
+[Warning] octave 'xmiuq5s' is not encoded in the measure of its start 'note-L57F3'. This may cause improper rendering.
+[Warning] octave 's1vnkov3' is not encoded in the measure of its start 'note-L90F3'. This may cause improper rendering.
+[Warning] octave 'i1pv0623' is not encoded in the measure of its start 'note-L132F2'. This may cause improper rendering.
+[Warning] octave 'a1elnoi' is not encoded in the measure of its start 'note-L168F2'. This may cause improper rendering.
+[Warning] octave 'x48bwa5' is not encoded in the measure of its start 'note-L205F2'. This may cause improper rendering.
+[Warning] octave 'qdnik2l' is not encoded in the measure of its start 'note-L242F2'. This may cause improper rendering.
+",,eos
+imslp__chopin-etudes-op10-imslp423660__p0002,imslp:imslp423660,997,False,low,scored,0.321590337192,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 105
+Expected durationFromStart to be: 731/48 but found it to be 55/4
+Line: 2DD	1ryy	16dddLL
+
+[Warning] octave 'e1cdp7o1' is not encoded in the measure of its start 'note-L22F2'. This may cause improper rendering.
+[Warning] octave 'z1v56z2l' is not encoded in the measure of its start 'note-L158F2'. This may cause improper rendering.
+",,eos
+imslp__chopin-etudes-op10-imslp423660__p0047,imslp:imslp423660,1874,False,high,scored,0.169032597266,True,True,True,False,,,eos
+imslp__chopin-etudes-op10-imslp423660__p0048,imslp:imslp423660,1975,False,high,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: serialization error: the score does not resolve: line 138 column 1: ottava closed while none is open,kern_parser lowering failed: serialization error: the score does not resolve: line 138 column 1: ottava closed while none is open,eos
+imslp__chopin-etudes-op10-imslp423660__p0049,imslp:imslp423660,2477,False,high,normalization_failure,1.0,False,False,False,False,"kern_parser lowering failed: parse error: line 77: invalid spine token ""8cc ff#- ccc:J"" at column 3: invalid note ""ff#-"": character 4 '-'","kern_parser lowering failed: parse error: line 77: invalid spine token ""8cc ff#- ccc:J"" at column 3: invalid note ""ff#-"": character 4 '-'",eos
+imslp__chopin-etudes-op10-imslp514955__p0001,imslp:imslp514955,1277,False,medium,scored,0.155353901996,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 58
+Expected durationFromStart to be: 11 but found it to be 12
+Line: 1AA	1FF#	16eeeLL
+
+[Warning] octave 'eeq8488' is not encoded in the measure of its start 'note-L125F3'. This may cause improper rendering.
+[Warning] octave 'q1hu43a6' is not encoded in the measure of its start 'note-L161F3'. This may cause improper rendering.
+[Warning] octave 'm1ln5pfa' is not encoded in the measure of its start 'note-L267F3'. This may cause improper rendering.
+",,eos
+imslp__chopin-etudes-op10-imslp535484__p0003,imslp:imslp535484,1277,False,medium,scored,0.940101826894,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 422
+Expected durationFromStart to be: 7 but found it to be 8
+Line: *-	*-
+
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.130890)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 708
+[Warning] 	Drawing justifiable width: 147391
+",,max_length
+imslp__chopin-etudes-op10-imslp60293__p0013,imslp:imslp60293,997,False,low,scored,0.171984047856,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 217
+Expected durationFromStart to be: 143/3 but found it to be 48
+Line: 16r	1GGG 1GG	4ryy
+
+",,eos
+imslp__chopin-etudes-op10-imslp626204__p0006,imslp:imslp626204,1273,False,medium,scored,0.325665461715,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 27
+Expected durationFromStart to be: 4 but found it to be 3
+Line: 1CC	1CC	24eeeeLL
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] octave 'xoeq9sb' is not encoded in the measure of its start 'note-L22F3'. This may cause improper rendering.
+[Warning] octave 'snvfbch' is not encoded in the measure of its start 'note-L58F3'. This may cause improper rendering.
+[Warning] octave 'i1fvwymy' is not encoded in the measure of its start 'note-L96F3'. This may cause improper rendering.
+[Warning] octave 'r15p3rok' is not encoded in the measure of its start 'note-L133F3'. This may cause improper rendering.
+[Warning] octave 'rseow3l' is not encoded in the measure of its start 'note-L168F3'. This may cause improper rendering.
+[Warning] octave 'o1m1i8df' is not encoded in the measure of its start 'note-L204F3'. This may cause improper rendering.
+[Warning] octave 'gs7f8ln' is not encoded in the measure of its start 'note-L240F3'. This may cause improper rendering.
+",,eos
+imslp__chopin-etudes-op10-imslp701872__p0005,imslp:imslp701872,997,False,low,scored,0.132211538462,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 26
+Expected durationFromStart to be: 9/2 but found it to be 4
+Line: 1C	1CC 1C	16eeeLL
+
+[Warning] octave 'i1e7rop8' is not encoded in the measure of its start 'note-L126F3'. This may cause improper rendering.
+[Warning] octave 'aej7xou' is not encoded in the measure of its start 'note-L197F3'. This may cause improper rendering.
+",,eos
+imslp__chopin-etudes-op10-imslp763454__p0003,imslp:imslp763454,859,False,low,scored,0.292873563218,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 25
+Expected durationFromStart to be: 4 but found it to be 15/4
+Line: 1C	1CC	1CC	24eeeLL	2ryy
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] octave 'sg57nx' is not encoded in the measure of its start 'note-L54F3'. This may cause improper rendering.
+[Warning] octave 'k1umso36' is not encoded in the measure of its start 'note-L62F3'. This may cause improper rendering.
+[Warning] octave 'o13il6sn' is not encoded in the measure of its start 'note-L88F3'. This may cause improper rendering.
+",,eos
+imslp__chopin-etudes-op10-imslp832407__p0004,imslp:imslp832407,567,False,low,scored,0.210434782609,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 97
+Expected durationFromStart to be: 20 but found it to be 79/4
+Line: 1DD	1DDD 1DD	16ddddLL
+
+",,eos
+imslp__chopin-etudes-op10-imslp856069__p0002,imslp:imslp856069,576,False,low,scored,0.40362225097,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 25
+Expected durationFromStart to be: 3 but found it to be 4
+Line: 1ryy	1CC	24eeeeLL
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] octave 'nfdon54' is not encoded in the measure of its start 'note-L20F3'. This may cause improper rendering.
+[Warning] octave 'z6aw73y' is not encoded in the measure of its start 'note-L66F3'. This may cause improper rendering.
+[Warning] octave 'apgi3a0' is not encoded in the measure of its start 'note-L97F3'. This may cause improper rendering.
+[Warning] octave 'l5xnolx' is not encoded in the measure of its start 'note-L105F3'. This may cause improper rendering.
+[Warning] octave 'l1c6kcqo' is not encoded in the measure of its start 'note-L136F3'. This may cause improper rendering.
+",,eos
+imslp__chopin-etudes-op10-imslp86296__p0001,imslp:imslp86296,859,False,low,scored,0.496278887583,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 31
+Expected durationFromStart to be: 3 but found it to be 3/2
+Line: 1C	16cLL	1CC 1C	1r	24cccLL
+
+",,eos
+imslp__chopin-etudes-op10-imslp86562__p0001,imslp:imslp86562,1000,False,low,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: serialization error: the score does not resolve: line 263 column 2: ottava closed while none is open,kern_parser lowering failed: serialization error: the score does not resolve: line 263 column 2: ottava closed while none is open,eos
+imslp__chopin-etudes-op10-imslp865870__p0003,imslp:imslp865870,788,False,low,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: parse error: line 174: empty spine token at column 3,kern_parser lowering failed: parse error: line 174: empty spine token at column 3,eos
+imslp__chopin-etudes-op10-imslp865918__p0003,imslp:imslp865918,997,False,low,scored,0.14689550732,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 24
+Expected durationFromStart to be: 6 but found it to be 4
+Line: 1C	1CC	16eeeLL
+
+[Warning] octave 'z19bpb04' is not encoded in the measure of its start 'note-L18F3'. This may cause improper rendering.
+[Warning] octave 'pvbq8l8' is not encoded in the measure of its start 'note-L91F3'. This may cause improper rendering.
+[Warning] octave 's1bbyqm5' is not encoded in the measure of its start 'note-L165F3'. This may cause improper rendering.
+[Warning] octave 'd1dit50g' is not encoded in the measure of its start 'note-L202F3'. This may cause improper rendering.
+",,eos
+imslp__chopin-etudes-op10-imslp916162__p0001,imslp:imslp916162,997,False,low,scored,0.199209095403,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 26
+Expected durationFromStart to be: 4 but found it to be 5
+Line: 1ryy	1C	1CC 1C	16eeeLL
+
+",,eos
+imslp__chopin-etudes-op10-imslp969413__p0001,imslp:imslp969413,997,False,low,scored,0.163358778626,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 23
+Expected durationFromStart to be: 6 but found it to be 4
+Line: 1C	1CC 1C	16eeeeLL
+
+[Warning] octave 'xsg85x7' is not encoded in the measure of its start 'note-L18F3'. This may cause improper rendering.
+[Warning] octave 'h1007s8m' is not encoded in the measure of its start 'note-L52F3'. This may cause improper rendering.
+[Warning] octave 'v10jg0xg' is not encoded in the measure of its start 'note-L89F3'. This may cause improper rendering.
+[Warning] octave 'a1lkm21z' is not encoded in the measure of its start 'note-L127F3'. This may cause improper rendering.
+[Warning] octave 'r13187io' is not encoded in the measure of its start 'note-L165F3'. This may cause improper rendering.
+",,eos
+imslp__chopin-etudes-op10-imslp969931__p0002,imslp:imslp969931,788,False,low,scored,0.205562273277,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 26
+Expected durationFromStart to be: 6 but found it to be 4
+Line: 1C	1CC 1C	16eeeeLL
+
+[Warning] octave 'y1bi3cai' is not encoded in the measure of its start 'note-L21F3'. This may cause improper rendering.
+[Warning] octave 'm1m79ttk' is not encoded in the measure of its start 'note-L94F3'. This may cause improper rendering.
+[Warning] octave 'x1ludl55' is not encoded in the measure of its start 'note-L132F3'. This may cause improper rendering.
+[Warning] octave 'f10a7lrd' is not encoded in the measure of its start 'note-L170F3'. This may cause improper rendering.
+",,eos
+imslp__chopin-etudes-op10-imslp971749__p0001,imslp:imslp971749,997,False,low,scored,0.174412793603,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 26
+Expected durationFromStart to be: 4 but found it to be 5
+Line: 1r	1CC	1C	16eeeLL
+
+",,eos
+imslp__chopin-etudes-op25-imslp112921__p0034,imslp:imslp112921,2490,False,high,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: parse error: line 295: empty spine token at column 3,kern_parser lowering failed: parse error: line 295: empty spine token at column 3,eos
+imslp__chopin-etudes-op25-imslp112921__p0035,imslp:imslp112921,2499,False,high,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: parse error: line 75: empty spine token at column 3,kern_parser lowering failed: parse error: line 75: empty spine token at column 3,eos
+imslp__chopin-etudes-op25-imslp112921__p0036,imslp:imslp112921,2640,False,high,scored,0.209913706602,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 12
+Expected durationFromStart to be: 3/2 but found it to be 1
+Line: 8.e-L	4E-	4ggg
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+",,eos
+imslp__chopin-etudes-op25-imslp112921__p0037,imslp:imslp112921,2654,False,high,scored,0.0119567280319,True,True,True,False,,,eos
+imslp__chopin-etudes-op25-imslp112921__p0038,imslp:imslp112921,2105,False,high,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: parse error: line 268: empty spine token at column 2,kern_parser lowering failed: parse error: line 268: empty spine token at column 2,eos
+imslp__chopin-etudes-op25-imslp112921__p0039,imslp:imslp112921,2641,False,high,scored,0.19512195122,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 117
+Expected durationFromStart to be: 17 but found it to be 205/12
+Line: 24cccLL	24cccLL
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/12 quarter notes
+",,eos
+imslp__chopin-nocturne-in-c-sharp-minor-b-49-imslp1005676__p0001,imslp:imslp1005676,855,False,low,scored,0.0241034685479,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 99
+Expected durationFromStart to be: 43 but found it to be 173/4
+Line: 8G#L	8dd#L
+
+",,eos
+imslp__chopin-nocturne-in-c-sharp-minor-b-49-imslp1005676__p0002,imslp:imslp1005676,1058,False,low,scored,0.0573065902579,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 209
+Expected durationFromStart to be: 155/2 but found it to be 77
+Line: 4.B#	4r	.
+
+",,eos
+imslp__chopin-nocturne-in-c-sharp-minor-b-49-imslp1005676__p0003,imslp:imslp1005676,1416,False,medium,scored,0.102980007544,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 14
+Expected durationFromStart to be: 4 but found it to be 7/2
+Line: 2r	.	12b#L
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+",,eos
+imslp__chopin-nocturnes-op9-imslp112335__p0011,imslp:imslp112335,1489,False,medium,scored,0.0821382007823,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 164
+Expected durationFromStart to be: 121/2 but found it to be 60
+Line: 8EEL	4.bb-
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+",,eos
+imslp__chopin-nocturnes-op9-imslp112335__p0012,imslp:imslp112335,1449,False,medium,scored,0.0905686074225,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 90
+Expected durationFromStart to be: 61/2 but found it to be 30
+Line: 8EEL	4.bb-
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/6 quarter notes
+",,eos
+imslp__chopin-nocturnes-op9-imslp112335__p0013,imslp:imslp112335,1458,False,medium,scored,0.300103128223,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 59
+Expected durationFromStart to be: 41/2 but found it to be 81/4
+Line: 16B- 16d 16g-JJ	16.gg-LL
+
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.748732)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1403
+[Warning] 	Drawing justifiable width: 24838
+",,eos
+imslp__chopin-op10-no4-imslp423660__p0016,imslp:imslp423660,1867,False,high,scored,0.0707700650759,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0001,imslp:imslp1012575,1097,False,low,scored,0.217772215269,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0002,imslp:imslp1012575,801,False,low,scored,0.0580886945659,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0003,imslp:imslp1012575,747,False,low,scored,0.00537634408602,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0004,imslp:imslp1012575,826,False,low,scored,0.171397964649,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0005,imslp:imslp1012575,1266,False,medium,scored,0.248140900196,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0006,imslp:imslp1012575,842,False,low,scored,0.104504504505,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0007,imslp:imslp1012575,768,False,low,scored,0.0833840535606,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 12
+Expected durationFromStart to be: 3 but found it to be 7/2
+Line: 8E-	8E-L	4gg	2.dd-
+
+",,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0008,imslp:imslp1012575,826,False,low,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: parse error: line 38: empty spine token at column 1,kern_parser lowering failed: parse error: line 38: empty spine token at column 1,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0009,imslp:imslp1012575,686,False,low,scored,0.128914785142,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 73
+Expected durationFromStart to be: 52 but found it to be 51
+Line: 4CC#	8gg#L
+
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.779697)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1398
+[Warning] 	Drawing justifiable width: 23858
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.775517)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1362
+[Warning] 	Drawing justifiable width: 24033
+",,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0010,imslp:imslp1012575,819,False,low,scored,0.030599755202,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0011,imslp:imslp1012575,802,False,low,scored,0.0842627013631,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0012,imslp:imslp1012575,731,False,low,scored,0.269981120201,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 98
+Expected durationFromStart to be: 125/2 but found it to be 63
+Line: 2.AA 2.E	2.ee	2.cc#
+
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.766777)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1398
+[Warning] 	Drawing justifiable width: 24260
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.739339)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1362
+[Warning] 	Drawing justifiable width: 25209
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.770102)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1362
+[Warning] 	Drawing justifiable width: 24202
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.747853)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1362
+[Warning] 	Drawing justifiable width: 24922
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.728616)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1362
+[Warning] 	Drawing justifiable width: 25580
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.701626)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1362
+[Warning] 	Drawing justifiable width: 26564
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.667885)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1362
+[Warning] 	Drawing justifiable width: 27906
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.639778)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1362
+[Warning] 	Drawing justifiable width: 29132
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.621681)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1362
+[Warning] 	Drawing justifiable width: 29980
+",,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0013,imslp:imslp1012575,819,False,low,scored,0.0333940497875,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0014,imslp:imslp1012575,799,False,low,scored,0.104347826087,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0015,imslp:imslp1012575,722,False,low,scored,0.0803324099723,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0016,imslp:imslp1012575,1005,False,low,scored,0.0461460446247,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0017,imslp:imslp1012575,811,False,low,scored,0.182974018795,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0018,imslp:imslp1012575,1090,False,low,scored,0.114678899083,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0019,imslp:imslp1012575,1070,False,low,scored,0.159906759907,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0020,imslp:imslp1012575,786,False,low,scored,0.117458279846,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 15
+Expected durationFromStart to be: 12 but found it to be 13
+Line: 2.EE-	2.EEE-	2.ryy
+
+",,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0021,imslp:imslp1012575,699,False,low,scored,0.0635135135135,True,True,True,False,,,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0022,imslp:imslp1012575,928,False,low,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: parse error: line 74: empty spine token at column 1,kern_parser lowering failed: parse error: line 74: empty spine token at column 1,eos
+imslp__chopin-scherzo-no2-op31-imslp1012575__p0023,imslp:imslp1012575,878,False,low,scored,0.35140562249,True,True,True,False,,,eos
+imslp__chopin-waltzes-op64-imslp576651__p0010,imslp:imslp576651,962,False,low,scored,0.00837696335079,True,True,True,False,,,eos
+imslp__debussy-suite-bergamasque-cd-82-debussy-claude-imslp1017416__p0002,imslp:imslp1017416,732,False,low,scored,0.0772980501393,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 89
+Expected durationFromStart to be: 87/2 but found it to be 45
+Line: 8r	2.FF 2.D-	8ee-L	8r
+
+",,eos
+imslp__debussy-suite-bergamasque-cd-82-debussy-claude-imslp1017416__p0003,imslp:imslp1017416,1695,False,high,scored,0.338281473023,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 79
+Expected durationFromStart to be: 19 but found it to be 77/4
+Line: 8r	2.AAA 2.AA	8r
+
+",,eos
+imslp__debussy-suite-bergamasque-cd-82-debussy-claude-imslp1017416__p0004,imslp:imslp1017416,834,False,low,scored,0.234482758621,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 110
+Expected durationFromStart to be: 49/2 but found it to be 97/4
+Line: 16aa-LL	4.A-	4.aa-	.
+
+",,eos
+imslp__debussy-suite-bergamasque-cd-82-debussy-claude-imslp1017416__p0005,imslp:imslp1017416,1135,False,medium,scored,0.135585783238,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 33
+Expected durationFromStart to be: 6 but found it to be 13/2
+Line: 16f#LL	4.e	.	.
+
+",,eos
+imslp__debussy-suite-bergamasque-cd-82-debussy-claude-imslp1017416__p0006,imslp:imslp1017416,977,False,low,scored,0.433943592281,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 57
+Expected durationFromStart to be: 12 but found it to be 25/2
+Line: 16BB-LL	2.BB-	4.eee-	16eee-LL
+
+",,eos
+imslp__liszt-hungarian-rhapsody-no2-s-244-2-imslp300584__p0001,imslp:imslp300584,1434,False,medium,scored,0.323871409029,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 260
+Expected durationFromStart to be: 557/12 but found it to be 93/2
+Line: *-	*-
+
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.760725)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1576
+[Warning] 	Drawing justifiable width: 24219
+",,eos
+imslp__liszt-hungarian-rhapsody-no2-s-244-2-imslp300584__p0002,imslp:imslp300584,2181,False,high,scored,0.1959894963,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 239
+Expected durationFromStart to be: 151/4 but found it to be 75/2
+Line: 4e	4ryy	.	32g#
+
+",,eos
+imslp__liszt-hungarian-rhapsody-no2-s-244-2-imslp300584__p0003,imslp:imslp300584,2855,False,high,scored,0.357331706325,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 90
+Expected durationFromStart to be: 25/2 but found it to be 49/4
+Line: 16E#	2ccc#
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/8 quarter notes
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.799965)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1540
+[Warning] 	Drawing justifiable width: 23076
+",,eos
+imslp__liszt-hungarian-rhapsody-no2-s-244-2-imslp300584__p0004,imslp:imslp300584,2290,False,high,normalization_failure,1.0,False,False,False,False,"kern_parser lowering failed: parse error: line 103: spine count mismatch; expected 5, found 4","kern_parser lowering failed: parse error: line 103: spine count mismatch; expected 5, found 4",eos
+imslp__liszt-hungarian-rhapsody-no2-s-244-2-imslp300584__p0005,imslp:imslp300584,1299,False,medium,scored,0.296880602366,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 103
+Expected durationFromStart to be: 24 but found it to be 23
+Line: 4fff#	.	16.bb
+
+[Warning] octave 'd1op03b5' is not encoded in the measure of its start 'note-L101F1'. This may cause improper rendering.
+",,eos
+imslp__liszt-hungarian-rhapsody-no2-s-244-2-imslp300584__p0006,imslp:imslp300584,1548,False,medium,scored,0.0284617844579,True,True,True,False,,,eos
+imslp__liszt-hungarian-rhapsody-no2-s-244-2-imslp300584__p0007,imslp:imslp300584,2225,False,high,scored,0.021362716438,True,True,True,False,,,eos
+imslp__liszt-hungarian-rhapsody-no2-s-244-2-imslp300584__p0008,imslp:imslp300584,1979,False,high,scored,0.084008097166,True,True,True,False,,,eos
+imslp__liszt-hungarian-rhapsody-no2-s-244-2-imslp300584__p0010,imslp:imslp300584,1680,False,high,scored,0.0908256880734,True,True,True,False,,,eos
+imslp__liszt-hungarian-rhapsody-no2-s-244-2-imslp300584__p0014,imslp:imslp300584,1099,False,low,normalization_failure,1.0,False,False,False,False,"kern_parser lowering failed: parse error: line 26: invalid spine token ""16ff#ff#LL"" at column 2: invalid note ""16ff#ff#LL"": character 6 'f'","kern_parser lowering failed: parse error: line 26: invalid spine token ""16ff#ff#LL"" at column 2: invalid note ""16ff#ff#LL"": character 6 'f'",eos
+imslp__liszt-liebestraume-s-541-liszt-franz-imslp114924__p0010,imslp:imslp114924,601,False,low,scored,0.125203252033,True,True,True,False,,,eos
+imslp__liszt-liebestraume-s-541-liszt-franz-imslp114924__p0011,imslp:imslp114924,1330,False,medium,scored,0.471835251363,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 15
+Expected durationFromStart to be: 4 but found it to be 5
+Line: 4r	4ryy	8c
+
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.622364)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1583
+[Warning] 	Drawing justifiable width: 29592
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.219033)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1534
+[Warning] 	Drawing justifiable width: 84307
+",,max_length
+imslp__liszt-liebestraume-s-541-liszt-franz-imslp114924__p0012,imslp:imslp114924,1697,False,high,scored,0.0468888233559,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 242
+Expected durationFromStart to be: 207/2 but found it to be 103
+Line: 8BL	2CC# 2C#	.	.
+
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.762028)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1754
+[Warning] 	Drawing justifiable width: 23944
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.748646)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1754
+[Warning] 	Drawing justifiable width: 24372
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.721871)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1754
+[Warning] 	Drawing justifiable width: 25276
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.718007)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1754
+[Warning] 	Drawing justifiable width: 25412
+",,eos
+imslp__liszt-liebestraume-s-541-liszt-franz-imslp114924__p0013,imslp:imslp114924,1615,False,high,scored,0.220424992071,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 133
+Expected durationFromStart to be: 91/2 but found it to be 45
+Line: 8f	2.ryy	16gg 16gggLL
+
+[Warning] octave 'o779t39' is not encoded in the measure of its start 'chord-L126F2'. This may cause improper rendering.
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.613175)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 685
+[Warning] 	Drawing justifiable width: 31500
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.726838)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 685
+[Warning] 	Drawing justifiable width: 26574
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.672997)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 685
+[Warning] 	Drawing justifiable width: 28700
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.732795)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 685
+[Warning] 	Drawing justifiable width: 26358
+",,eos
+imslp__mozart-fantasie-in-d-minor-k397-imslp56448__p0001,imslp:imslp56448,1606,False,high,scored,0.113537117904,True,True,True,False,,,eos
+imslp__mozart-fantasie-in-d-minor-k397-imslp56448__p0002,imslp:imslp56448,1787,False,high,scored,0.112939208031,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 136
+Expected durationFromStart to be: 163/4 but found it to be 40
+Line: 16ALL	16A<
+
+",,eos
+imslp__mozart-fantasie-in-d-minor-k397-imslp56448__p0003,imslp:imslp56448,1562,False,medium,scored,0.343475321163,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 53
+Expected durationFromStart to be: 47/4 but found it to be 4
+Line: 16BB-LL	1ryy
+
+",,eos
+imslp__mozart-piano-sonata-no11-in-a-major-k-331-300i-mozart-wolfgang-amadeus-imslp220__p0013,imslp:imslp220,1479,False,medium,scored,0.235114079021,True,True,False,True,"found it to be 140/3
+Line: 4AA 4A	4a
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration5/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration11/12 quarter notes
+",,eos
+imslp__mozart-piano-sonata-no11-in-a-major-k-331-300i-mozart-wolfgang-amadeus-imslp220__p0014,imslp:imslp220,1503,False,medium,scored,0.0408909574468,True,True,True,False,,,eos
+imslp__mozart-piano-sonata-no11-in-a-major-k-331-300i-mozart-wolfgang-amadeus-imslp220__p0015,imslp:imslp220,1453,False,medium,scored,0.0776632302405,True,True,True,False,,,eos
+imslp__mozart-piano-sonata-no16-in-c-major-k-545-mozart-wolfgang-amadeus-imslp226__p0001,imslp:imslp226,1232,False,medium,scored,0.131621187801,True,True,True,False,,,eos
+imslp__mozart-piano-sonata-no16-in-c-major-k-545-mozart-wolfgang-amadeus-imslp226__p0002,imslp:imslp226,1294,False,medium,scored,0.466973886329,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 68
+Expected durationFromStart to be: 46/3 but found it to be 16
+Line: 16dLL	8dL
+
+",,eos
+imslp__mozart-piano-sonata-no16-in-c-major-k-545-mozart-wolfgang-amadeus-imslp226__p0003,imslp:imslp226,1249,False,medium,scored,0.0147351652728,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 184
+Expected durationFromStart to be: 49 but found it to be 195/4
+Line: 16B-LL	4r
+
+",,eos
+imslp__rachmaninoff-10-preludes-op23-rachmaninoff-sergei-imslp105592__p0020,imslp:imslp105592,2183,False,high,scored,0.152188704922,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 188
+Expected durationFromStart to be: 209/4 but found it to be 105/2
+Line: 8F# 8A 8d	8g 8dd 8ggJ	8r
+
+",,eos
+imslp__rachmaninoff-10-preludes-op23-rachmaninoff-sergei-imslp105592__p0021,imslp:imslp105592,3444,False,high,scored,0.13091684435,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 198
+Expected durationFromStart to be: 58 but found it to be 117/2
+Line: 4.DDD 4.DD	8r	8r	4.D
+
+",,eos
+imslp__rachmaninoff-10-preludes-op23-rachmaninoff-sergei-imslp105592__p0023,imslp:imslp105592,2029,False,high,scored,0.183846971307,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 158
+Expected durationFromStart to be: 69/2 but found it to be 71/2
+Line: 8DDD 8DD	8ryy	8ryy
+
+",,eos
+imslp__rachmaninoff-10-preludes-op23-rachmaninoff-sergei-imslp105592__p0024,imslp:imslp105592,3170,False,high,scored,0.0900533417007,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 57
+Expected durationFromStart to be: 19 but found it to be 37/2
+Line: 4g 4b-	8dL	8r	8dd 8dddL	.	8r
+
+",,eos
+imslp__rachmaninoff-morceaux-de-fantaisie-op3-rachmaninoff-sergei-imslp79003__p0004,imslp:imslp79003,1629,False,high,scored,0.190401994391,True,True,True,False,,,eos
+imslp__rachmaninoff-morceaux-de-fantaisie-op3-rachmaninoff-sergei-imslp79003__p0005,imslp:imslp79003,1275,False,medium,scored,0.00710900473934,True,True,True,False,,,eos
+imslp__rachmaninoff-morceaux-de-fantaisie-op3-rachmaninoff-sergei-imslp79003__p0006,imslp:imslp79003,1754,False,high,scored,0.402849740933,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 101
+Expected durationFromStart to be: 27 but found it to be 82/3
+Line: 12ee 12gg#L	4ccc# 4eee 4ggg#	4ryy
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration2/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+",,eos
+imslp__rachmaninoff-morceaux-de-fantaisie-op3-rachmaninoff-sergei-imslp79003__p0007,imslp:imslp79003,1127,False,medium,scored,0.599760095962,True,True,True,False,,,eos
+imslp__rachmaninoff-piano-concerto-no2-op18-imslp953715__p0022,imslp:imslp953715,1486,False,medium,scored,0.283217936037,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 114
+Expected durationFromStart to be: 83/2 but found it to be 42
+Line: 2BB	1EE	12BL	1G#
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/3 quarter notes
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.785337)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1576
+[Warning] 	Drawing justifiable width: 23460
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.799583)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1576
+[Warning] 	Drawing justifiable width: 23042
+",,eos
+imslp__rachmaninoff-piano-concerto-no2-op18-imslp953715__p0023,imslp:imslp953715,1193,False,medium,scored,0.370693233707,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 218
+Expected durationFromStart to be: 359/4 but found it to be 351/4
+Line: 1BBB	1cc#	12cc#L
+
+",,eos
+imslp__rachmaninoff-piano-concerto-no2-op18-imslp953715__p0024,imslp:imslp953715,1831,False,high,scored,0.0561452513966,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 91
+Expected durationFromStart to be: 43/2 but found it to be 21
+Line: 12dL	12f#L	.
+
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+[Warning] In HumdrumInput::setDuration: Unprintable duration1/6 quarter notes
+",,eos
+imslp__rachmaninoff-piano-concerto-no2-op18-imslp953715__p0025,imslp:imslp953715,1899,False,high,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: serialization error: the score does not resolve: line 327 column 2: cannot merge spines from different original spines,kern_parser lowering failed: serialization error: the score does not resolve: line 327 column 2: cannot merge spines from different original spines,eos
+imslp__rachmaninoff-piano-concerto-no2-op18-imslp953715__p0026,imslp:imslp953715,1705,False,high,scored,0.228808158062,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 106
+Expected durationFromStart to be: 41/2 but found it to be 83/4
+Line: 8B-	8f 8ff	.
+
+",,eos
+imslp__rachmaninoff-piano-concerto-no2-op18-imslp953715__p0027,imslp:imslp953715,2644,False,high,scored,0.361877315768,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 176
+Expected durationFromStart to be: 36 but found it to be 155/4
+Line: 16cc##	8aa#L	16gg#LL
+
+",,eos
+imslp__rachmaninoff-piano-concerto-no2-op18-imslp953715__p0028,imslp:imslp953715,2233,False,high,scored,0.294546368434,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 284
+Expected durationFromStart to be: 65 but found it to be 131/2
+Line: 2r	16f#LL	.
+
+[Warning] Justification is highly compressed (ratio smaller than 0.8: 0.721004)
+[Warning] 	System full width: 20000
+[Warning] 	Non-justifiable width: 1220
+[Warning] 	Drawing justifiable width: 26047
+",,eos
+imslp__rachmaninoff-piano-concerto-no2-op18-imslp953715__p0029,imslp:imslp953715,1389,False,medium,scored,0.706331387517,True,True,False,True,"Error: Inconsistent rhythm analysis occurring near line 25
+Expected durationFromStart to be: 5 but found it to be 7/2
+Line: 1ryy	24f# 24a	16e
+
+",,max_length
+imslp__rachmaninoff-piano-concerto-no2-op18-imslp953715__p0030,imslp:imslp953715,1392,False,medium,normalization_failure,1.0,False,False,False,False,kern_parser lowering failed: serialization error: the score does not resolve: line 124 column 2: cannot merge spines from different original spines,kern_parser lowering failed: serialization error: the score does not resolve: line 124 column 2: cannot merge spines from different original spines,eos
+imslp__satie-3-gymnopedies-satie-erik-imslp1599__p0002,imslp:imslp1599,266,False,low,scored,0.0,True,True,True,False,,,eos
+imslp__satie-3-gymnopedies-satie-erik-imslp1599__p0003,imslp:imslp1599,391,False,low,scored,0.0140485312899,True,True,True,False,,,eos
+imslp__satie-3-gymnopedies-satie-erik-imslp1599__p0004,imslp:imslp1599,317,False,low,scored,0.0,True,True,True,False,,,eos

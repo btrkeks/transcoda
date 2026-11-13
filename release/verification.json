@@ -1,0 +1,991 @@
+{
+  "status": "pass-local-validation",
+  "software": {
+    "python": "3.12.13",
+    "torch": "2.9.1+cpu",
+    "torchvision": "0.24.1+cpu",
+    "transformers": "5.12.1",
+    "tokenizers": "0.22.2",
+    "numpy": "2.4.6",
+    "xgrammar": "0.2.2",
+    "verovio": "6.2.1",
+    "datasets": "5.0.1"
+  },
+  "frozen_protocol_parity": [
+    {
+      "status": "pass",
+      "cohort": "public",
+      "mode": "constrained",
+      "numerical_environment": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1"
+      },
+      "gold_pages_sha256": "a9957b8e308c82d1db6c1e7c45c4cc203074f345f08faf274a1a08e3e2b3b227",
+      "gold_summary_sha256": "ed9639ede3b1a26f77d16932b87d54850fdd9f76031200e7d761a5e7fa433400",
+      "gold_paired_sha256": "eb120cf0ecb9207bd18d0cc4d6be17feac80b789c632115405aeab1dd659d9d7",
+      "predictions_sha256": "840ab1276dcb59c511efc3514b92066b094ae70577202eb22bb6bf3381c20cef",
+      "frozen_thresholds_sha256": "90b92d48247303c52517f4129b7b541b2a738114cf27d75149b01a28698258de",
+      "kern_parser_sha256": "79d8b7a3ac15fc7f65b3330d2820e31c48018d36b5cec35549caff9bc4ad2738",
+      "verosim_sha256": "ce947b2c492dd2f83157a350ea29887592cf83d7bf84ad431e5630728f8ad567",
+      "differences": [],
+      "pages": 202,
+      "aggregate_and_bootstrap_equal": true,
+      "paired_baselines_equal": [
+        "legato",
+        "smt",
+        "smt-cd"
+      ],
+      "baseline_sha256": {
+        "legato": "0e294b5dc0777832bd85f8a0f72812ff2b3df8de802aefb2e7a55e7761b75614",
+        "smt": "76e5996db6fbba0f7116bfdc52e9e770478bcf8100e5e4b494017606feb8cb1a",
+        "smt-cd": "859555e401e518c2f53626fec4b38e5694eef79806e6b9fb70959b18bcd5a669"
+      },
+      "exact_per_page_scores": true,
+      "tolerance": 0,
+      "omr_ned_x100": 22.58590632008552,
+      "bootstrap": {
+        "confidence_level": 0.95,
+        "density_document_cluster_seeds": [
+          20260827,
+          20260829,
+          20260831
+        ],
+        "density_page_seeds": [
+          20260826,
+          20260828,
+          20260830
+        ],
+        "document_cluster": {
+          "available": true,
+          "ci_high": 0.2720945761211204,
+          "ci_low": 0.18865320929996363,
+          "point": 0.2258590632008552
+        },
+        "document_cluster_seed": 20260727,
+        "main_interval": "document_cluster",
+        "method": "percentile",
+        "page": {
+          "available": true,
+          "ci_high": 0.2564985036564425,
+          "ci_low": 0.19684311898094292,
+          "point": 0.2258590632008552
+        },
+        "page_seed": 20260726,
+        "resamples": 50000
+      },
+      "renderability": {
+        "count": 202,
+        "definition": "After the recorded notation conversion with no repairs, Verovio must load the full prediction, produce at least one page, and render every page to a nonempty SVG even with error diagnostics. Secondary renderability also requires no error diagnostic. Warnings are allowed. Kern must contain a **kern exclusive interpretation. ABC (including Legato) is converted with the recorded abc2xml script and Python executable, then the resulting MusicXML is tested. Conversion errors, native crashes, timeouts and inference failures are not renderable.",
+        "error_diagnostic_count": 0,
+        "fraction": 1.0,
+        "without_error_count": 202,
+        "without_error_fraction": 1.0
+      }
+    },
+    {
+      "status": "pass",
+      "cohort": "public",
+      "mode": "beam",
+      "numerical_environment": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1"
+      },
+      "gold_pages_sha256": "3876e216b8cca1be018ad2e0cda02ed9095055b8c1f4e8611259fc633413bf42",
+      "gold_summary_sha256": "f7ea5710563a2db5b5bd363cea197698afb20ddbc7cedab51783716775529e47",
+      "gold_paired_sha256": "d7a79c251bc31984554579a1748be96676577c1fc7aed6000a6bb93126e189e5",
+      "predictions_sha256": "df83171b66ec0fdd5b7d71536aa792a89952ae83be41346ce6bb1fe2d5442523",
+      "frozen_thresholds_sha256": "90b92d48247303c52517f4129b7b541b2a738114cf27d75149b01a28698258de",
+      "kern_parser_sha256": "79d8b7a3ac15fc7f65b3330d2820e31c48018d36b5cec35549caff9bc4ad2738",
+      "verosim_sha256": "ce947b2c492dd2f83157a350ea29887592cf83d7bf84ad431e5630728f8ad567",
+      "differences": [],
+      "pages": 202,
+      "aggregate_and_bootstrap_equal": true,
+      "paired_baselines_equal": [
+        "legato",
+        "smt",
+        "smt-cd"
+      ],
+      "baseline_sha256": {
+        "legato": "0e294b5dc0777832bd85f8a0f72812ff2b3df8de802aefb2e7a55e7761b75614",
+        "smt": "76e5996db6fbba0f7116bfdc52e9e770478bcf8100e5e4b494017606feb8cb1a",
+        "smt-cd": "859555e401e518c2f53626fec4b38e5694eef79806e6b9fb70959b18bcd5a669"
+      },
+      "exact_per_page_scores": true,
+      "tolerance": 0,
+      "omr_ned_x100": 28.495220830535693,
+      "bootstrap": {
+        "confidence_level": 0.95,
+        "density_document_cluster_seeds": [
+          20260827,
+          20260829,
+          20260831
+        ],
+        "density_page_seeds": [
+          20260826,
+          20260828,
+          20260830
+        ],
+        "document_cluster": {
+          "available": true,
+          "ci_high": 0.3414307146113855,
+          "ci_low": 0.23705802745206364,
+          "point": 0.28495220830535695
+        },
+        "document_cluster_seed": 20260727,
+        "main_interval": "document_cluster",
+        "method": "percentile",
+        "page": {
+          "available": true,
+          "ci_high": 0.3285245335247149,
+          "ci_low": 0.24311080708156566,
+          "point": 0.28495220830535695
+        },
+        "page_seed": 20260726,
+        "resamples": 50000
+      },
+      "renderability": {
+        "count": 180,
+        "definition": "After the recorded notation conversion with no repairs, Verovio must load the full prediction, produce at least one page, and render every page to a nonempty SVG even with error diagnostics. Secondary renderability also requires no error diagnostic. Warnings are allowed. Kern must contain a **kern exclusive interpretation. ABC (including Legato) is converted with the recorded abc2xml script and Python executable, then the resulting MusicXML is tested. Conversion errors, native crashes, timeouts and inference failures are not renderable.",
+        "error_diagnostic_count": 124,
+        "fraction": 0.8910891089108911,
+        "without_error_count": 56,
+        "without_error_fraction": 0.27722772277227725
+      }
+    },
+    {
+      "status": "pass",
+      "cohort": "synthetic",
+      "mode": "constrained",
+      "numerical_environment": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1"
+      },
+      "gold_pages_sha256": "62f3177f3b00134d9214f9e1e67736d9d54e752937f2bc61ea601da652e1c62d",
+      "gold_summary_sha256": "21bc05d708452b853e868bf73957d87e4468e753e930d23f8eb1bbba76153e3c",
+      "gold_paired_sha256": "56694f0cc6ec01b97f903d62d0c4064b4aa590be1706e961f1fdfb029557b7e9",
+      "predictions_sha256": "07d49c62d7929ca2ab338304639d0bbaef937d63b4653b6690dda4ca344f625b",
+      "frozen_thresholds_sha256": "66c4b889ad74fb05c49658e1097ad4b07458deb99f360624cc488edef47f5bfd",
+      "kern_parser_sha256": "79d8b7a3ac15fc7f65b3330d2820e31c48018d36b5cec35549caff9bc4ad2738",
+      "verosim_sha256": "ce947b2c492dd2f83157a350ea29887592cf83d7bf84ad431e5630728f8ad567",
+      "differences": [],
+      "pages": 2500,
+      "aggregate_and_bootstrap_equal": true,
+      "paired_baselines_equal": [
+        "legato",
+        "smt",
+        "smt-cd"
+      ],
+      "baseline_sha256": {
+        "legato": "c5db4af0140c19c64468eed3b422f472080c22849a5ea59f6aec7ba99d9eb8ed",
+        "smt": "01d0214a64ba24ad195dc0548b79dd49455fc5d3117d4b2f3d4484d680e7ed2d",
+        "smt-cd": "8f89b2ac759b3b0110c4e7b1e78d27aa4b6b4d958c2b7484286ac9dfdcadc5a7"
+      },
+      "exact_per_page_scores": true,
+      "tolerance": 0,
+      "omr_ned_x100": 1.2540120374668067,
+      "bootstrap": {
+        "confidence_level": 0.95,
+        "density_document_cluster_seeds": [
+          20260827,
+          20260829,
+          20260831
+        ],
+        "density_page_seeds": [
+          20260826,
+          20260828,
+          20260830
+        ],
+        "document_cluster": {
+          "available": true,
+          "ci_high": 0.015183974401386783,
+          "ci_low": 0.010109031306159746,
+          "point": 0.012540120374668067
+        },
+        "document_cluster_seed": 20260727,
+        "main_interval": "document_cluster",
+        "method": "percentile",
+        "page": {
+          "available": true,
+          "ci_high": 0.014784175429286976,
+          "ci_low": 0.01050610134288715,
+          "point": 0.012540120374668067
+        },
+        "page_seed": 20260726,
+        "resamples": 50000
+      },
+      "renderability": {
+        "count": 2500,
+        "definition": "After the recorded notation conversion with no repairs, Verovio must load the full prediction, produce at least one page, and render every page to a nonempty SVG even with error diagnostics. Secondary renderability also requires no error diagnostic. Warnings are allowed. Kern must contain a **kern exclusive interpretation. ABC (including Legato) is converted with the recorded abc2xml script and Python executable, then the resulting MusicXML is tested. Conversion errors, native crashes, timeouts and inference failures are not renderable.",
+        "error_diagnostic_count": 0,
+        "fraction": 1.0,
+        "without_error_count": 2500,
+        "without_error_fraction": 1.0
+      }
+    },
+    {
+      "status": "pass",
+      "cohort": "synthetic",
+      "mode": "beam",
+      "numerical_environment": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1"
+      },
+      "gold_pages_sha256": "b4d7e01d7d7549447dcf930c0ae39ca98074cd0001b9d75bcaef088f986b645d",
+      "gold_summary_sha256": "75d42551d0ed440e73064c7e0fd6ae79c843244d8cb4488c16af8b91ef9962b1",
+      "gold_paired_sha256": "a04f72996575bc2d3af28a10704f9b091f021e99874b33b869332f6260f9b0d8",
+      "predictions_sha256": "8b93e399131e812ec7eefc5ec1067ad6e102891d4f6cc0026325784ddef51e0a",
+      "frozen_thresholds_sha256": "66c4b889ad74fb05c49658e1097ad4b07458deb99f360624cc488edef47f5bfd",
+      "kern_parser_sha256": "79d8b7a3ac15fc7f65b3330d2820e31c48018d36b5cec35549caff9bc4ad2738",
+      "verosim_sha256": "ce947b2c492dd2f83157a350ea29887592cf83d7bf84ad431e5630728f8ad567",
+      "differences": [],
+      "pages": 2500,
+      "aggregate_and_bootstrap_equal": true,
+      "paired_baselines_equal": [
+        "legato",
+        "smt",
+        "smt-cd"
+      ],
+      "baseline_sha256": {
+        "legato": "c5db4af0140c19c64468eed3b422f472080c22849a5ea59f6aec7ba99d9eb8ed",
+        "smt": "01d0214a64ba24ad195dc0548b79dd49455fc5d3117d4b2f3d4484d680e7ed2d",
+        "smt-cd": "8f89b2ac759b3b0110c4e7b1e78d27aa4b6b4d958c2b7484286ac9dfdcadc5a7"
+      },
+      "exact_per_page_scores": true,
+      "tolerance": 0,
+      "omr_ned_x100": 1.5589932509194417,
+      "bootstrap": {
+        "confidence_level": 0.95,
+        "density_document_cluster_seeds": [
+          20260827,
+          20260829,
+          20260831
+        ],
+        "density_page_seeds": [
+          20260826,
+          20260828,
+          20260830
+        ],
+        "document_cluster": {
+          "available": true,
+          "ci_high": 0.019458184716721737,
+          "ci_low": 0.012100165588254,
+          "point": 0.015589932509194418
+        },
+        "document_cluster_seed": 20260727,
+        "main_interval": "document_cluster",
+        "method": "percentile",
+        "page": {
+          "available": true,
+          "ci_high": 0.018967316292576534,
+          "ci_low": 0.012523522280655274,
+          "point": 0.015589932509194418
+        },
+        "page_seed": 20260726,
+        "resamples": 50000
+      },
+      "renderability": {
+        "count": 2488,
+        "definition": "After the recorded notation conversion with no repairs, Verovio must load the full prediction, produce at least one page, and render every page to a nonempty SVG even with error diagnostics. Secondary renderability also requires no error diagnostic. Warnings are allowed. Kern must contain a **kern exclusive interpretation. ABC (including Legato) is converted with the recorded abc2xml script and Python executable, then the resulting MusicXML is tested. Conversion errors, native crashes, timeouts and inference failures are not renderable.",
+        "error_diagnostic_count": 260,
+        "fraction": 0.9952,
+        "without_error_count": 2228,
+        "without_error_fraction": 0.8912
+      }
+    }
+  ],
+  "paper_value_checks": {
+    "status": "pass",
+    "checks": [
+      {
+        "name": "public/beam/mean",
+        "actual": "28.50",
+        "expected": "28.50",
+        "equal": true
+      },
+      {
+        "name": "public/beam/median",
+        "actual": "17.23",
+        "expected": "17.23",
+        "equal": true
+      },
+      {
+        "name": "public/beam/failures",
+        "actual": 22,
+        "expected": 22,
+        "equal": true
+      },
+      {
+        "name": "public/beam/page",
+        "actual": [
+          "24.31",
+          "32.85"
+        ],
+        "expected": [
+          "24.31",
+          "32.85"
+        ],
+        "equal": true
+      },
+      {
+        "name": "public/beam/document_cluster",
+        "actual": [
+          "23.71",
+          "34.14"
+        ],
+        "expected": [
+          "23.71",
+          "34.14"
+        ],
+        "equal": true
+      },
+      {
+        "name": "public/beam/renderable",
+        "actual": "89.1",
+        "expected": "89.1",
+        "equal": true
+      },
+      {
+        "name": "public/beam/strict",
+        "actual": "27.7",
+        "expected": "27.7",
+        "equal": true
+      },
+      {
+        "name": "beam/density-counts",
+        "actual": [
+          73,
+          61,
+          68
+        ],
+        "expected": [
+          73,
+          61,
+          68
+        ],
+        "equal": true
+      },
+      {
+        "name": "beam/density-ranges",
+        "actual": [
+          [
+            8,
+            1099
+          ],
+          [
+            1127,
+            1562
+          ],
+          [
+            1574,
+            3444
+          ]
+        ],
+        "expected": [
+          [
+            8,
+            1099
+          ],
+          [
+            1127,
+            1562
+          ],
+          [
+            1574,
+            3444
+          ]
+        ],
+        "equal": true
+      },
+      {
+        "name": "beam/density-means",
+        "actual": [
+          "25.51",
+          "26.24",
+          "33.73"
+        ],
+        "expected": [
+          "25.51",
+          "26.24",
+          "33.73"
+        ],
+        "equal": true
+      },
+      {
+        "name": "beam/Legato-mean",
+        "actual": "-24.71",
+        "expected": "-24.71",
+        "equal": true
+      },
+      {
+        "name": "beam/Legato-CI",
+        "actual": [
+          "-30.93",
+          "-18.48"
+        ],
+        "expected": [
+          "-30.93",
+          "-18.48"
+        ],
+        "equal": true
+      },
+      {
+        "name": "beam/Legato-density-0-mean",
+        "actual": "-14.19",
+        "expected": "-14.19",
+        "equal": true
+      },
+      {
+        "name": "beam/Legato-density-0-CI",
+        "actual": [
+          "-23.52",
+          "-7.69"
+        ],
+        "expected": [
+          "-23.52",
+          "-7.69"
+        ],
+        "equal": true
+      },
+      {
+        "name": "beam/Legato-density-1-mean",
+        "actual": "-27.85",
+        "expected": "-27.85",
+        "equal": true
+      },
+      {
+        "name": "beam/Legato-density-1-CI",
+        "actual": [
+          "-39.47",
+          "-16.62"
+        ],
+        "expected": [
+          "-39.47",
+          "-16.62"
+        ],
+        "equal": true
+      },
+      {
+        "name": "beam/Legato-density-2-mean",
+        "actual": "-33.17",
+        "expected": "-33.17",
+        "equal": true
+      },
+      {
+        "name": "beam/Legato-density-2-CI",
+        "actual": [
+          "-38.46",
+          "-26.91"
+        ],
+        "expected": [
+          "-38.46",
+          "-26.91"
+        ],
+        "equal": true
+      },
+      {
+        "name": "beam/Spearman",
+        "actual": "0.17",
+        "expected": "0.17",
+        "equal": true
+      },
+      {
+        "name": "public/constrained/mean",
+        "actual": "22.59",
+        "expected": "22.59",
+        "equal": true
+      },
+      {
+        "name": "public/constrained/median",
+        "actual": "15.86",
+        "expected": "15.86",
+        "equal": true
+      },
+      {
+        "name": "public/constrained/failures",
+        "actual": 0,
+        "expected": 0,
+        "equal": true
+      },
+      {
+        "name": "public/constrained/page",
+        "actual": [
+          "19.68",
+          "25.65"
+        ],
+        "expected": [
+          "19.68",
+          "25.65"
+        ],
+        "equal": true
+      },
+      {
+        "name": "public/constrained/document_cluster",
+        "actual": [
+          "18.87",
+          "27.21"
+        ],
+        "expected": [
+          "18.87",
+          "27.21"
+        ],
+        "equal": true
+      },
+      {
+        "name": "public/constrained/renderable",
+        "actual": "100.0",
+        "expected": "100.0",
+        "equal": true
+      },
+      {
+        "name": "public/constrained/strict",
+        "actual": "100.0",
+        "expected": "100.0",
+        "equal": true
+      },
+      {
+        "name": "constrained/density-counts",
+        "actual": [
+          73,
+          61,
+          68
+        ],
+        "expected": [
+          73,
+          61,
+          68
+        ],
+        "equal": true
+      },
+      {
+        "name": "constrained/density-ranges",
+        "actual": [
+          [
+            8,
+            1099
+          ],
+          [
+            1127,
+            1562
+          ],
+          [
+            1574,
+            3444
+          ]
+        ],
+        "expected": [
+          [
+            8,
+            1099
+          ],
+          [
+            1127,
+            1562
+          ],
+          [
+            1574,
+            3444
+          ]
+        ],
+        "equal": true
+      },
+      {
+        "name": "constrained/density-means",
+        "actual": [
+          "20.20",
+          "22.11",
+          "25.57"
+        ],
+        "expected": [
+          "20.20",
+          "22.11",
+          "25.57"
+        ],
+        "equal": true
+      },
+      {
+        "name": "constrained/Legato-mean",
+        "actual": "-30.62",
+        "expected": "-30.62",
+        "equal": true
+      },
+      {
+        "name": "constrained/Legato-CI",
+        "actual": [
+          "-36.75",
+          "-24.44"
+        ],
+        "expected": [
+          "-36.75",
+          "-24.44"
+        ],
+        "equal": true
+      },
+      {
+        "name": "constrained/Legato-density-0-mean",
+        "actual": "-19.49",
+        "expected": "-19.49",
+        "equal": true
+      },
+      {
+        "name": "constrained/Legato-density-0-CI",
+        "actual": [
+          "-27.63",
+          "-13.71"
+        ],
+        "expected": [
+          "-27.63",
+          "-13.71"
+        ],
+        "equal": true
+      },
+      {
+        "name": "constrained/Legato-density-1-mean",
+        "actual": "-31.98",
+        "expected": "-31.98",
+        "equal": true
+      },
+      {
+        "name": "constrained/Legato-density-1-CI",
+        "actual": [
+          "-40.53",
+          "-23.37"
+        ],
+        "expected": [
+          "-40.53",
+          "-23.37"
+        ],
+        "equal": true
+      },
+      {
+        "name": "constrained/Legato-density-2-mean",
+        "actual": "-41.34",
+        "expected": "-41.34",
+        "equal": true
+      },
+      {
+        "name": "constrained/Legato-density-2-CI",
+        "actual": [
+          "-48.19",
+          "-33.80"
+        ],
+        "expected": [
+          "-48.19",
+          "-33.80"
+        ],
+        "equal": true
+      },
+      {
+        "name": "constrained/Spearman",
+        "actual": "0.17",
+        "expected": "0.17",
+        "equal": true
+      },
+      {
+        "name": "synthetic/beam/mean",
+        "actual": "1.56",
+        "expected": "1.56",
+        "equal": true
+      },
+      {
+        "name": "synthetic/beam/median",
+        "actual": "0.08",
+        "expected": "0.08",
+        "equal": true
+      },
+      {
+        "name": "synthetic/beam/failures",
+        "actual": 12,
+        "expected": 12,
+        "equal": true
+      },
+      {
+        "name": "synthetic/beam/page",
+        "actual": [
+          "1.25",
+          "1.90"
+        ],
+        "expected": [
+          "1.25",
+          "1.90"
+        ],
+        "equal": true
+      },
+      {
+        "name": "synthetic/beam/document_cluster",
+        "actual": [
+          "1.21",
+          "1.95"
+        ],
+        "expected": [
+          "1.21",
+          "1.95"
+        ],
+        "equal": true
+      },
+      {
+        "name": "synthetic/beam/renderable",
+        "actual": "99.5",
+        "expected": "99.5",
+        "equal": true
+      },
+      {
+        "name": "synthetic/beam/strict",
+        "actual": "89.1",
+        "expected": "89.1",
+        "equal": true
+      },
+      {
+        "name": "synthetic/constrained/mean",
+        "actual": "1.25",
+        "expected": "1.25",
+        "equal": true
+      },
+      {
+        "name": "synthetic/constrained/median",
+        "actual": "0.10",
+        "expected": "0.10",
+        "equal": true
+      },
+      {
+        "name": "synthetic/constrained/failures",
+        "actual": 0,
+        "expected": 0,
+        "equal": true
+      },
+      {
+        "name": "synthetic/constrained/page",
+        "actual": [
+          "1.05",
+          "1.48"
+        ],
+        "expected": [
+          "1.05",
+          "1.48"
+        ],
+        "equal": true
+      },
+      {
+        "name": "synthetic/constrained/document_cluster",
+        "actual": [
+          "1.01",
+          "1.52"
+        ],
+        "expected": [
+          "1.01",
+          "1.52"
+        ],
+        "equal": true
+      },
+      {
+        "name": "synthetic/constrained/renderable",
+        "actual": "100.0",
+        "expected": "100.0",
+        "equal": true
+      },
+      {
+        "name": "synthetic/constrained/strict",
+        "actual": "100.0",
+        "expected": "100.0",
+        "equal": true
+      },
+      {
+        "name": "public/common-valid-pages",
+        "actual": 180,
+        "expected": 180,
+        "equal": true
+      },
+      {
+        "name": "public/common-valid/beam",
+        "actual": "19.76",
+        "expected": "19.76",
+        "equal": true
+      },
+      {
+        "name": "public/common-valid/constrained",
+        "actual": "21.41",
+        "expected": "21.41",
+        "equal": true
+      },
+      {
+        "name": "public/beam/renderable-with-errors",
+        "actual": 124,
+        "expected": 124,
+        "equal": true
+      },
+      {
+        "name": "public/beam/inconsistent-rhythm",
+        "actual": 123,
+        "expected": 123,
+        "equal": true
+      }
+    ],
+    "not_checkable_from_numeric_tables": []
+  },
+  "pytest": {
+    "passed": 80,
+    "failed": 0,
+    "dependency_deprecation_warnings": 6
+  },
+  "smoke": {
+    "import_tokenizer": {
+      "returncode": 0,
+      "vocab_size": 2999,
+      "tokenizer_sha256": "0a2786058ada19db7ff29568f0059ab96b0ca1fb2fb3332664caf162af97aa61"
+    },
+    "normalization": {
+      "returncode": 0
+    },
+    "density": {
+      "returncode": 0
+    },
+    "score": {
+      "returncode": 0,
+      "summary": {
+        "cohort_count": 2,
+        "failure_count": 1,
+        "omr_ned": 0.5,
+        "document_count": 2
+      }
+    },
+    "inference": {
+      "returncode": 0
+    }
+  },
+  "inference": [
+    {
+      "cohort": "public",
+      "mode": "constrained",
+      "pages": 5,
+      "matches": 5
+    },
+    {
+      "cohort": "public",
+      "mode": "beam",
+      "pages": 5,
+      "matches": 5
+    },
+    {
+      "cohort": "synthetic",
+      "mode": "constrained",
+      "pages": 5,
+      "matches": 5
+    },
+    {
+      "cohort": "synthetic",
+      "mode": "beam",
+      "pages": 5,
+      "matches": 5
+    }
+  ],
+  "parser_input_parity": {
+    "status": "pass",
+    "inputs": 8106,
+    "frozen_parser_sha256": "69fafa5e9105e15e664e47b4c23d442e779c31563b2b71338a51bb5501536273",
+    "candidate_parser_sha256": "79d8b7a3ac15fc7f65b3330d2820e31c48018d36b5cec35549caff9bc4ad2738",
+    "differences": [],
+    "error_text_differences": [],
+    "conversion_failures": 34,
+    "frozen_source_revision": "05663e318b0cf8f8c9218d12f197898f0e5440f1",
+    "candidate_source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "candidate_derived_from": "4234a4f3d62948550bc2cfeb28d95f9dd231b1b0"
+  },
+  "audit": {
+    "status": "pass",
+    "findings": 0,
+    "first_party_findings": 0,
+    "receipt": "release/audit-findings.json"
+  },
+  "not_verified": [
+    "Full training or exact historical checkpoint selection",
+    "GPU installation and inference",
+    "Original IMSLP PDF rasterization and crop equivalence",
+    "Hub download before asset publication"
+  ],
+  "publication": "not performed",
+  "toy_generation": {
+    "status": "pass",
+    "source": "toy",
+    "rows": 1,
+    "workers": 1,
+    "continuation_preflight_and_preparation": true
+  },
+  "reference_provenance": {
+    "musescore_community": 136,
+    "hand_transcription": 42,
+    "existing_encoding_unrecorded": 1,
+    "chopinscores": 23
+  },
+  "reference_terms_disclosure": "MuseScore community encoding terms and the source of one existing encoding could not be fully established. All 202 references are retained with per-page provenance, attribution and a removal-on-request policy.",
+  "check_commands": [
+    {
+      "name": "uv-sync",
+      "command": "uv sync --frozen --all-extras",
+      "exit_code": 0
+    },
+    {
+      "name": "cargo-build",
+      "command": "CARGO_BUILD_JOBS=2 cargo build --locked --release",
+      "exit_code": 0
+    },
+    {
+      "name": "rust-helper-test",
+      "command": "CARGO_BUILD_JOBS=2 cargo test --locked --release -p generation_helpers",
+      "exit_code": 0
+    },
+    {
+      "name": "converter-build",
+      "command": "make -C vendor/musicxml2hum release -j 2",
+      "exit_code": 0
+    },
+    {
+      "name": "verosim-build",
+      "command": "cmake --build external/verosim/build -j 2",
+      "exit_code": 0
+    },
+    {
+      "name": "pytest",
+      "command": "uv run --no-sync pytest tests -q",
+      "exit_code": 0
+    },
+    {
+      "name": "smoke",
+      "command": "uv run --no-sync python scripts/smoke.py --verosim external/verosim/build/verosim --out outputs/w103-smoke",
+      "exit_code": 0
+    },
+    {
+      "name": "generation",
+      "command": "uv run --no-sync python scripts/generate.py --input-kern examples --source toy --work outputs/w103-generation --output outputs/w103-generated-data --workers 1 --target-count 1",
+      "exit_code": 0
+    },
+    {
+      "name": "parser-input-parity",
+      "command": "uv run --no-sync python scripts/compare_parser_inputs.py --frozen-parser outputs/frozen-parser-build/target/release/kern_parser --out outputs/w103-parser-input-parity",
+      "exit_code": 0
+    },
+    {
+      "name": "public-constrained",
+      "command": "uv run --no-sync python scripts/verify_tools.py --cohort public --mode constrained --out outputs/w103-public-constrained",
+      "exit_code": 0
+    },
+    {
+      "name": "public-beam",
+      "command": "uv run --no-sync python scripts/verify_tools.py --cohort public --mode beam --out outputs/w103-public-beam",
+      "exit_code": 0
+    },
+    {
+      "name": "synthetic-constrained",
+      "command": "uv run --no-sync python scripts/verify_tools.py --cohort synthetic --mode constrained --out outputs/w103-synthetic-constrained",
+      "exit_code": 0
+    },
+    {
+      "name": "synthetic-beam",
+      "command": "uv run --no-sync python scripts/verify_tools.py --cohort synthetic --mode beam --out outputs/w103-synthetic-beam",
+      "exit_code": 0
+    },
+    {
+      "name": "paper-values",
+      "command": "uv run --no-sync python scripts/verify_paper.py --out outputs/w103-paper-values.json",
+      "exit_code": 0
+    }
+  ]
+}

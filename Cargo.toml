@@ -1,0 +1,8 @@
+[workspace]
+members = ["vendor/kern_parser", "crates/generation_helpers"]
+resolver = "2"
+
+[patch.crates-io]
+verovioxide = { git = "https://github.com/btrkeks/verovioxide.git", rev = "642a6634f2c8cf333a95aebb18274460a4f5094d" }
+verovioxide-data = { git = "https://github.com/btrkeks/verovioxide.git", rev = "642a6634f2c8cf333a95aebb18274460a4f5094d" }
+verovioxide-sys = { git = "https://github.com/btrkeks/verovioxide.git", rev = "642a6634f2c8cf333a95aebb18274460a4f5094d" }

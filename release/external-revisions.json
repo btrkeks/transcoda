@@ -1,0 +1,47 @@
+{
+  "source_dependencies": [
+    {
+      "name": "VeroSim",
+      "url": "https://github.com/btrkeks/verosim.git",
+      "revision": "d63cb62b61379a83c619b5001e0425d3411fd84c",
+      "fetched_by": "scripts/setup_verosim.sh"
+    },
+    {
+      "name": "Verovio fork",
+      "url": "https://github.com/btrkeks/verovio.git",
+      "revision": "74a74adbff229ec875289faba3e262a34b0836b9",
+      "fetched_by": "scripts/setup_verosim.sh"
+    },
+    {
+      "name": "verovioxide, verovioxide-data, verovioxide-sys",
+      "url": "https://github.com/btrkeks/verovioxide.git",
+      "revision": "642a6634f2c8cf333a95aebb18274460a4f5094d",
+      "fetched_by": "Cargo.toml / Cargo.lock"
+    },
+    {
+      "name": "musicxml2hum",
+      "revision": "5c47c178894bbf6493ae6efb14bd4a78e5086c53",
+      "vendored": true
+    },
+    {
+      "name": "kern_parser",
+      "revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+      "vendored": true,
+      "derived_from": "4234a4f3d62948550bc2cfeb28d95f9dd231b1b0"
+    },
+    {
+      "name": "Verovio used by verovioxide",
+      "url": "https://codeload.github.com/btrkeks/verovio/tar.gz/a667281cc7845a5f6da45ad89414494e57fbac6f",
+      "revision": "a667281cc7845a5f6da45ad89414494e57fbac6f",
+      "fetched_by": "verovioxide-sys/build.rs"
+    }
+  ],
+  "python_packages": "uv.lock",
+  "rust_registry_packages": "Cargo.lock",
+  "encoder_initialization": {
+    "id": "facebook/convnextv2-tiny-22k-224",
+    "revision": "default upstream revision; training provenance does not record an immutable Hub commit",
+    "used_for": "initializing training; model construction currently loads encoder before restoring full checkpoint"
+  },
+  "publication_prerequisite": "The pinned source commits must be available on their public remotes before users can build."
+}

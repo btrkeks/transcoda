@@ -1,0 +1,52 @@
+{
+  "abc2xml": {
+    "sha256": "c5cc7205051f2698801ba2e036c69b2aa083f170dd98decd85f733003d6acdda"
+  },
+  "code": {
+    "evaluate.py": "943417d15257fbb523de9c90401c9825180f16f5e43760cf692aa3596469cb62",
+    "evaluation_inputs.py": "e07b31adeb18395c0216ae2888cfc4bb229cd2fd37930f88fcd2b502fbe405d9",
+    "normalization.py": "431a8c9ba6ff933088a3d157f8e09352c27c54db24aacf67023c171bda3de784",
+    "renderability.py": "f43069f61b5b41c5ebdcc2c2f9a336941d4f39ef5bf4cd94fc684121718ddcff",
+    "scoring.py": "45fe90166aab69b98197df94020cece904f81b72bea4483c39f58cd2c344952a",
+    "uncertainty.py": "4b2f12ab410a0271d0f03b7448f65711ec409f7cd383f340aaca2f27b05ac6cc"
+  },
+  "kern_parser": {
+    "sha256": "049586c92dd28bb5a5047dbb5140bb0c98caea16e38571528555ca8c1c9afaed"
+  },
+  "numpy_version": "2.4.6",
+  "profile": {
+    "sha256": "fd60e546e785d700e2a13c8e31380afeb191b643199f928679b9e48257a2a433"
+  },
+  "python": {
+    "sha256": "7d43f6e86a6c6dd12005ec77eb2055f1be3f1bb3adedf8afe0a87973fa7371ce"
+  },
+  "python_version": "3.12.13 (main, Jul 18 2026, 17:02:19) [Clang 22.1.3 ]",
+  "rendering_verovio": {
+    "definition": "After the recorded notation conversion with no repairs, Verovio must load the full prediction, produce at least one page, and render every page to a nonempty SVG even with error diagnostics. Secondary renderability also requires no error diagnostic. Warnings are allowed. Kern must contain a **kern exclusive interpretation. ABC (including Legato) is converted with the recorded abc2xml script and Python executable, then the resulting MusicXML is tested. Conversion errors, native crashes, timeouts and inference failures are not renderable.",
+    "native_modules": {
+      "_verovio.cpython-312-x86_64-linux-gnu.so": "03f8acf11b7e054a2984f47075c34ffda2452375115e73b89db0639b9ad228d8"
+    },
+    "options": {
+      "inputFrom": "humdrum|musicxml|mei (per normalized format)"
+    },
+    "version": "6.2.1-8d42439"
+  },
+  "scorer_source_commit": "885bb1b02527b8261e2b2212663f443d7270f78a",
+  "verosim": {
+    "sha256": "00598e5cceb551b8ef51a26f00af3089cfc6e055a2d925ccadfe993250afff1b"
+  },
+  "source_export": {
+    "verosim": "d63cb62b61379a83c619b5001e0425d3411fd84c",
+    "verovio": "74a74adbff229ec875289faba3e262a34b0836b9",
+    "note": "The setup recipe uses the historical source and its committed renderer pin identified by binary markers and per-page parity. Rebuilt binary identities require per-cohort parity before use with frozen thresholds."
+  },
+  "rebuilt_release_tools": {
+    "kern_parser": {
+      "sha256": "79d8b7a3ac15fc7f65b3330d2820e31c48018d36b5cec35549caff9bc4ad2738",
+      "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a"
+    },
+    "verosim": {
+      "sha256": "ce947b2c492dd2f83157a350ea29887592cf83d7bf84ad431e5630728f8ad567"
+    }
+  }
+}

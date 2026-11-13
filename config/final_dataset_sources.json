@@ -1,0 +1,25 @@
+{
+  "sources": [
+    {
+      "name": "pdmx",
+      "split": "train",
+      "kind": "synthetic_svg",
+      "source_dataset": "pdmx",
+      "layout_targets_report_jsonl": "data/interim/train/pdmx/7_targets/layout_targets_report.jsonl"
+    },
+    {
+      "name": "grandstaff",
+      "split": "train",
+      "kind": "synthetic_svg",
+      "source_dataset": "grandstaff",
+      "layout_targets_report_jsonl": "data/interim/train/grandstaff/7_targets/layout_targets_report.jsonl"
+    },
+    {
+      "name": "kernscores-merged",
+      "split": "train",
+      "kind": "synthetic_svg",
+      "source_dataset": "kernscores-merged",
+      "layout_targets_report_jsonl": "data/interim/train/kernscores-merged/7_targets/layout_targets_report.jsonl"
+    }
+  ]
+}

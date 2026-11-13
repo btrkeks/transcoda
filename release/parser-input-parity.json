@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "inputs": 8106,
+  "frozen_parser_sha256": "69fafa5e9105e15e664e47b4c23d442e779c31563b2b71338a51bb5501536273",
+  "candidate_parser_sha256": "79d8b7a3ac15fc7f65b3330d2820e31c48018d36b5cec35549caff9bc4ad2738",
+  "differences": [],
+  "error_text_differences": [],
+  "conversion_failures": 34,
+  "frozen_source_revision": "05663e318b0cf8f8c9218d12f197898f0e5440f1",
+  "candidate_source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+  "candidate_derived_from": "4234a4f3d62948550bc2cfeb28d95f9dd231b1b0"
+}

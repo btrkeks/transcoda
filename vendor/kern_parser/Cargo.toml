@@ -1,0 +1,39 @@
+[package]
+name = "kern_parser"
+version = "0.1.0"
+edition = "2021"
+description = "Humdrum **kern parsing and synthetic data preparation for Transcoda"
+license = "PolyForm-Noncommercial-1.0.0"
+
+[features]
+default = ["cli", "engraving"]
+cli = ["dep:clap", "dep:indicatif", "dep:tempfile"]
+engraving = ["dep:verovioxide"]
+
+[[bin]]
+name = "kern_parser"
+path = "src/main.rs"
+required-features = ["cli"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"], optional = true }
+indicatif = { version = "0.17", optional = true }
+num-rational = { version = "0.4", default-features = false, features = ["std"] }
+rayon = "1"
+roxmltree = "0.20"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+thiserror = "1"
+tempfile = { version = "3", optional = true }
+verovioxide = { version = "0.3", default-features = false, features = ["bundled-data"], optional = true }
+walkdir = "2"
+
+[dev-dependencies]
+tempfile = "3"
+proptest = "1"
+
+[patch.crates-io]
+verovioxide = { git = "https://github.com/btrkeks/verovioxide.git", rev = "642a6634f2c8cf333a95aebb18274460a4f5094d" }
+verovioxide-data = { git = "https://github.com/btrkeks/verovioxide.git", rev = "642a6634f2c8cf333a95aebb18274460a4f5094d" }
+verovioxide-sys = { git = "https://github.com/btrkeks/verovioxide.git", rev = "642a6634f2c8cf333a95aebb18274460a4f5094d" }

@@ -1,0 +1,14 @@
+mod barline_fermatas;
+mod continuation_meter;
+mod cross_staff;
+mod editorial_accidental_serialization;
+mod label_alignment;
+mod mixed_tandem_records;
+mod ottava_closer_validation;
+mod repetition_and_tuplet_breaks;
+mod rest_placement;
+mod serialize_idempotency;
+mod staff_placement;
+mod transcoda_v2_pipeline;
+mod transcoda_v2_properties;
+mod tuplet_brackets;

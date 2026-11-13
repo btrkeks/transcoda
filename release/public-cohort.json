@@ -1,0 +1,17 @@
+{
+  "pages": 202,
+  "documents": 79,
+  "exact_final_cd_cohort": true,
+  "source_final_pages_sha256": "a9957b8e308c82d1db6c1e7c45c4cc203074f345f08faf274a1a08e3e2b3b227",
+  "staged_references_sha256": "ec65ab49aeb36de0011e4ca97cfe0719c2e42f2f2415fb5d03e68d745f5c83ae",
+  "staged_manifest_sha256": "5f1293acafcb0a4de109b41c38968f20c66d823f390156de69f7b8fa464be7c3",
+  "scan_license_files": 79,
+  "scan_images_in_git": 0,
+  "unreleased_reference_pages_in_git": 0,
+  "provenance_counts": {
+    "musescore_community": 136,
+    "hand_transcription": 42,
+    "existing_encoding_unrecorded": 1,
+    "chopinscores": 23
+  }
+}

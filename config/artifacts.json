@@ -1,0 +1,5 @@
+{
+  "model_id": "btrkeks/transcoda-v2.1",
+  "synthetic_test_id": "btrkeks/transcoda-synthetic-test",
+  "checkpoint_filename": "transcoda-v2.1.ckpt"
+}

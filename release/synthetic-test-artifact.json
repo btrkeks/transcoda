@@ -1,0 +1,46 @@
+{
+  "rows": 2500,
+  "source_counts": {
+    "pdmx": 1500,
+    "grandstaff": 1000
+  },
+  "kernscores_rows": 0,
+  "format": "datasets.save_to_disk",
+  "files": [
+    {
+      "path": "README.md",
+      "size_bytes": 2036,
+      "sha256": "78a00788c8423803dbb754bd1b8ff280e211949bd35316ef34e29d82168ae285"
+    },
+    {
+      "path": "data-00000-of-00001.arrow",
+      "size_bytes": 282962640,
+      "sha256": "c1e6522ea24a57dce127e5ccede5ee888b096cec336f702c78782ffa0f52abd9"
+    },
+    {
+      "path": "dataset_info.json",
+      "size_bytes": 811,
+      "sha256": "b9da8e83df9485dddd462f7aa8c094b97452b65970f55a86c3800067e7bbd7c5"
+    },
+    {
+      "path": "licenses/CC-BY-4.0.txt",
+      "size_bytes": 18657,
+      "sha256": "9ba9550ad48438d0836ddab3da480b3b69ffa0aac7b7878b5a0039e7ab429411"
+    },
+    {
+      "path": "licenses/grandstaff-hub-metadata.txt",
+      "size_bytes": 578,
+      "sha256": "24b5ca5fe366ce9d024feedf96d662f1a0676b04aabf1ead4fde773b4509a80d"
+    },
+    {
+      "path": "licenses/pdmx-code-MIT",
+      "size_bytes": 1068,
+      "sha256": "6176397743b4273b0f82427da4a51dc27b5c0240b75a6ad954d22650b7666ce9"
+    },
+    {
+      "path": "state.json",
+      "size_bytes": 250,
+      "sha256": "ad5a81d3863aebea3ab66a8e13a3bbfe7af43ef29bd87dc75361cf06b1ed244a"
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "bootstrap": {
+    "confidence_level": 0.95,
+    "density_document_cluster_seeds": [
+      20260827,
+      20260829,
+      20260831
+    ],
+    "density_page_seeds": [
+      20260826,
+      20260828,
+      20260830
+    ],
+    "document_cluster": {
+      "available": true,
+      "ci_high": 0.019458184716721737,
+      "ci_low": 0.012100165588254,
+      "point": 0.015589932509194418
+    },
+    "document_cluster_seed": 20260727,
+    "main_interval": "document_cluster",
+    "method": "percentile",
+    "page": {
+      "available": true,
+      "ci_high": 0.018967316292576534,
+      "ci_low": 0.012523522280655274,
+      "point": 0.015589932509194418
+    },
+    "page_seed": 20260726,
+    "resamples": 50000
+  },
+  "cohort_count": 2500,
+  "density_thirds": [
+    {
+      "count": 835,
+      "intervals": {
+        "document_cluster": {
+          "available": true,
+          "ci_high": 0.012458298842428838,
+          "ci_low": 0.004420173308379747,
+          "point": 0.007938517313063779
+        },
+        "page": {
+          "available": true,
+          "ci_high": 0.012389165381046254,
+          "ci_low": 0.004483345717663791,
+          "point": 0.007938517313063779
+        }
+      },
+      "label": "low",
+      "max_n_gt": 542,
+      "min_n_gt": 57,
+      "omr_ned": 0.007938517313063779
+    },
+    {
+      "count": 834,
+      "intervals": {
+        "document_cluster": {
+          "available": true,
+          "ci_high": 0.018717576382220866,
+          "ci_low": 0.008419630379483935,
+          "point": 0.013140769473832276
+        },
+        "page": {
+          "available": true,
+          "ci_high": 0.01787226314299934,
+          "ci_low": 0.009255970894745086,
+          "point": 0.013140769473832276
+        }
+      },
+      "label": "medium",
+      "max_n_gt": 882,
+      "min_n_gt": 543,
+      "omr_ned": 0.013140769473832276
+    },
+    {
+      "count": 831,
+      "intervals": {
+        "document_cluster": {
+          "available": true,
+          "ci_high": 0.03454558262764487,
+          "ci_low": 0.018029808292911308,
+          "point": 0.025736182401205378
+        },
+        "page": {
+          "available": true,
+          "ci_high": 0.03386602964333722,
+          "ci_low": 0.018624002975268686,
+          "point": 0.025736182401205378
+        }
+      },
+      "label": "high",
+      "max_n_gt": 2704,
+      "min_n_gt": 883,
+      "omr_ned": 0.025736182401205378
+    }
+  ],
+  "document_count": 1765,
+  "failure_count": 12,
+  "failure_score": 1.0,
+  "median": 0.0008166599973319999,
+  "near_empty_reference_count": 0,
+  "omr_ned": 0.015589932509194418,
+  "q25": 0.0,
+  "q75": 0.005769246802045,
+  "renderability": {
+    "count": 2488,
+    "definition": "After the recorded notation conversion with no repairs, Verovio must load the full prediction, produce at least one page, and render every page to a nonempty SVG even with error diagnostics. Secondary renderability also requires no error diagnostic. Warnings are allowed. Kern must contain a **kern exclusive interpretation. ABC (including Legato) is converted with the recorded abc2xml script and Python executable, then the resulting MusicXML is tested. Conversion errors, native crashes, timeouts and inference failures are not renderable.",
+    "error_diagnostic_count": 260,
+    "fraction": 0.9952,
+    "without_error_count": 2228,
+    "without_error_fraction": 0.8912
+  },
+  "scale": "fraction; multiply by 100 for paper tables",
+  "schema_version": 1,
+  "status_counts": {
+    "normalization_failure": 12,
+    "scored": 2488
+  }
+}

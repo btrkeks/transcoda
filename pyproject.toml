@@ -1,0 +1,39 @@
+[project]
+name = "transcoda"
+version = "2.1.0"
+description = "Synthetic-only optical music recognition for the NeurIPS paper"
+readme = "README.md"
+license = "AGPL-3.0-only"
+license-files = ["LICENSE"]
+requires-python = ">=3.11,<3.14"
+dependencies = [
+ "torch==2.9.1", "torchvision==0.24.1", "torchao==0.15.0", "torchtune==0.6.1",
+ "transformers==5.12.1", "tokenizers>=0.22.1,<0.23", "loguru>=0.7.3",
+ "numpy==2.4.6", "pillow>=11", "pydantic>=2.12.5", "opencv-python-headless>=4.13.0.92",
+]
+
+[project.optional-dependencies]
+cpu = ['torch==2.9.1+cpu; sys_platform == "linux" and platform_machine == "x86_64"', 'torchvision==0.24.1+cpu; sys_platform == "linux" and platform_machine == "x86_64"']
+train = ["lightning>=2.6.0,<3", "datasets>=5.0.0,<6", "rich>=14.2.0", "fire>=0.7.0", "wandb>=0.22.3", "kornia>=0.8.2", "torchinfo>=1.8.0"]
+data = ["datasets>=5.0.0,<6", "fire>=0.7.0", "rich>=14.2.0", "verovio==6.2.1", "cairosvg>=2.8.0", "augraphy>=8.2.6", "scikit-image>=0.25.2", "names>=0.3.0", "wonderwords>=3.0.1", "pebble>=5.0.0", "pyvips>=3.1.1", "rapidfuzz>=3.14.3"]
+eval = ["verovio==6.2.1", "datasets>=5.0.0,<6", "matplotlib>=3.8.0"]
+constraints = ["xgrammar==0.2.2"]
+
+[dependency-groups]
+dev = ["pytest>=9.0.2"]
+
+[tool.uv]
+package = false
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", extra = "cpu", marker = "sys_platform == 'linux' and platform_machine == 'x86_64'" }]
+torchvision = [{ index = "pytorch-cpu", extra = "cpu", marker = "sys_platform == 'linux' and platform_machine == 'x86_64'" }]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

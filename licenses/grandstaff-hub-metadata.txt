@@ -1,0 +1,30 @@
+---
+license: mit
+dataset_info:
+  features:
+  - name: image
+    dtype: image
+  - name: transcription
+    dtype: string
+  splits:
+  - name: train
+    num_bytes: 466885692.24
+    num_examples: 41598
+  - name: val
+    num_bytes: 52320953.668
+    num_examples: 4623
+  - name: test
+    num_bytes: 75277514.456
+    num_examples: 7661
+  download_size: 530238432
+  dataset_size: 594484160.364
+configs:
+- config_name: default
+  data_files:
+  - split: train
+    path: data/train-*
+  - split: val
+    path: data/val-*
+  - split: test
+    path: data/test-*
+---

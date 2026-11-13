@@ -1,0 +1,166 @@
+{
+  "status": "pass",
+  "findings": [],
+  "cohort_checks": [
+    {
+      "path": "evaluation/baselines/public/legato/report.samples.jsonl",
+      "pages": 202,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/baselines/public/smt/report.samples.jsonl",
+      "pages": 202,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/baselines/public/smt-cd/report.samples.jsonl",
+      "pages": 202,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/baselines/synthetic/legato/report.samples.jsonl",
+      "pages": 2500,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/baselines/synthetic/smt/report.samples.jsonl",
+      "pages": 2500,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/baselines/synthetic/smt-cd/report.samples.jsonl",
+      "pages": 2500,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/frozen-public-beam-pages.csv",
+      "pages": 202,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/frozen-public-pages.csv",
+      "pages": 202,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/frozen-synthetic-beam-pages.csv",
+      "pages": 2500,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/frozen-synthetic-pages.csv",
+      "pages": 2500,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/imslp-real-public.json",
+      "pages": 202,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/imslp-real-public.tsv",
+      "pages": 202,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/predictions/synthetic-beam.jsonl",
+      "pages": 2500,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/predictions/synthetic-constrained.jsonl",
+      "pages": 2500,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/predictions/transcoda-beam.jsonl",
+      "pages": 202,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/predictions/transcoda-constrained.jsonl",
+      "pages": 202,
+      "exact_cohort": true
+    },
+    {
+      "path": "evaluation/synthetic-test.json",
+      "pages": 2500,
+      "exact_cohort": true
+    },
+    {
+      "path": "synthetic-asset",
+      "pages": 2500,
+      "source_counts": {
+        "pdmx": 1500,
+        "grandstaff": 1000
+      },
+      "kernscores_rows": 0
+    }
+  ],
+  "upstream_attribution_emails_for_review": [
+    {
+      "path": "release/audit-findings.json",
+      "address": "arseny.kapoulkine@gmail.com"
+    },
+    {
+      "path": "release/audit-findings.json",
+      "address": "craig@ccrma.stanford.edu"
+    },
+    {
+      "path": "release/audit-findings.json",
+      "address": "kristen@tima.net"
+    },
+    {
+      "path": "vendor/musicxml2hum/Makefile",
+      "address": "craig@ccrma.stanford.edu"
+    },
+    {
+      "path": "vendor/musicxml2hum/include/humlib.h",
+      "address": "craig@ccrma.stanford.edu"
+    },
+    {
+      "path": "vendor/musicxml2hum/include/pugiconfig.hpp",
+      "address": "arseny.kapoulkine@gmail.com"
+    },
+    {
+      "path": "vendor/musicxml2hum/include/pugiconfig.hpp",
+      "address": "kristen@tima.net"
+    },
+    {
+      "path": "vendor/musicxml2hum/include/pugixml.hpp",
+      "address": "arseny.kapoulkine@gmail.com"
+    },
+    {
+      "path": "vendor/musicxml2hum/include/pugixml.hpp",
+      "address": "kristen@tima.net"
+    },
+    {
+      "path": "vendor/musicxml2hum/src/humlib.cpp",
+      "address": "craig@ccrma.stanford.edu"
+    },
+    {
+      "path": "vendor/musicxml2hum/src/musicxml2hum.cpp",
+      "address": "craig@ccrma.stanford.edu"
+    },
+    {
+      "path": "vendor/musicxml2hum/src/pugixml.cpp",
+      "address": "arseny.kapoulkine@gmail.com"
+    },
+    {
+      "path": "vendor/musicxml2hum/src/pugixml.cpp",
+      "address": "kristen@tima.net"
+    }
+  ],
+  "exclusions": [
+    ".git",
+    ".pytest_cache",
+    ".venv",
+    "__pycache__",
+    "augraphy_cache",
+    "bin",
+    "build",
+    "external",
+    "outputs",
+    "target"
+  ]
+}

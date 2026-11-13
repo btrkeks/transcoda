@@ -1,0 +1,39 @@
+[
+  {
+    "file": "licenses/convnext-v2-LICENSE",
+    "source": "https://raw.githubusercontent.com/facebookresearch/ConvNeXt-V2/main/LICENSE",
+    "sha256": "9ab7947f327be897e841ce58b90996c4b814c35127897b383f17616510115b9b",
+    "status": "copied"
+  },
+  {
+    "file": "licenses/pdmx-code-MIT",
+    "source": "https://raw.githubusercontent.com/pnlong/PDMX/main/LICENSE",
+    "sha256": "6176397743b4273b0f82427da4a51dc27b5c0240b75a6ad954d22650b7666ce9",
+    "status": "copied"
+  },
+  {
+    "file": "licenses/grandstaff-hub-metadata.txt",
+    "source": "https://huggingface.co/datasets/PRAIG/GrandStaff/raw/main/README.md",
+    "sha256": "24b5ca5fe366ce9d024feedf96d662f1a0676b04aabf1ead4fde773b4509a80d",
+    "status": "copied",
+    "note": "Upstream dataset card declares MIT; no source copyright holder invented."
+  },
+  {
+    "file": "vendor/kern_parser/LICENSE",
+    "source": "https://raw.githubusercontent.com/polyformproject/polyform-licenses/1.0.0/PolyForm-Noncommercial-1.0.0.md",
+    "sha256": "2496f428fe686868f3120ab39c967d988dda4c8f7186106d3790664a72e0a418",
+    "status": "copied"
+  },
+  {
+    "file": "licenses/CC-BY-4.0.txt",
+    "source": "https://raw.githubusercontent.com/creativecommons/creativecommons.org/main/docroot/legalcode/by_4.0.txt",
+    "sha256": "9ba9550ad48438d0836ddab3da480b3b69ffa0aac7b7878b5a0039e7ab429411",
+    "status": "copied"
+  },
+  {
+    "file": "licenses/CC-BY-NC-4.0.txt",
+    "source": "licenses/convnext-v2-LICENSE, weight-license section",
+    "sha256": "336255dc30193e8e15d689d9481bb05673d89055718f3a96923a7ffb99adbbaf",
+    "status": "copied"
+  }
+]

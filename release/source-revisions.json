@@ -1,0 +1,11 @@
+{
+  "transcoda": "6312f9253e0f99069736f6c6e508828ffbf85881",
+  "kern_parser": "38563829dbcbd33e9df8aaca6286ad359406123a",
+  "musicxml2hum": "5c47c178894bbf6493ae6efb14bd4a78e5086c53",
+  "decoder": "d84355a01783918d41c3b777d4f28973502ca8d5",
+  "data_pipeline": "af54873424de33cd982bfd47ba815416b3bb3edf",
+  "reference_staging": "052298c00bd75cf45ba3bbf51936b5db3188ae35",
+  "training_run": "b0a1bf3f965c",
+  "resolved_config_source_sha256": "948dcfdfb03e22f327488d4b066df67aa7fe866fdd6d7e901566d42462c7b09a",
+  "kern_parser_derived_from": "4234a4f3d62948550bc2cfeb28d95f9dd231b1b0"
+}

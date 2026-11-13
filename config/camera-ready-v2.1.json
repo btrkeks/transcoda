@@ -1,0 +1,189 @@
+{
+  "checkpoint": {
+    "auto_resume": false,
+    "dirpath": "weights/training",
+    "filename": "transcoda-model",
+    "mode": "min",
+    "monitor": "val/real/CER",
+    "project": "transcoda",
+    "run_name": "camera-ready-v2.1",
+    "save_last": true,
+    "save_top_k": 1,
+    "tags": [
+      "camera-ready"
+    ],
+    "verbose": true
+  },
+  "data": {
+    "fixed_image_height": 1485,
+    "fixed_image_width": 1050,
+    "image_width": 1050,
+    "train_path": "data/train-synthetic-v2.1",
+    "validation_paths": {
+      "real": "data/validation"
+    },
+    "vocab_dir": "./vocab/bpe3k-transcoda-v2-20260707T132218830399Z-0a2786058ada"
+  },
+  "generation": {
+    "do_sample": false,
+    "early_stopping": true,
+    "length_penalty": 1.0,
+    "num_beams": 1,
+    "num_return_sequences": 1,
+    "repetition_penalty": 1.3,
+    "strategy": "greedy",
+    "use_cache": true,
+    "validation_length_buffer": 32,
+    "validation_length_multiplier": 1.5
+  },
+  "model": {
+    "d_model": 768,
+    "dim_ff": 1536,
+    "encoder_model_name_or_path": "facebook/convnextv2-tiny-22k-224",
+    "encoder_provider": "transformers",
+    "freeze_encoder_stages": 0,
+    "max_image_height": 1485,
+    "max_image_width": 1050,
+    "max_seq_len": 2200,
+    "multiscale_fusion_init_logit": -4.0,
+    "multiscale_hidden_state_index": -2,
+    "num_attn_heads": 12,
+    "num_hidden_layers": 10,
+    "positional_encoding": "rope",
+    "projector_hidden_mult": 4.0,
+    "rope_theta": 10000.0,
+    "vision_frontend": "conv"
+  },
+  "optimizer": {
+    "cosine_eta_min_factor": 0.05,
+    "cosine_restart_mult": 2,
+    "cosine_restart_period": 2000,
+    "encoder_lr_factor": 0.5,
+    "layerwise_decay_gamma": 0.95,
+    "layerwise_target": "encoder",
+    "learning_rate": 0.001,
+    "lr_scheduler": "cosine",
+    "warmup_steps": 2000,
+    "weight_decay": 0.01
+  },
+  "seed": 42,
+  "training": {
+    "accumulate_grad_batches": 11,
+    "batch_size": 12,
+    "compile_mode": "max-autotune-no-cudagraphs",
+    "compile_model": true,
+    "compute_omr_ned": true,
+    "decoder_length_buckets": [
+      768,
+      1024,
+      1536
+    ],
+    "devices": 1,
+    "early_stopping_enabled": true,
+    "early_stopping_min_delta": 1.0,
+    "early_stopping_patience": 40,
+    "enable_profiling": false,
+    "freeze_encoder_steps": 0,
+    "frequent_validation_set_names": [
+      "real"
+    ],
+    "frequent_validation_subset_seed": 0,
+    "frequent_validation_subset_sizes": {},
+    "full_validation_every_n_steps": 1000,
+    "gradient_clip_algorithm": "norm",
+    "gradient_clip_val": 1.0,
+    "grammar_path": "grammars/kern-transcoda-v2.gbnf",
+    "label_smoothing": 0.1,
+    "limit_val_batches": 1.0,
+    "log_example_images": false,
+    "max_epochs": 5,
+    "max_steps": 10695,
+    "min_fit_validation_step": 1000,
+    "normalize_on_gpu": true,
+    "num_nodes": 1,
+    "num_workers": 12,
+    "omit_train_decoder_attention_mask": true,
+    "omit_train_encoder_attention_mask": true,
+    "omr_ned_jobs": 0,
+    "omr_ned_kern_parser_binary": "target/release/kern_parser",
+    "omr_ned_mode": "active",
+    "omr_ned_verosim_binary": "external/verosim/build/verosim",
+    "profiler_active_steps": 3,
+    "profiler_repeat": 1,
+    "profiler_wait_steps": 1,
+    "profiler_warmup_steps": 1,
+    "progress_enable_ascii_bar": false,
+    "progress_train_every_n_steps": 50,
+    "progress_train_interval_seconds": 30.0,
+    "progress_val_percent_interval": 10,
+    "runaway_monitor_enabled": true,
+    "runaway_monitor_flag_no_eos_at_max_length": true,
+    "runaway_monitor_strictness": "moderate",
+    "skip_final_validation": false,
+    "skip_test": false,
+    "spine_structure_barline_width": "compact",
+    "spine_structure_empty_field_mode": "data_only",
+    "strategy": "auto",
+    "tiered_validation_enabled": false,
+    "train_persistent_workers": true,
+    "train_pin_memory": true,
+    "train_prefetch_factor": 4,
+    "use_grammar_constraints": true,
+    "use_spine_structure_constraints": true,
+    "val_batch_size": 32,
+    "val_check_interval": 5000,
+    "val_persistent_workers": false,
+    "val_pin_memory": false,
+    "val_prefetch_factor": 2
+  },
+  "validation": {
+    "decoding": {
+      "grammar_path": "grammars/kern-transcoda-v2.gbnf",
+      "spine_structure_barline_width": "compact",
+      "spine_structure_empty_field_mode": "data_only",
+      "use_grammar_constraints": true,
+      "use_spine_structure_constraints": true
+    },
+    "metrics": {
+      "verosim": {
+        "enabled": true,
+        "jobs": 0,
+        "kern_parser_binary": "target/release/kern_parser",
+        "mode": "active",
+        "verosim_binary": "external/verosim/build/verosim"
+      }
+    },
+    "schedule": {
+      "frequent_validation_set_names": [
+        "real"
+      ],
+      "frequent_validation_subset_seed": 0,
+      "frequent_validation_subset_sizes": {},
+      "full_validation_every_n_steps": 1000,
+      "min_fit_validation_step": 1000,
+      "tiered_validation_enabled": false
+    },
+    "selection": {
+      "enabled": true,
+      "fallback": "val/real/CER",
+      "max_prediction_truncation_rate": 0.02,
+      "max_runaway_rate": 0.02,
+      "max_verosim_failure_rate": 0.1,
+      "min_samples": 1,
+      "mode": "min",
+      "omr_ned_min_step": 2000,
+      "primary": "val/real/OMR_NED"
+    }
+  },
+  "validation_selection": {
+    "enabled": true,
+    "fallback": "val/real/CER",
+    "max_prediction_truncation_rate": 0.02,
+    "max_runaway_rate": 0.02,
+    "max_verosim_failure_rate": 0.1,
+    "min_samples": 1,
+    "mode": "min",
+    "omr_ned_min_step": 2000,
+    "primary": "val/real/OMR_NED"
+  }
+}

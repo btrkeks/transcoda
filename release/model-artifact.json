@@ -1,0 +1,14 @@
+{
+  "source_checkpoint_sha256": "559167f798492eb3f77a3794abba238176ccdd06e4d7a9b3424e72f3a15981d0",
+  "exported_checkpoint": "weights/transcoda-v2.1.ckpt",
+  "exported_sha256": "7016c0c9bb5896ccf2e64624d566427b9e3a524fa57d8ae649609f5aa562a5bf",
+  "size_bytes": 216370752,
+  "tensor_count": 427,
+  "all_tensors_byte_equal": true,
+  "global_step": 8715,
+  "selection_reason": "cer_best; step 8715; private real validation",
+  "hosting": null,
+  "license": "CC-BY-NC-4.0",
+  "hosting_config": "config/artifacts.json",
+  "hosting_asset_key": "model_id"
+}

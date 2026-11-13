@@ -1,0 +1,27 @@
+{
+  "builder": {
+    "code_commit": "af54873424de33cd982bfd47ba815416b3bb3edf",
+    "kern_parser_sha256": null,
+    "kind": "adopted",
+    "policy_digest": null
+  },
+  "corpus_version": null,
+  "created_at": "2026-10-28T12:35:02Z",
+  "dataset_path": "data/datasets/train/train_synthetic_augraphy_v21_20261026T170800Z",
+  "eligibility": null,
+  "image_size": [
+    1485,
+    1050
+  ],
+  "members_digest": null,
+  "name": "train_synthetic_augraphy_v21_20261026T170800Z",
+  "release_digest": "sha256:23ed3500ab9f8130ed2361fbbf7c634a8ab50cf3d238dabafe4d39599ca19197",
+  "role": "train",
+  "row_count": 343470,
+  "row_schema_digest": "sha256:0b43b2b4395d32e846bcfc0cb79d812a748ad251e022634aa641e6104760cb79",
+  "schema_version": 1,
+  "snapshot_digest": "sha256:8205ab37116e7adaa42d8048597b212033993ab968272c988f8126bc39a50947",
+  "tier_counts": {
+    "synthetic": 343470
+  }
+}

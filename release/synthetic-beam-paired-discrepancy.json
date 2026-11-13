@@ -1,0 +1,68 @@
+{
+  "status": "resolved",
+  "standalone_statistics_equal": true,
+  "exact_page_score_differences": 0,
+  "results": [
+    {
+      "baseline": "legato",
+      "differences": []
+    },
+    {
+      "baseline": "smt",
+      "differences": [
+        {
+          "field": ".density_thirds[0].intervals.document_cluster.ci_low",
+          "actual": -0.9324080042775216,
+          "expected": -0.932408004277522,
+          "difference": 4.440892098500626e-16
+        },
+        {
+          "field": ".density_thirds[0].intervals.document_cluster.ci_high",
+          "actual": -0.9148671384104545,
+          "expected": -0.9148671384104544,
+          "difference": -1.1102230246251565e-16
+        }
+      ]
+    },
+    {
+      "baseline": "smt-cd",
+      "differences": [
+        {
+          "field": ".density_thirds[1].intervals.document_cluster.ci_low",
+          "actual": -0.922375159461013,
+          "expected": -0.9223751594610127,
+          "difference": -3.3306690738754696e-16
+        }
+      ]
+    }
+  ],
+  "policy": "No tolerance or expected value changed.",
+  "previous_status": "fail",
+  "root_cause": "The frozen scoring launcher set OPENBLAS_NUM_THREADS=1 and OMP_NUM_THREADS=1. The release verifier omitted these settings. NumPy 2.4.6 uses 16 OpenBLAS threads by default on the verification machine. Thread-dependent summation in counts @ sums.T in cluster_bootstrap changes the listed CI bounds by 1 to 4 units in the last place. Page order, scores, document grouping, density membership and paired per-page differences are identical.",
+  "fix": "scripts/verify_tools.py sets both frozen thread variables before NumPy loads, including in the evaluator subprocess. Zero tolerance and all frozen expectations are unchanged.",
+  "diagnosis": {
+    "default_threads": 16,
+    "frozen_threads": 1,
+    "numpy_version": "2.4.6",
+    "affected_density_inputs_sha256": [
+      "7467a9c9ab2f65799fbc150b3659efbbfdd36de9cac13372056a755923e3fee1",
+      "bae566ca8bb146cfcac006879d13af1ba463816dd27a7b23c71a29a289b06630"
+    ],
+    "one_thread_bounds": [
+      {
+        "baseline": "SMT++",
+        "third": "low",
+        "ci_low": -0.932408004277522,
+        "ci_high": -0.9148671384104544
+      },
+      {
+        "baseline": "SMT++ with constrained decoding",
+        "third": "medium",
+        "ci_low": -0.9223751594610127,
+        "ci_high": -0.9085588689448945
+      }
+    ]
+  },
+  "full_exact_gate": "pass",
+  "tolerance": 0
+}

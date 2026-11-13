@@ -1,0 +1,172 @@
+{
+  "source": "NeurIPS 2026 camera-ready main.tex: main results, uncertainty, density and results prose",
+  "values": {
+    "public": {
+      "beam": {
+        "mean": "28.50",
+        "median": "17.23",
+        "page": [
+          "24.31",
+          "32.85"
+        ],
+        "document_cluster": [
+          "23.71",
+          "34.14"
+        ],
+        "renderable": "89.1",
+        "strict": "27.7",
+        "failures": 22,
+        "density": [
+          "25.51",
+          "26.24",
+          "33.73"
+        ],
+        "legato": {
+          "mean": "-24.71",
+          "ci": [
+            "-30.93",
+            "-18.48"
+          ],
+          "density": [
+            {
+              "mean": "-14.19",
+              "ci": [
+                "-23.52",
+                "-7.69"
+              ]
+            },
+            {
+              "mean": "-27.85",
+              "ci": [
+                "-39.47",
+                "-16.62"
+              ]
+            },
+            {
+              "mean": "-33.17",
+              "ci": [
+                "-38.46",
+                "-26.91"
+              ]
+            }
+          ]
+        }
+      },
+      "constrained": {
+        "mean": "22.59",
+        "median": "15.86",
+        "page": [
+          "19.68",
+          "25.65"
+        ],
+        "document_cluster": [
+          "18.87",
+          "27.21"
+        ],
+        "renderable": "100.0",
+        "strict": "100.0",
+        "failures": 0,
+        "density": [
+          "20.20",
+          "22.11",
+          "25.57"
+        ],
+        "legato": {
+          "mean": "-30.62",
+          "ci": [
+            "-36.75",
+            "-24.44"
+          ],
+          "density": [
+            {
+              "mean": "-19.49",
+              "ci": [
+                "-27.63",
+                "-13.71"
+              ]
+            },
+            {
+              "mean": "-31.98",
+              "ci": [
+                "-40.53",
+                "-23.37"
+              ]
+            },
+            {
+              "mean": "-41.34",
+              "ci": [
+                "-48.19",
+                "-33.80"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "synthetic": {
+      "beam": {
+        "mean": "1.56",
+        "median": "0.08",
+        "page": [
+          "1.25",
+          "1.90"
+        ],
+        "document_cluster": [
+          "1.21",
+          "1.95"
+        ],
+        "renderable": "99.5",
+        "strict": "89.1",
+        "failures": 12
+      },
+      "constrained": {
+        "mean": "1.25",
+        "median": "0.10",
+        "page": [
+          "1.05",
+          "1.48"
+        ],
+        "document_cluster": [
+          "1.01",
+          "1.52"
+        ],
+        "renderable": "100.0",
+        "strict": "100.0",
+        "failures": 0
+      }
+    }
+  },
+  "common_valid_public": {
+    "pages": 180,
+    "beam": "19.76",
+    "constrained": "21.41"
+  },
+  "public_spearman": {
+    "beam": "0.17",
+    "constrained": "0.17"
+  },
+  "public_density_counts": [
+    73,
+    61,
+    68
+  ],
+  "public_density_ranges": [
+    [
+      8,
+      1099
+    ],
+    [
+      1127,
+      1562
+    ],
+    [
+      1574,
+      3444
+    ]
+  ],
+  "strict_diagnostic_public_beam": {
+    "renderable_with_error": 124,
+    "inconsistent_rhythm": 123
+  },
+  "paper_source_sha256": "1cfbf873d83b3168e42c23224da7cd1012522fe58cbe0b6a3ed667e05b6f8d6c"
+}

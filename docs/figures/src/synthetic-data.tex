@@ -1,0 +1,24 @@
+% Synthetic training-style pages made with the released generator.
+% Source pieces: GrandStaff test split (MIT), converted to Humdrum.
+% scripts/generate.py --source grandstaff --target-count 6 --seed 7 --continuation-fraction 0
+% Clean panel: same command with --no-augmentation. See README.md in this directory.
+\documentclass[border=6pt]{standalone}
+\input{preamble}
+\begin{document}
+\begin{tikzpicture}[
+    page/.style={inner sep=0pt, draw=rule, line width=0.6pt},
+    lab/.style={font=\small\bfseries, text=muted, anchor=south, inner sep=0pt},
+    arr/.style={-{Stealth[length=7pt,width=7pt]}, line width=1.4pt, tc},
+]
+\def\pw{4.0cm}
+\node[page, anchor=north west] (clean) at (0,0) {\includegraphics[width=\pw]{grandstaff-3-clean.png}};
+\node[page, anchor=north west] (deg) at ($(clean.north east)+(1.2,0)$) {\includegraphics[width=\pw]{grandstaff-3-degraded.png}};
+\draw[arr] ($(clean.east)+(0.15,0)$) -- ($(deg.west)+(-0.15,0)$);
+\node[page, anchor=north west] (more1) at ($(deg.north east)+(0.9,0)$) {\includegraphics[width=\pw]{grandstaff-1-degraded.png}};
+\node[page, anchor=north west] (more2) at ($(more1.north east)+(0.35,0)$) {\includegraphics[width=\pw]{grandstaff-4-degraded.png}};
+\node[lab] at ($(clean.north)+(0,0.22)$) {CLEAN RENDER};
+\node[lab] at ($(deg.north)+(0,0.22)$) {SCAN DEGRADATION};
+\node[lab] at ($($(more1.north)!0.5!(more2.north)$)+(0,0.22)$) {OTHER DEGRADATIONS};
+\draw[rule, line width=0.6pt] ($(deg.north east)!0.5!(more1.north west)$) -- ($(deg.south east)!0.5!(more1.south west)$);
+\end{tikzpicture}
+\end{document}

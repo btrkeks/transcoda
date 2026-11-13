@@ -1,0 +1,49 @@
+{
+  "public_reference_source_release_digest": "sha256:9b09019acd6c992c453b7fdd59af9ed22142e540666bac72fef88b574a846d75",
+  "public_source_snapshot_digest": "sha256:996cf31b2c7f4adeaf2f969628d7785804e478b8169e68e0b8959ebfefe2ba25",
+  "public_pages": 202,
+  "public_manifest_sha256": "5f1293acafcb0a4de109b41c38968f20c66d823f390156de69f7b8fa464be7c3",
+  "synthetic_source_release_digest": "sha256:819f57310915f8c8ca270ba9da8213b7b7e36b4b7ea8d70d965ae7ab6e42462b",
+  "synthetic_source_snapshot_digest": "sha256:a97f2c729c328480654f98e5be50c534864b89bb54240cabffc1784dcb716bc3",
+  "synthetic_pages": 2500,
+  "exported_synthetic_columns": [
+    "image",
+    "transcription",
+    "sample_id",
+    "document_id"
+  ],
+  "run_config_source_sha256": "948dcfdfb03e22f327488d4b066df67aa7fe866fdd6d7e901566d42462c7b09a",
+  "note": "Synthetic Arrow schema is narrowed for release, so its byte digest differs from the internal source snapshot.",
+  "exported_columns_value_equal": true,
+  "exported_arrow_sha256": "c1e6522ea24a57dce127e5ccede5ee888b096cec336f702c78782ffa0f52abd9",
+  "exported_arrow_size_bytes": 282962640,
+  "source_snapshot_checks": {
+    "public": {
+      "snapshot_digest": "sha256:996cf31b2c7f4adeaf2f969628d7785804e478b8169e68e0b8959ebfefe2ba25",
+      "verified": true
+    },
+    "synthetic": {
+      "snapshot_digest": "sha256:a97f2c729c328480654f98e5be50c534864b89bb54240cabffc1784dcb716bc3",
+      "verified": true
+    }
+  },
+  "synthetic_source_counts": {
+    "pdmx": 1500,
+    "grandstaff": 1000
+  },
+  "kernscores_test_rows": 0,
+  "synthetic_copy_value_equal": true,
+  "synthetic_asset_layout": "Hugging Face save_to_disk; external to git",
+  "training_snapshot_redistributed": false,
+  "training_release_digest": "sha256:23ed3500ab9f8130ed2361fbbf7c634a8ab50cf3d238dabafe4d39599ca19197",
+  "synthetic_exact_final_evaluation_cohort": true,
+  "synthetic_source_release_matches_final_evaluation": true,
+  "synthetic_final_cohort_pin_sha256": "e5015a202dd5ed1b0129ebd52941add698e1a11bda6690662e30f6d5af600952",
+  "public_reference_provenance_counts": {
+    "musescore_community": 136,
+    "hand_transcription": 42,
+    "existing_encoding_unrecorded": 1,
+    "chopinscores": 23
+  },
+  "public_reference_disclosure": "docs/imslp-real-card.md"
+}

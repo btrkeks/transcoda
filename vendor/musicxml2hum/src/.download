@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+
+use strict;
+my $baseaddr = "https://raw.githubusercontent.com/craigsapp/humlib/master";
+my @files = qw(min/humlib.cpp min/pugixml.cpp cli/musicxml2hum.cpp);
+
+my $curl = `which curl`;
+my $wget = `which wget`;
+
+chomp $curl;
+chomp $wget;
+
+foreach my $file (@files) {
+	getFile($file);
+}
+
+sub getFile {
+	my ($file) = @_;
+	my $basename = $file;
+	$basename =~ s/.*\///;
+	my $command;
+	if ($wget !~ /^\s*$/) {
+		$command = "$wget \"$baseaddr/$file\" -O \"$basename\" &> /dev/null";
+		`$command`;
+	} else {
+		$command = "$curl --remote-name \"$baseaddr/$file\" &> /dev/null";
+		`$command`;
+	}
+	# print "$command\n";
+}
+
+

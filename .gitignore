@@ -1,0 +1,26 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.cache/
+outputs/
+target/
+external/
+augraphy_cache/
+vendor/musicxml2hum/build/
+vendor/musicxml2hum/bin/
+weights/*.ckpt
+data/synthetic-test/
+data/train-synthetic/
+data/validation/
+data/imslp-public-images/
+wandb/
+# Keep downloaded or generated assets and credentials outside code history.
+data/
+weights/
+logs/
+reports/
+*.log
+*.count
+.env
+.env.*

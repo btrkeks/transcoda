@@ -1,0 +1,188 @@
+# GBNF grammar for the Transcoda v2 OMR **kern dialect.
+#
+# This grammar describes the line/token language emitted by
+# `SerializePreset::TranscodaV2` in `crates/kern_parser`.
+# It intentionally omits standard **kern features that the v2 serializer drops,
+# such as exclusive interpretation lines, tuplets, invisible noteheads,
+# note-local ties/slurs, articulations, ornaments, bowing, forced accidentals,
+# and Humdrum `*-` terminator lines. It preserves cross-staff placement markers
+# (`>` and `<`).
+
+# =============================================================================
+# ROOT
+# =============================================================================
+
+root ::= header (body-item nl)* body-item?
+
+# v2 targets omit `**kern` and start with an OMR-normalized header.  Clef and
+# key signature lines are always present.  Meter or mensuration may be absent,
+# and in multi-spine files it may be mixed with `*` null interpretations.
+header ::= clef-line nl key-line nl meter-like-line?
+
+clef-line ::= clef (tab clef)*
+key-line ::= keysig (tab keysig)*
+meter-like-line ::= meter-like-field (tab meter-like-field)* nl
+meter-like-field ::= "*" | meter | mensuration
+
+# =============================================================================
+# BODY LINES
+# =============================================================================
+
+body-item ::= body-line | system-break-line nl barline-line
+
+body-line ::=
+    barline-line |
+    record-line |
+    spine-op-line |
+    interp-line
+
+system-break-line ::= "!!LO:LB" (":g=" system-break-group)?
+system-break-group ::= system-break-char system-break-char*
+system-break-char ::= [A-Za-z0-9_.-]
+
+barline-line ::= barline (tab barline)*
+barline ::= ("==" bar-number? | "=" bar-number? barline-style?) barline-fermata?
+barline-fermata ::= ";;" | ";"
+bar-number ::= positive-int
+barline-style ::= ":|!|:" | ":|!" | "!|:" | ":|:" | "||" | "-"
+
+# Empty data fields encode omitted Humdrum `.` null tokens.  Require at least
+# one non-empty field so all-null data records remain omitted.
+record-line ::= empty-data-prefix spine-content data-field-tail
+empty-data-prefix ::= "" | tab empty-data-prefix
+data-field-tail ::= "" | tab data-field data-field-tail
+data-field ::= "" | spine-content
+spine-content ::= multi-measure-rest | rest | grace-chord | compact-chord
+
+# Spine manipulator lines are syntactic only here.  Cross-line spine-count
+# semantics remain the job of the stateful constraints and Rust parser.
+spine-op-line ::= spine-op-segment (tab spine-op-segment)*
+spine-op-segment ::= "*" | "*^" | join-group
+join-group ::= "*v" (tab "*v")+
+
+# The Rust parser represents tandem interpretation lines as homogeneous:
+# every non-null field on a line must have the same interpretation kind.
+interp-line ::=
+    clef-interp-line |
+    keysig-interp-line |
+    meter-interp-line |
+    mensuration-interp-line |
+    ottava-interp-line |
+    pedal-interp-line |
+    tremolo-interp-line |
+    cue-interp-line |
+    stria-interp-line
+
+clef-interp-line ::= clef-interp-field (tab clef-interp-field)*
+clef-interp-field ::= "*" | clef
+keysig-interp-line ::= keysig-interp-field (tab keysig-interp-field)*
+keysig-interp-field ::= "*" | keysig
+meter-interp-line ::= meter-interp-field (tab meter-interp-field)*
+meter-interp-field ::= "*" | meter
+mensuration-interp-line ::= mensuration-interp-field (tab mensuration-interp-field)*
+mensuration-interp-field ::= "*" | mensuration
+ottava-interp-line ::= ottava-interp-field (tab ottava-interp-field)*
+ottava-interp-field ::= "*" | ottava
+pedal-interp-line ::= pedal-interp-field (tab pedal-interp-field)*
+pedal-interp-field ::= "*" | pedal
+tremolo-interp-line ::= tremolo-interp-field (tab tremolo-interp-field)*
+tremolo-interp-field ::= "*" | tremolo
+cue-interp-line ::= cue-interp-field (tab cue-interp-field)*
+cue-interp-field ::= "*" | cue
+stria-interp-line ::= stria-interp-field (tab stria-interp-field)*
+stria-interp-field ::= "*" | stria
+
+# =============================================================================
+# COMPACT TRANSCODA V2 DATA TOKENS
+# =============================================================================
+
+# Standard **kern multiple-stops repeat the duration on each subtoken
+# (`4c 4e 4g`).  Transcoda v2 emits the duration once (`4c e g`).
+compact-chord ::= duration note-body (" " note-body)* chord-suffix?
+
+# Grace chords similarly emit duration + grace-kind only on the first subtoken
+# when following subtokens share the same grace kind (`8qcc dd`).
+# A following subtoken may carry its own kind when it differs (`8qcc Qee`).
+grace-chord ::= duration grace-kind note-body (" " grace-note-body)* chord-suffix?
+grace-note-body ::= grace-kind? note-body
+
+note-body ::= pitch accidental? cross-staff-placement?
+
+rest ::= duration "r" "yy"? fermata?
+multi-measure-rest ::= "MM" multi-measure-count "r"
+multi-measure-count ::= [2-9] | [1-9] [0-9] [0-9]*
+
+chord-suffix ::= fermata? arpeggio? beam?
+fermata ::= ";"
+arpeggio ::= ":"
+
+# Canonical beam spellings emitted by `ChordBeams::write_kern_beam_spelling`.
+beam ::= beam-start beam-partial-right? | beam-end beam-partial-left? | beam-partial-left
+beam-start ::= "L" "L"*
+beam-end ::= "J" "J"*
+beam-partial-left ::= "k" "k"*
+beam-partial-right ::= "K" "K"*
+
+# =============================================================================
+# DURATIONS
+# =============================================================================
+
+duration ::= duration-value dots?
+duration-value ::= rational-duration | "000" | "00" | "0" | positive-int
+rational-duration ::= positive-int "%" positive-int
+dots ::= "." "."*
+
+positive-int ::= [1-9] [0-9]*
+
+# =============================================================================
+# PITCHES AND ACCIDENTALS
+# =============================================================================
+
+pitch ::=
+    pitch-a | pitch-b | pitch-c | pitch-d | pitch-e | pitch-f | pitch-g
+
+pitch-a ::= "aaaaaa" | "aaaaa" | "aaaa" | "aaa" | "aa" | "a" | "AAAAAA" | "AAAAA" | "AAAA" | "AAA" | "AA" | "A"
+pitch-b ::= "bbbbbb" | "bbbbb" | "bbbb" | "bbb" | "bb" | "b" | "BBBBBB" | "BBBBB" | "BBBB" | "BBB" | "BB" | "B"
+pitch-c ::= "cccccc" | "ccccc" | "cccc" | "ccc" | "cc" | "c" | "CCCCCC" | "CCCCC" | "CCCC" | "CCC" | "CC" | "C"
+pitch-d ::= "dddddd" | "ddddd" | "dddd" | "ddd" | "dd" | "d" | "DDDDDD" | "DDDDD" | "DDDD" | "DDD" | "DD" | "D"
+pitch-e ::= "eeeeee" | "eeeee" | "eeee" | "eee" | "ee" | "e" | "EEEEEE" | "EEEEE" | "EEEE" | "EEE" | "EE" | "E"
+pitch-f ::= "ffffff" | "fffff" | "ffff" | "fff" | "ff" | "f" | "FFFFFF" | "FFFFF" | "FFFF" | "FFF" | "FF" | "F"
+pitch-g ::= "gggggg" | "ggggg" | "gggg" | "ggg" | "gg" | "g" | "GGGGGG" | "GGGGG" | "GGGG" | "GGG" | "GG" | "G"
+
+accidental ::= "##" | "--" | "#" | "-" | "n"
+cross-staff-placement ::= ">" | "<"
+
+# =============================================================================
+# TANDEM INTERPRETATIONS
+# =============================================================================
+
+clef ::= "*clef" (pitched-clef | tab-clef | percussion-clef)
+pitched-clef ::= ("G" | "F" | "C") clef-shift? [1-9]
+clef-shift ::= "^" "^"* | "v" "v"*
+tab-clef ::= "TAB" [1-9]?
+percussion-clef ::= "X" [1-9]?
+
+keysig ::= "*k[" key-accidentals "]"
+key-accidentals ::=
+    "" |
+    "b-" | "b-e-" | "b-e-a-" | "b-e-a-d-" | "b-e-a-d-g-" | "b-e-a-d-g-c-" | "b-e-a-d-g-c-f-" |
+    "f#" | "f#c#" | "f#c#g#" | "f#c#g#d#" | "f#c#g#d#a#" | "f#c#g#d#a#e#" | "f#c#g#d#a#e#b#"
+
+meter ::= "*M" positive-int "/" positive-int
+mensuration ::= "*met(" mensuration-sign ")"
+mensuration-sign ::= "C|" | "C" | "c|" | "c"
+
+grace-kind ::= "qq" | "q" | "Q" | "P" | "p"
+
+ottava ::= "*8va" | "*X8va" | "*8ba" | "*X8ba" | "*15ma" | "*X15ma" | "*15ba" | "*X15ba"
+pedal ::= "*ped" | "*Xped"
+tremolo ::= "*tremolo" | "*Xtremolo"
+cue ::= "*cue" | "*Xcue"
+stria ::= "*stria" positive-int
+
+# =============================================================================
+# BASIC TOKENS
+# =============================================================================
+
+nl ::= "\n"
+tab ::= "\t"

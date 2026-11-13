@@ -1,0 +1,88 @@
+{
+  "images": [
+    {
+      "path": "docs/figures/architecture.png",
+      "bytes": 33134,
+      "sha256": "9df5880c46b815bbd6da211bd5135e92d225b3244f695d186b80e9f907b9768e",
+      "source": "Diagram with a thumbnail of IMSLP file 300584 (Liszt, Hungarian Rhapsody No. 2, Peters), PDF page 7",
+      "terms": "Public domain as stated by IMSLP for the thumbnail"
+    },
+    {
+      "path": "docs/figures/qualitative.png",
+      "bytes": 283630,
+      "sha256": "8ac21bd74e104acbd4951ea0bc0dea78c7ed49445d3df35f7893cea203e11e1f",
+      "source": "Crop of IMSLP file 300584 (Liszt, Hungarian Rhapsody No. 2, Peters), PDF page 7; Transcoda output rendered with Verovio",
+      "terms": "Public domain as stated by IMSLP for the scan crop"
+    },
+    {
+      "path": "docs/figures/src/assets/grandstaff-1-degraded.png",
+      "bytes": 46522,
+      "sha256": "1ecf25c39ab77e222ea0d664fb5ee4bb85cf44c1fb61e628987424ab54404a1f",
+      "source": "GrandStaff test piece rendered by scripts/generate.py, seed 7",
+      "terms": "MIT, as GrandStaff"
+    },
+    {
+      "path": "docs/figures/src/assets/grandstaff-3-clean.png",
+      "bytes": 44894,
+      "sha256": "b5400240572e5c161cd85faaec42a20d11cbecc14346368977c504ff52a6f134",
+      "source": "GrandStaff test piece rendered by scripts/generate.py, seed 7, --no-augmentation",
+      "terms": "MIT, as GrandStaff"
+    },
+    {
+      "path": "docs/figures/src/assets/grandstaff-3-degraded.png",
+      "bytes": 91974,
+      "sha256": "5a86099bf0ca393c6dc3d2a3b01127c9a918f5aa0d790b7e4bb148b5fb556fb0",
+      "source": "GrandStaff test piece rendered by scripts/generate.py, seed 7",
+      "terms": "MIT, as GrandStaff"
+    },
+    {
+      "path": "docs/figures/src/assets/grandstaff-4-degraded.png",
+      "bytes": 63833,
+      "sha256": "a6b0be676989b851514902149d8b243cadc0a6e5a98085ba198a317b3ad30efb",
+      "source": "GrandStaff test piece rendered by scripts/generate.py, seed 7",
+      "terms": "MIT, as GrandStaff"
+    },
+    {
+      "path": "docs/figures/src/assets/liszt-p26-system1.png",
+      "bytes": 60023,
+      "sha256": "2d631b145217f64446b1469e8235c76c2eee535deb23bb1a03e13ec06a8ccd79",
+      "source": "Crop of IMSLP file 300584 (Liszt, Hungarian Rhapsody No. 2, Peters), PDF page 7",
+      "terms": "Public domain as stated by IMSLP"
+    },
+    {
+      "path": "docs/figures/src/assets/liszt-p26-systems4-5-scan.png",
+      "bytes": 193603,
+      "sha256": "496f61a96a6533affcd209c603066a4a51415e480292f74acdabce79d5be22b3",
+      "source": "Crop of IMSLP file 300584 (Liszt, Hungarian Rhapsody No. 2, Peters), PDF page 7",
+      "terms": "Public domain as stated by IMSLP"
+    },
+    {
+      "path": "docs/figures/src/assets/liszt-p26-systems4-5-transcoda.png",
+      "bytes": 77087,
+      "sha256": "b880e551c742a430816f213a10abcda4e22a109c6ac729f70a5645f9d6b5eb72",
+      "source": "Transcoda prediction for that page, rendered with Verovio",
+      "terms": "Original output of this release"
+    },
+    {
+      "path": "docs/figures/src/assets/liszt-p26-thumb.png",
+      "bytes": 67386,
+      "sha256": "6a051e3c5c926bece34812ee49c4d5de9a2c7be076fff5e986cc57e9cf495d96",
+      "source": "Thumbnail of IMSLP file 300584 (Liszt, Hungarian Rhapsody No. 2, Peters), PDF page 7",
+      "terms": "Public domain as stated by IMSLP"
+    },
+    {
+      "path": "docs/figures/synthetic-data.png",
+      "bytes": 186525,
+      "sha256": "33ad02a3e73e815f40e604cea1655bff3ee7918b14b6150f42db0dbf09eef496",
+      "source": "GrandStaff test piece rendered by scripts/generate.py, seed 7",
+      "terms": "MIT, as GrandStaff"
+    },
+    {
+      "path": "docs/figures/teaser.png",
+      "bytes": 91237,
+      "sha256": "7b8a37a7e5ae2fbb941f58218499cb449bfb7f9b278016ab66eb70f3db07f59f",
+      "source": "Crop of IMSLP file 300584 (Liszt, Hungarian Rhapsody No. 2, Peters), PDF page 7; Transcoda output; scores from evaluation/",
+      "terms": "Public domain as stated by IMSLP for the scan crop"
+    }
+  ]
+}

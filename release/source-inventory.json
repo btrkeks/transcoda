@@ -1,0 +1,2768 @@
+[
+  {
+    "path": "config/data_spec.json",
+    "source_path": "config/data_spec.json",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "e5bd2884418a9d4e8db31f4f2a183de77977bc0601013bb040042b747d318daa",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "e5bd2884418a9d4e8db31f4f2a183de77977bc0601013bb040042b747d318daa"
+  },
+  {
+    "path": "config/evaluation-profiles/transcoda-real-ground-truth-v1.json",
+    "source_path": "config/evaluation-profiles/transcoda-real-ground-truth-v1.json",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "fd60e546e785d700e2a13c8e31380afeb191b643199f928679b9e48257a2a433",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "fd60e546e785d700e2a13c8e31380afeb191b643199f928679b9e48257a2a433"
+  },
+  {
+    "path": "config/final_dataset_sources.json",
+    "source_path": "config/final_dataset_sources.json",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "942220a056de112897265d9c01d1527db54733221a6127344f81d608103d3004",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "942220a056de112897265d9c01d1527db54733221a6127344f81d608103d3004"
+  },
+  {
+    "path": "grammars/kern-transcoda-v2.gbnf",
+    "source_path": "grammars/kern-transcoda-v2.gbnf",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "5604747206012b41e9f1b248c54fdb0fc3d22ab75ce243fc7f6b98f1e24c4cb2",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "5604747206012b41e9f1b248c54fdb0fc3d22ab75ce243fc7f6b98f1e24c4cb2"
+  },
+  {
+    "path": "pipelines/__init__.py",
+    "source_path": "pipelines/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "81b67afe6774e064335295ea372eea2ec10f58cf674e9b731030c2281ea5df42",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "81b67afe6774e064335295ea372eea2ec10f58cf674e9b731030c2281ea5df42"
+  },
+  {
+    "path": "pipelines/baselines/__init__.py",
+    "source_path": "pipelines/baselines/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "50f689f5366453ef3bcf4162b3e0e21f2e9fe1d15e4220b22c9f006dd058a484",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "50f689f5366453ef3bcf4162b3e0e21f2e9fe1d15e4220b22c9f006dd058a484"
+  },
+  {
+    "path": "pipelines/baselines/binaries.py",
+    "source_path": "pipelines/baselines/binaries.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "0b03772f5abd99fa18a7d406c910db3d0f96b0ac82ffa2476ecf1da3cba3c5f9",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "0b03772f5abd99fa18a7d406c910db3d0f96b0ac82ffa2476ecf1da3cba3c5f9"
+  },
+  {
+    "path": "pipelines/baselines/contracts.py",
+    "source_path": "pipelines/baselines/contracts.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "313eec1014e517f6c76200b3166d87a5ec9ac14aa0123359cba8495827015303",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "27187c66b8c44a59508053fecd78e4c1ff47adff65fb29897289c883cc70ccf4"
+  },
+  {
+    "path": "pipelines/baselines/evaluate.py",
+    "source_path": "pipelines/baselines/evaluate.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "c460fad03cecc93ce065065c1a485cf3a92fcdce1a2ab2833cf1de6e01b16068",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "980090634d0fa531a8140723d8a422aa633b13dbd1a48a5cf1a7cc14be48a137"
+  },
+  {
+    "path": "pipelines/baselines/evaluation_inputs.py",
+    "source_path": "pipelines/baselines/evaluation_inputs.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "94c9b62c419bb980bf18919057e95d806f515e06a88246d147905a295fabe075",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "0e64b09a2024c2025b3affdd32c03a3ab7f73ad6f791c448395ded5711e52b18"
+  },
+  {
+    "path": "pipelines/baselines/io.py",
+    "source_path": "pipelines/baselines/io.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "d8f6c1adcc58534260b8d9124d03a39367ce998982d579ff825e390a7123b8c3",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "d8f6c1adcc58534260b8d9124d03a39367ce998982d579ff825e390a7123b8c3"
+  },
+  {
+    "path": "pipelines/baselines/normalization.py",
+    "source_path": "pipelines/baselines/normalization.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "431a8c9ba6ff933088a3d157f8e09352c27c54db24aacf67023c171bda3de784",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "431a8c9ba6ff933088a3d157f8e09352c27c54db24aacf67023c171bda3de784"
+  },
+  {
+    "path": "pipelines/baselines/renderability.py",
+    "source_path": "pipelines/baselines/renderability.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "f43069f61b5b41c5ebdcc2c2f9a336941d4f39ef5bf4cd94fc684121718ddcff",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "f43069f61b5b41c5ebdcc2c2f9a336941d4f39ef5bf4cd94fc684121718ddcff"
+  },
+  {
+    "path": "pipelines/baselines/scoring.py",
+    "source_path": "pipelines/baselines/scoring.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "45fe90166aab69b98197df94020cece904f81b72bea4483c39f58cd2c344952a",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "45fe90166aab69b98197df94020cece904f81b72bea4483c39f58cd2c344952a"
+  },
+  {
+    "path": "pipelines/baselines/uncertainty.py",
+    "source_path": "pipelines/baselines/uncertainty.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "4b2f12ab410a0271d0f03b7448f65711ec409f7cd383f340aaca2f27b05ac6cc",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "4b2f12ab410a0271d0f03b7448f65711ec409f7cd383f340aaca2f27b05ac6cc"
+  },
+  {
+    "path": "pipelines/datasets/__init__.py",
+    "source_path": "pipelines/datasets/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "de64a54ce4282b5df0bc400c8757d2bdc0bb0837f537770d6654ed5912830564",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "de64a54ce4282b5df0bc400c8757d2bdc0bb0837f537770d6654ed5912830564"
+  },
+  {
+    "path": "pipelines/datasets/data_spec.py",
+    "source_path": "pipelines/datasets/data_spec.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "10a515f454e8281a8622c63ac8b8fc9659bca7014630e4adbd0a170e5df1d35f",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "10a515f454e8281a8622c63ac8b8fc9659bca7014630e4adbd0a170e5df1d35f"
+  },
+  {
+    "path": "pipelines/datasets/generation/__init__.py",
+    "source_path": "pipelines/datasets/generation/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "8ab2f8714224d6717b02dd5f790cb978e82ddcb6853a848211e7836b0114b77a",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "8ab2f8714224d6717b02dd5f790cb978e82ddcb6853a848211e7836b0114b77a"
+  },
+  {
+    "path": "pipelines/datasets/generation/cleanup/__init__.py",
+    "source_path": "pipelines/datasets/generation/cleanup/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "5b25b92848e798ac4fc2ce6c492d741be6949b9d26a22a04e5ad83a8eb19e2dc",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "5b25b92848e798ac4fc2ce6c492d741be6949b9d26a22a04e5ad83a8eb19e2dc"
+  },
+  {
+    "path": "pipelines/datasets/generation/cleanup/base.py",
+    "source_path": "pipelines/datasets/generation/cleanup/base.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "471ee251d264bff55fe8121a9ee446b80582902c409874dc0af65cf4d30423e8",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "471ee251d264bff55fe8121a9ee446b80582902c409874dc0af65cf4d30423e8"
+  },
+  {
+    "path": "pipelines/datasets/generation/cleanup/main.py",
+    "source_path": "pipelines/datasets/generation/cleanup/main.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "a66366ea967d8fd50016ff5896b18480923a01f25ed54fc22ab6fe022b749001",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "a66366ea967d8fd50016ff5896b18480923a01f25ed54fc22ab6fe022b749001"
+  },
+  {
+    "path": "pipelines/datasets/generation/cleanup/passes/__init__.py",
+    "source_path": "pipelines/datasets/generation/cleanup/passes/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "cb3fa738f0b5418ca34ccbf4006f45e20d9d862c94bb6d9fa8e7ba0e3f3beeac",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "cb3fa738f0b5418ca34ccbf4006f45e20d9d862c94bb6d9fa8e7ba0e3f3beeac"
+  },
+  {
+    "path": "pipelines/datasets/generation/cleanup/passes/musescore_palette_template.py",
+    "source_path": "pipelines/datasets/generation/cleanup/passes/musescore_palette_template.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "949bbbe473c339535f234f2053be9bd5799e4cca1a78ab14dc91d9157344a6e2",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "949bbbe473c339535f234f2053be9bd5799e4cca1a78ab14dc91d9157344a6e2"
+  },
+  {
+    "path": "pipelines/datasets/generation/cleanup/passes/remove_exact_interpretations.py",
+    "source_path": "pipelines/datasets/generation/cleanup/passes/remove_exact_interpretations.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "ac65fa42e5effbbdff8503d802a539054c4bce54ad453e35e2a8b8871d0005e9",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "ac65fa42e5effbbdff8503d802a539054c4bce54ad453e35e2a8b8871d0005e9"
+  },
+  {
+    "path": "pipelines/datasets/generation/cleanup/passes/remove_grandstaff_single_y_from_notes.py",
+    "source_path": "pipelines/datasets/generation/cleanup/passes/remove_grandstaff_single_y_from_notes.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "5ea26bc1cd1ebbddcb4277356f9257252c89dcf405cb68b0e32a2cb647a04f24",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "5ea26bc1cd1ebbddcb4277356f9257252c89dcf405cb68b0e32a2cb647a04f24"
+  },
+  {
+    "path": "pipelines/datasets/generation/cleanup/passes/rest_decorations.py",
+    "source_path": "pipelines/datasets/generation/cleanup/passes/rest_decorations.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "449dca7c0c8c571c1f263ec70ed867f1e291f144d18ba81c6b4593fa7f8138ae",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "449dca7c0c8c571c1f263ec70ed867f1e291f144d18ba81c6b4593fa7f8138ae"
+  },
+  {
+    "path": "pipelines/datasets/generation/cleanup/pipeline.py",
+    "source_path": "pipelines/datasets/generation/cleanup/pipeline.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "50ed3d9f97a56e6673d6a19ffde5a9e7d995125295b9980376b9d94a968a8071",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "50ed3d9f97a56e6673d6a19ffde5a9e7d995125295b9980376b9d94a968a8071"
+  },
+  {
+    "path": "pipelines/datasets/generation/cleanup/presets.py",
+    "source_path": "pipelines/datasets/generation/cleanup/presets.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "55caf27bf714d80ab38d6247451adbd7471e9033d5245c1820795b3f8f82460b",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "55caf27bf714d80ab38d6247451adbd7471e9033d5245c1820795b3f8f82460b"
+  },
+  {
+    "path": "pipelines/datasets/generation/extract_raw_data/extract_grandstaff_transcriptions.py",
+    "source_path": "pipelines/datasets/generation/extract_raw_data/extract_grandstaff_transcriptions.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "ebc6260057dfc742b551f3c3e0669021b23c7fbe193d7de2b710c149fcf189bb",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "ebc6260057dfc742b551f3c3e0669021b23c7fbe193d7de2b710c149fcf189bb"
+  },
+  {
+    "path": "pipelines/datasets/generation/extract_raw_data/extract_mxl.sh",
+    "source_path": "pipelines/datasets/generation/extract_raw_data/extract_mxl.sh",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "4d6cc14dce24e5336e81b226ab45fc6009638c892789e24ddd82599e6360f4c6",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "4d6cc14dce24e5336e81b226ab45fc6009638c892789e24ddd82599e6360f4c6"
+  },
+  {
+    "path": "pipelines/datasets/generation/extract_raw_data/extract_mxl_member.py",
+    "source_path": "pipelines/datasets/generation/extract_raw_data/extract_mxl_member.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "d731c2c12615c4fbd6e90d1fd984b108e95f3cef272d2f27498bfd4a12b29939",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "d731c2c12615c4fbd6e90d1fd984b108e95f3cef272d2f27498bfd4a12b29939"
+  },
+  {
+    "path": "pipelines/datasets/generation/extract_raw_data/extract_openscore_xml.py",
+    "source_path": "pipelines/datasets/generation/extract_raw_data/extract_openscore_xml.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "c2b9019285ff8f7b8342b11f1929d681c63cd4c90fa514bffa8acb37f9ffaaef",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "c2b9019285ff8f7b8342b11f1929d681c63cd4c90fa514bffa8acb37f9ffaaef"
+  },
+  {
+    "path": "pipelines/datasets/generation/extract_raw_data/kernscores.py",
+    "source_path": "pipelines/datasets/generation/extract_raw_data/kernscores.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "39f08b56d960e7c2732a6a29b9b3a8c1197fdc3575004d082977445bd4dff8ab",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "39f08b56d960e7c2732a6a29b9b3a8c1197fdc3575004d082977445bd4dff8ab"
+  },
+  {
+    "path": "pipelines/datasets/generation/filtering/__init__.py",
+    "source_path": "pipelines/datasets/generation/filtering/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "5c68d31ec52cb952d755873084707e7f68321e543990128500134ae3c6f7a540",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "5c68d31ec52cb952d755873084707e7f68321e543990128500134ae3c6f7a540"
+  },
+  {
+    "path": "pipelines/datasets/generation/filtering/base.py",
+    "source_path": "pipelines/datasets/generation/filtering/base.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "e7774be6b2dd7d0ea61030596bb4de35aa5123a19a214a2dd5d0a586f8d91201",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "e7774be6b2dd7d0ea61030596bb4de35aa5123a19a214a2dd5d0a586f8d91201"
+  },
+  {
+    "path": "pipelines/datasets/generation/filtering/filters/__init__.py",
+    "source_path": "pipelines/datasets/generation/filtering/filters/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "9742aa4627545281d72146b927be16b934dd438226bdb436256b3fef4c8e39a9",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "aa544aec1fabff8045c188ffbd7c69f90116de6a99245d4e45b404f3b815accf"
+  },
+  {
+    "path": "pipelines/datasets/generation/filtering/filters/header_clef.py",
+    "source_path": "pipelines/datasets/generation/filtering/filters/header_clef.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "30977127b5137c9b54c3b640318d5fa70f4e32dde8c5f6c34d4a5fd4a9231546",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "30977127b5137c9b54c3b640318d5fa70f4e32dde8c5f6c34d4a5fd4a9231546"
+  },
+  {
+    "path": "pipelines/datasets/generation/filtering/filters/rational_duration.py",
+    "source_path": "pipelines/datasets/generation/filtering/filters/rational_duration.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "07dc2d805e2604bee2045c2085bd03f8511d8db23a1cbb447820efcc7b4ff008",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "07dc2d805e2604bee2045c2085bd03f8511d8db23a1cbb447820efcc7b4ff008"
+  },
+  {
+    "path": "pipelines/datasets/generation/filtering/filters/rhythm.py",
+    "source_path": "pipelines/datasets/generation/filtering/filters/rhythm.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "9272d288a98a65f8525f7b1a035b51cd43060606ea1730dea55f6498f1d1b8c7",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "9272d288a98a65f8525f7b1a035b51cd43060606ea1730dea55f6498f1d1b8c7"
+  },
+  {
+    "path": "pipelines/datasets/generation/filtering/filters/staves.py",
+    "source_path": "pipelines/datasets/generation/filtering/filters/staves.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "425a84037e9b1396878c6b2e3223ea4d148608114c7a72fb97fc1983e40fe520",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "425a84037e9b1396878c6b2e3223ea4d148608114c7a72fb97fc1983e40fe520"
+  },
+  {
+    "path": "pipelines/datasets/generation/filtering/main.py",
+    "source_path": "pipelines/datasets/generation/filtering/main.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "3f00cda28c21c2e74bb19a9640e519b286cf1065add1de58b8b75cd0b1b19632",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "0a0ae14a08486c4fa8f2cfc9e8564d63cdafd4c22dffd7b86c1db676e43a5f58"
+  },
+  {
+    "path": "pipelines/datasets/generation/filtering/pipeline.py",
+    "source_path": "pipelines/datasets/generation/filtering/pipeline.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "bb2f3aa9d5ac165a104f6698aa9051fb7a684ae254f1b3fba9c6b140193b1026",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "bb2f3aa9d5ac165a104f6698aa9051fb7a684ae254f1b3fba9c6b140193b1026"
+  },
+  {
+    "path": "pipelines/datasets/generation/filtering/stats.py",
+    "source_path": "pipelines/datasets/generation/filtering/stats.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "b537291fa2551e46b6d6c0f1a215e2e3eb00063055626a5eb51d33ad81e5a44e",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "b537291fa2551e46b6d6c0f1a215e2e3eb00063055626a5eb51d33ad81e5a44e"
+  },
+  {
+    "path": "pipelines/datasets/generation/report_hum2xml_conversion.py",
+    "source_path": "pipelines/datasets/generation/report_hum2xml_conversion.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "76fb4b0db35cc5f81d9a8435dcf2cd79c6f5aaa8811cba169667fd0b6047bfbc",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "76fb4b0db35cc5f81d9a8435dcf2cd79c6f5aaa8811cba169667fd0b6047bfbc"
+  },
+  {
+    "path": "pipelines/datasets/materialization/__init__.py",
+    "source_path": "pipelines/datasets/materialization/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "5575802298f4fbb1c4532bf13834f71f64cad36e9ba3d56001a7bf449dd65b3c",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "5575802298f4fbb1c4532bf13834f71f64cad36e9ba3d56001a7bf449dd65b3c"
+  },
+  {
+    "path": "pipelines/datasets/materialization/assemble.py",
+    "source_path": "pipelines/datasets/materialization/assemble.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "328e182b26198dc20497d24d3bf6b074cd43a3faf35524c64f842cfe58b5decc",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "d284ab05befa1a810e3740c5edb23fd58c6b611bc6d76cedbc27f101fd7707a6"
+  },
+  {
+    "path": "pipelines/datasets/materialization/augraphy.py",
+    "source_path": "pipelines/datasets/materialization/augraphy.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "2f669276512b6ce273effb9b20943f8d23a46e8b56de6fb9d879503c9c7b918a",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "2f669276512b6ce273effb9b20943f8d23a46e8b56de6fb9d879503c9c7b918a"
+  },
+  {
+    "path": "pipelines/datasets/materialization/images.py",
+    "source_path": "pipelines/datasets/materialization/images.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "c4ab3a7d1357b9a0cd05db682a807741744d7dce68d75ef6020fde501d6d73b9",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "c4ab3a7d1357b9a0cd05db682a807741744d7dce68d75ef6020fde501d6d73b9"
+  },
+  {
+    "path": "pipelines/datasets/materialization/main.py",
+    "source_path": "pipelines/datasets/materialization/main.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "3591ff783557443db8dd8de3cd1ecd8200628338fa36515de69121cf880976dd",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "da9d6968e3fc5329e183cd3e66bc7b485a6da01f76eb8ef86c333c12a5b78824"
+  },
+  {
+    "path": "pipelines/datasets/materialization/registry.py",
+    "source_path": "pipelines/datasets/materialization/registry.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "8f822a4e17f408bd3226c70824755dadc9cb68c3ec2a2db4631b0063a8c845d6",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "8f822a4e17f408bd3226c70824755dadc9cb68c3ec2a2db4631b0063a8c845d6"
+  },
+  {
+    "path": "pipelines/datasets/materialization/rendering/__init__.py",
+    "source_path": "pipelines/datasets/materialization/rendering/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "pipelines/datasets/materialization/rendering/exceptions.py",
+    "source_path": "pipelines/datasets/materialization/rendering/exceptions.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "9d5c69a23efa4c3b611dc521b5ccac271e68d734cdc8eab43e7c0f2dbfeb4dff",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "9d5c69a23efa4c3b611dc521b5ccac271e68d734cdc8eab43e7c0f2dbfeb4dff"
+  },
+  {
+    "path": "pipelines/datasets/materialization/rendering/svg_augmentation.py",
+    "source_path": "pipelines/datasets/materialization/rendering/svg_augmentation.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "9ba76de45b2368b5acc9e6840abe30aa699f3fa6a56362a9ea7927dbec9f9f9a",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "9ba76de45b2368b5acc9e6840abe30aa699f3fa6a56362a9ea7927dbec9f9f9a"
+  },
+  {
+    "path": "pipelines/datasets/materialization/rendering/types.py",
+    "source_path": "pipelines/datasets/materialization/rendering/types.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "eb10812ec913ee27ad898fb8714bc3edb20f6b1cff47d0383a28f047ca7ce1fe",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "eb10812ec913ee27ad898fb8714bc3edb20f6b1cff47d0383a28f047ca7ce1fe"
+  },
+  {
+    "path": "pipelines/datasets/materialization/rendering/verovio_backend.py",
+    "source_path": "pipelines/datasets/materialization/rendering/verovio_backend.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "30dc95a481be0279b9caa966bd2b8b8ceca281fd620ba18a95806c940c538c8e",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "30dc95a481be0279b9caa966bd2b8b8ceca281fd620ba18a95806c940c538c8e"
+  },
+  {
+    "path": "pipelines/datasets/materialization/rust_manifest_to_hf.py",
+    "source_path": "pipelines/datasets/materialization/rust_manifest_to_hf.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "0bb4a56579203deafb81d8b0d00896e390b1ab695b8bb7fbdf15e4972e37b90b",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "597059a5cd4859083f011bf8bf89beee10075d8122ff4328c53d0da2155688ea"
+  },
+  {
+    "path": "scripts/dataset_generation/kern_conversions/convert_ekern_to_kern.sh",
+    "source_path": "scripts/dataset_generation/kern_conversions/convert_ekern_to_kern.sh",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "c21acc5dcc186eda0445092a80ae4dd691c3fae632c32a25f06b566990413ed4",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "ecf50bc4f47937d0935e5ee4fe4984efae8e123d29f3c9bec8cf13825a4aef8a"
+  },
+  {
+    "path": "scripts/dataset_generation/kern_conversions/convert_xml_to_kern.sh",
+    "source_path": "scripts/dataset_generation/kern_conversions/convert_xml_to_kern.sh",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "0a75146739899962f82c9b79f4289ead34ce0bf20df6538583ba7574c8b80aff",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "6d96524c9f68fb9fa374a3afa47cd321915f49ade222a705b4f23db23c511b15"
+  },
+  {
+    "path": "train.py",
+    "source_path": "train.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "780978f43cba9a78dbebcaa69ae79a6d9e91a4b1ec2fc82a4172256ee48299d9",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "780978f43cba9a78dbebcaa69ae79a6d9e91a4b1ec2fc82a4172256ee48299d9"
+  },
+  {
+    "path": "transcoda/__init__.py",
+    "source_path": "transcoda/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "transcoda/artifacts.py",
+    "source_path": "transcoda/artifacts.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "953401269364b0f715071908f9a747d19c62f51d4805ef301a3fdf0e69a18152",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "953401269364b0f715071908f9a747d19c62f51d4805ef301a3fdf0e69a18152"
+  },
+  {
+    "path": "transcoda/callbacks/__init__.py",
+    "source_path": "transcoda/callbacks/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "45bac3c850a2376e633f9f16d16676701acc0ee0b1f2b2c0e04a76b0e92fe264",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "45bac3c850a2376e633f9f16d16676701acc0ee0b1f2b2c0e04a76b0e92fe264"
+  },
+  {
+    "path": "transcoda/callbacks/durable_checkpoint.py",
+    "source_path": "transcoda/callbacks/durable_checkpoint.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "42170b3b4fbf1cc1804548837d259d8c5834baab1984d56de098dda213874ea7",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "42170b3b4fbf1cc1804548837d259d8c5834baab1984d56de098dda213874ea7"
+  },
+  {
+    "path": "transcoda/callbacks/epoch_timing.py",
+    "source_path": "transcoda/callbacks/epoch_timing.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "64eebe6d6186b096be21a7b7baffa72cc174ac12a65315254496173bbf8de161",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "64eebe6d6186b096be21a7b7baffa72cc174ac12a65315254496173bbf8de161"
+  },
+  {
+    "path": "transcoda/callbacks/fit_validation_warmup.py",
+    "source_path": "transcoda/callbacks/fit_validation_warmup.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "243d89b383f7075455fe40e805c2e26b80154a09fb9868a3bb07878649cbce71",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "243d89b383f7075455fe40e805c2e26b80154a09fb9868a3bb07878649cbce71"
+  },
+  {
+    "path": "transcoda/callbacks/gated_checkpoint.py",
+    "source_path": "transcoda/callbacks/gated_checkpoint.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "fe9d0a0fa4aaf94b0f554b3a5cf9cde981e63b68b85b7a50925e04648fce945c",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "fe9d0a0fa4aaf94b0f554b3a5cf9cde981e63b68b85b7a50925e04648fce945c"
+  },
+  {
+    "path": "transcoda/callbacks/learning_rate.py",
+    "source_path": "transcoda/callbacks/learning_rate.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "732d99c3f3bff7c586380e44e004f2bacfe3c8088f4d5a270ad4c6f61defe33f",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "732d99c3f3bff7c586380e44e004f2bacfe3c8088f4d5a270ad4c6f61defe33f"
+  },
+  {
+    "path": "transcoda/callbacks/log_progress.py",
+    "source_path": "transcoda/callbacks/log_progress.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "46740def860a6df9bbe7c0c7942c0123d2e197b450dc555a57da8464d73afdde",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "46740def860a6df9bbe7c0c7942c0123d2e197b450dc555a57da8464d73afdde"
+  },
+  {
+    "path": "transcoda/callbacks/validation_prediction_writer.py",
+    "source_path": "transcoda/callbacks/validation_prediction_writer.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "4384464ba664fc3bc533a00dd2b4855c85c32ea0789a5fcafdf06b05c734f823",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "4384464ba664fc3bc533a00dd2b4855c85c32ea0789a5fcafdf06b05c734f823"
+  },
+  {
+    "path": "transcoda/callbacks/verosim_validation_metric.py",
+    "source_path": "transcoda/callbacks/verosim_validation_metric.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "db5836dce533d091354e14cf14c950f9daec8533f8389b40222c04c2a8b94346",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "db5836dce533d091354e14cf14c950f9daec8533f8389b40222c04c2a8b94346"
+  },
+  {
+    "path": "transcoda/callbacks/wandb_visualizer.py",
+    "source_path": "transcoda/callbacks/wandb_visualizer.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "7d50ee76390bb4c1981a79e5923c06ed7057658f22924568b0ac4ac920ba22fb",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "7d50ee76390bb4c1981a79e5923c06ed7057658f22924568b0ac4ac920ba22fb"
+  },
+  {
+    "path": "transcoda/callbacks/wandb_visualizer_rows.py",
+    "source_path": "transcoda/callbacks/wandb_visualizer_rows.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "8caa96ba6d3c6e8cbc05b630bfb866212c90cc11290a9af875ea0d49c0148bf9",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "8caa96ba6d3c6e8cbc05b630bfb866212c90cc11290a9af875ea0d49c0148bf9"
+  },
+  {
+    "path": "transcoda/config.py",
+    "source_path": "transcoda/config.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "ef94d74f4708934bf09d044c13552841086747ac10ca2ea2d5322f0f966f233c",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "ef94d74f4708934bf09d044c13552841086747ac10ca2ea2d5322f0f966f233c"
+  },
+  {
+    "path": "transcoda/core/__init__.py",
+    "source_path": "transcoda/core/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "transcoda/core/checkpoint_record.py",
+    "source_path": "transcoda/core/checkpoint_record.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "e32b0cfbb690185dc749ae7e01f3ade72d1f5349fd56854e14ef5e8499b67a33",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "e32b0cfbb690185dc749ae7e01f3ade72d1f5349fd56854e14ef5e8499b67a33"
+  },
+  {
+    "path": "transcoda/core/dataset_release.py",
+    "source_path": "transcoda/core/dataset_release.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "c15d3c4899aeed7d7bce336772219d3f26fabf52cf67eab7e75cafa589adcd3c",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "c15d3c4899aeed7d7bce336772219d3f26fabf52cf67eab7e75cafa589adcd3c"
+  },
+  {
+    "path": "transcoda/core/diff_utils.py",
+    "source_path": "transcoda/core/diff_utils.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "95ebe567b4df968535057c71f55a909fb9fd31cfbd75d0b67abbc90a49a0acdb",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "95ebe567b4df968535057c71f55a909fb9fd31cfbd75d0b67abbc90a49a0acdb"
+  },
+  {
+    "path": "transcoda/core/kern_concatenation.py",
+    "source_path": "transcoda/core/kern_concatenation.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "2547545df515f58141dd72a843e416b7beff3c8efa4ae72040a52f4b94185809",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "2547545df515f58141dd72a843e416b7beff3c8efa4ae72040a52f4b94185809"
+  },
+  {
+    "path": "transcoda/core/kern_footer.py",
+    "source_path": "transcoda/core/kern_footer.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "218bf4554f652b57462b366eb3ec4108858027f9ac9c4fc2aac80c8becc64975",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "218bf4554f652b57462b366eb3ec4108858027f9ac9c4fc2aac80c8becc64975"
+  },
+  {
+    "path": "transcoda/core/kern_postprocess.py",
+    "source_path": "transcoda/core/kern_postprocess.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "bd79308eb079ff1105eb8bb38cf54b1e1c7c57036fbdb96eb5133a8ccb1d02ab",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "bd79308eb079ff1105eb8bb38cf54b1e1c7c57036fbdb96eb5133a8ccb1d02ab"
+  },
+  {
+    "path": "transcoda/core/kern_utils.py",
+    "source_path": "transcoda/core/kern_utils.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "b8e745e61c0d93def010a0e7bb93eaa0c45231d59ee3206c0ff3e3c02157ecd4",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "b8e745e61c0d93def010a0e7bb93eaa0c45231d59ee3206c0ff3e3c02157ecd4"
+  },
+  {
+    "path": "transcoda/core/metrics/__init__.py",
+    "source_path": "transcoda/core/metrics/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "bdf7952fee8c06a4d2d819afbd1888dcb2a50bbf368014d17671c04d87dbb2a7",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "bdf7952fee8c06a4d2d819afbd1888dcb2a50bbf368014d17671c04d87dbb2a7"
+  },
+  {
+    "path": "transcoda/core/metrics/character_error_rate.py",
+    "source_path": "transcoda/core/metrics/character_error_rate.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "d556225550e02c146a593db65d2fa603e4956ff430b980d1ad81d1888f2458e1",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "d556225550e02c146a593db65d2fa603e4956ff430b980d1ad81d1888f2458e1"
+  },
+  {
+    "path": "transcoda/core/metrics/levenshtein.py",
+    "source_path": "transcoda/core/metrics/levenshtein.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "39d11c635bba85001995c2bb953ab8e2b3da5a31a8b762c951441ea606f9ca01",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "39d11c635bba85001995c2bb953ab8e2b3da5a31a8b762c951441ea606f9ca01"
+  },
+  {
+    "path": "transcoda/core/metrics/line_error_rate.py",
+    "source_path": "transcoda/core/metrics/line_error_rate.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "9d65c7d8f29a797eb033d1eae70709442651f3edc6296096d0493ff29f70d88c",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "9d65c7d8f29a797eb033d1eae70709442651f3edc6296096d0493ff29f70d88c"
+  },
+  {
+    "path": "transcoda/core/metrics/runaway_monitor.py",
+    "source_path": "transcoda/core/metrics/runaway_monitor.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "f79be08ab92d25b5e350f20bffab14fe3a1cb9dfc3883c5572d6fb3befae7db1",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "f79be08ab92d25b5e350f20bffab14fe3a1cb9dfc3883c5572d6fb3befae7db1"
+  },
+  {
+    "path": "transcoda/core/metrics/symbol_error_rate.py",
+    "source_path": "transcoda/core/metrics/symbol_error_rate.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "1f1b92007533fa2797744208874937552b171032f694c34352bcab0b6f8e207d",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "1f1b92007533fa2797744208874937552b171032f694c34352bcab0b6f8e207d"
+  },
+  {
+    "path": "transcoda/core/piece_break.py",
+    "source_path": "transcoda/core/piece_break.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "64540eb0684e5aa805daa13225a1a2d0dd2f55a619e49930c827e4fb1a1ebf04",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "64540eb0684e5aa805daa13225a1a2d0dd2f55a619e49930c827e4fb1a1ebf04"
+  },
+  {
+    "path": "transcoda/core/prediction_confidence.py",
+    "source_path": "transcoda/core/prediction_confidence.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "5a0e782ff9047bde857bdf22738bf2bd11b475ec4abb364946e199b864046814",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "5a0e782ff9047bde857bdf22738bf2bd11b475ec4abb364946e199b864046814"
+  },
+  {
+    "path": "transcoda/core/sample_identity.py",
+    "source_path": "transcoda/core/sample_identity.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "88911b95ab60b8d945a33acc97abf24e8864c89ec25f2f197a462ad7a5d5c1f2",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "88911b95ab60b8d945a33acc97abf24e8864c89ec25f2f197a462ad7a5d5c1f2"
+  },
+  {
+    "path": "transcoda/core/spine_state.py",
+    "source_revision": "6312f925",
+    "reason": "V2.1 constrained decoder, including timeline rule",
+    "staged_sha256": "23083b9c195929dae76f5508031d962f1fb2fad6ca14eb79719baef1fc855d3e"
+  },
+  {
+    "path": "transcoda/core/text_processing.py",
+    "source_path": "transcoda/core/text_processing.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "ddbf9c19aa09cef28cff14cc8b94b780fc7b30a239382dfdb0730a531bfbf17d",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "ddbf9c19aa09cef28cff14cc8b94b780fc7b30a239382dfdb0730a531bfbf17d"
+  },
+  {
+    "path": "transcoda/data/__init__.py",
+    "source_path": "transcoda/data/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "transcoda/data/collators.py",
+    "source_path": "transcoda/data/collators.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "21dd770301934e9db5b88544f98230a40211f7120b8f4f2db46283dd83cd7267",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "21dd770301934e9db5b88544f98230a40211f7120b8f4f2db46283dd83cd7267"
+  },
+  {
+    "path": "transcoda/data/datamodules.py",
+    "source_path": "transcoda/data/datamodules.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "19c32388a074707772b943ed0bf5d34edd1bf3bb8fc47364dbeb0d20dd75309d",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "19c32388a074707772b943ed0bf5d34edd1bf3bb8fc47364dbeb0d20dd75309d"
+  },
+  {
+    "path": "transcoda/data/datasets.py",
+    "source_path": "transcoda/data/datasets.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "a2c66ff52d2f7ac599ce8e97e0b399c642c6271d68b256aa1c6c1f5e0dfa339d",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "a2c66ff52d2f7ac599ce8e97e0b399c642c6271d68b256aa1c6c1f5e0dfa339d"
+  },
+  {
+    "path": "transcoda/data/mixture.py",
+    "source_path": "transcoda/data/mixture.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "2e6e95da34b8fd404822d982bcf8c36acd136661de21f6f4496ec2a418c85f10",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "2e6e95da34b8fd404822d982bcf8c36acd136661de21f6f4496ec2a418c85f10"
+  },
+  {
+    "path": "transcoda/data/preprocessing.py",
+    "source_path": "transcoda/data/preprocessing.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "93557602257cbad539f329dc90c222bf904bd1b6573af27391f5c8050a35334e",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "93557602257cbad539f329dc90c222bf904bd1b6573af27391f5c8050a35334e"
+  },
+  {
+    "path": "transcoda/data/train_sources.py",
+    "source_path": "transcoda/data/train_sources.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "a6fc2c17dd8c8f8c8437ee04e06bc1cd3e6f3b7e5a2d63e703b416a594d8bf52",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "a6fc2c17dd8c8f8c8437ee04e06bc1cd3e6f3b7e5a2d63e703b416a594d8bf52"
+  },
+  {
+    "path": "transcoda/evaluation/__init__.py",
+    "source_path": "transcoda/evaluation/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "d64d933a99d5ec5f9664e3c7d3174dcc51bd01d1cd31ccfdf5dd362f59ef9ab8",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "d64d933a99d5ec5f9664e3c7d3174dcc51bd01d1cd31ccfdf5dd362f59ef9ab8"
+  },
+  {
+    "path": "transcoda/evaluation/string_metrics.py",
+    "source_path": "transcoda/evaluation/string_metrics.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "d5974f685719a500a72111e86e350b62892c31c7a96c83bcc1fbb6803b423114",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "d5974f685719a500a72111e86e350b62892c31c7a96c83bcc1fbb6803b423114"
+  },
+  {
+    "path": "transcoda/evaluation/verosim_omr_ned.py",
+    "source_path": "transcoda/evaluation/verosim_omr_ned.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "f429c31a1313c27be9e146e238652b07c2b216d6a8257358bf46759d785c9f1a",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "f429c31a1313c27be9e146e238652b07c2b216d6a8257358bf46759d785c9f1a"
+  },
+  {
+    "path": "transcoda/grammar/__init__.py",
+    "source_path": "transcoda/grammar/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "3ec2c025660dc392c571e29481d69dc86bf4f26907c6b59d262b9791b461ebf2",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "3ec2c025660dc392c571e29481d69dc86bf4f26907c6b59d262b9791b461ebf2"
+  },
+  {
+    "path": "transcoda/grammar/constraint_factory.py",
+    "source_revision": "6312f925",
+    "reason": "V2.1 constrained decoder, including timeline rule",
+    "staged_sha256": "1b5d10165f0579374233c9c8dc6d59332bb1ce882db9ae8143794de47c2aeb95"
+  },
+  {
+    "path": "transcoda/grammar/kern_prefix_state.py",
+    "source_path": "transcoda/grammar/kern_prefix_state.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "7b4b7235a28fad45e7f53097c6cb5ab4044554fe843b131aabb966c096bd8c73",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "7b4b7235a28fad45e7f53097c6cb5ab4044554fe843b131aabb966c096bd8c73"
+  },
+  {
+    "path": "transcoda/grammar/line_loop_guard.py",
+    "source_path": "transcoda/grammar/line_loop_guard.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "cda7298a8cd840bfed4dc8cb7e63ecce0734e271dd7d8886dfdbdb04dfaa2c2d",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "cda7298a8cd840bfed4dc8cb7e63ecce0734e271dd7d8886dfdbdb04dfaa2c2d"
+  },
+  {
+    "path": "transcoda/grammar/logits_processor.py",
+    "source_revision": "6312f925",
+    "reason": "V2.1 constrained decoder, including timeline rule",
+    "staged_sha256": "337932b04fe77de6b94ecb61802945447296b8f9a27171a474940b47c535711a"
+  },
+  {
+    "path": "transcoda/grammar/provider.py",
+    "source_path": "transcoda/grammar/provider.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "0d22fd236c9d3114e6ff79dd40ee75b3a0ec838d18b58790db423d46aa3175a6",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "0d22fd236c9d3114e6ff79dd40ee75b3a0ec838d18b58790db423d46aa3175a6"
+  },
+  {
+    "path": "transcoda/grammar/semantic_sequence_finalizer.py",
+    "source_revision": "6312f925",
+    "reason": "V2.1 constrained decoder, including timeline rule",
+    "staged_sha256": "93ca39435b721715bf68e306bbe51434f4d2170cbeb92c7868e74670c9d23c88"
+  },
+  {
+    "path": "transcoda/grammar/spine_decoder_state.py",
+    "source_path": "transcoda/grammar/spine_decoder_state.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "eef44b7068cd5011a9af6622a2c3e97a6e5d36c272f7e182970fa8766bed3a5a",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "eef44b7068cd5011a9af6622a2c3e97a6e5d36c272f7e182970fa8766bed3a5a"
+  },
+  {
+    "path": "transcoda/grammar/spine_structure_processor.py",
+    "source_path": "transcoda/grammar/spine_structure_processor.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "03e287eea3257b11964fc58cb57f892abb669c7d2f2a496f0f729cfc9954c1a4",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "03e287eea3257b11964fc58cb57f892abb669c7d2f2a496f0f729cfc9954c1a4"
+  },
+  {
+    "path": "transcoda/grammar/spine_structure_rule.py",
+    "source_revision": "6312f925",
+    "reason": "V2.1 constrained decoder, including timeline rule",
+    "staged_sha256": "f6b99dd564ae31ecf61076e7119217a9e2966d808da356aa8523a14b1969bb2e"
+  },
+  {
+    "path": "transcoda/grammar/stateful_kern_logits_processor.py",
+    "source_revision": "6312f925",
+    "reason": "V2.1 constrained decoder, including timeline rule",
+    "staged_sha256": "b9b73f3a84b598c8de7a0e88a082bd86ed30139506a9c1a0835868f158c5ec68"
+  },
+  {
+    "path": "transcoda/grammar/tokenizer_adapter.py",
+    "source_path": "transcoda/grammar/tokenizer_adapter.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "83337fef7b5c947c847a4a6841ad95f2c1e831aeddad11e373449ccbcac848f6",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "83337fef7b5c947c847a4a6841ad95f2c1e831aeddad11e373449ccbcac848f6"
+  },
+  {
+    "path": "transcoda/inference/__init__.py",
+    "source_path": "transcoda/inference/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "635bade5b623ae7ed4c8724818c1decee8a37236c593b2986d680b4228184581",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "635bade5b623ae7ed4c8724818c1decee8a37236c593b2986d680b4228184581"
+  },
+  {
+    "path": "transcoda/inference/runtime.py",
+    "source_path": "transcoda/inference/runtime.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "ac8ced331576648e953f9b92e5ff0887a2a93fb86e9455531c42d2d91f387d7e",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "ac8ced331576648e953f9b92e5ff0887a2a93fb86e9455531c42d2d91f387d7e"
+  },
+  {
+    "path": "transcoda/metrics_schema.py",
+    "source_path": "transcoda/metrics_schema.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "b7ab699277325f5d6aa50e50464329f320b34ac62d107216458ce1f731beb789",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "b7ab699277325f5d6aa50e50464329f320b34ac62d107216458ce1f731beb789"
+  },
+  {
+    "path": "transcoda/model/__init__.py",
+    "source_path": "transcoda/model/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "57e2a362038028e7b6d90a59bb702f25c8e8fb7323c1e7587897c07830c55e1e",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "57e2a362038028e7b6d90a59bb702f25c8e8fb7323c1e7587897c07830c55e1e"
+  },
+  {
+    "path": "transcoda/model/checkpoint_loader.py",
+    "source_path": "transcoda/model/checkpoint_loader.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "3532e8aafc23886017f373d35461dbe07af031db0aa1d822f126f4d2b64ac007",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "3532e8aafc23886017f373d35461dbe07af031db0aa1d822f126f4d2b64ac007"
+  },
+  {
+    "path": "transcoda/model/configuration_transcoda.py",
+    "source_path": "transcoda/model/configuration_transcoda.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "485d7b1bc4949bbf72341b3a078a09aa73397ab39203b4472e91f415be1e04a3",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "485d7b1bc4949bbf72341b3a078a09aa73397ab39203b4472e91f415be1e04a3"
+  },
+  {
+    "path": "transcoda/model/encoder.py",
+    "source_path": "transcoda/model/encoder.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "edcae2fd6dd0103c41e687bc45dd7e047b3a3fd668d91854c70785d89307bd27",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "edcae2fd6dd0103c41e687bc45dd7e047b3a3fd668d91854c70785d89307bd27"
+  },
+  {
+    "path": "transcoda/model/frontends/__init__.py",
+    "source_path": "transcoda/model/frontends/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "d182a0a97e6cb4743dda1a454e8b60ebb98dea5fa764aefdc429d6f503ddc727",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "d182a0a97e6cb4743dda1a454e8b60ebb98dea5fa764aefdc429d6f503ddc727"
+  },
+  {
+    "path": "transcoda/model/frontends/conv_frontend.py",
+    "source_path": "transcoda/model/frontends/conv_frontend.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "6522e8fd455299d1abad6f9a67c00804cd525a2ed2edd26ef973d8539583b5a0",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "6522e8fd455299d1abad6f9a67c00804cd525a2ed2edd26ef973d8539583b5a0"
+  },
+  {
+    "path": "transcoda/model/frontends/conv_multiscale_frontend.py",
+    "source_path": "transcoda/model/frontends/conv_multiscale_frontend.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "7f0308b652a95a3e2bca8dce722c850bceb3fe30440b1f5499ad0c0268be3b44",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "7f0308b652a95a3e2bca8dce722c850bceb3fe30440b1f5499ad0c0268be3b44"
+  },
+  {
+    "path": "transcoda/model/frontends/factory.py",
+    "source_path": "transcoda/model/frontends/factory.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "7783a71e5e5cf3067511ccda3f3e04d086d0bd6c05cf282fed44317be5e6a684",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "7783a71e5e5cf3067511ccda3f3e04d086d0bd6c05cf282fed44317be5e6a684"
+  },
+  {
+    "path": "transcoda/model/frontends/feature_map.py",
+    "source_path": "transcoda/model/frontends/feature_map.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "5b61fb850d85503818404f3cb05f11ce6da4158739a69588ba84eb8f885fdc8c",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "5b61fb850d85503818404f3cb05f11ce6da4158739a69588ba84eb8f885fdc8c"
+  },
+  {
+    "path": "transcoda/model/frontends/swin_frontend.py",
+    "source_path": "transcoda/model/frontends/swin_frontend.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "12fee186439a7878668b58d62a7d545e009ea6f0948c7f86f66fabb8119f575a",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "12fee186439a7878668b58d62a7d545e009ea6f0948c7f86f66fabb8119f575a"
+  },
+  {
+    "path": "transcoda/model/generation_confidence.py",
+    "source_path": "transcoda/model/generation_confidence.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "b2b20e09029c9fbb5175052e87fefdeb4b682b698ea3b423364af8e985c5719b",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "b2b20e09029c9fbb5175052e87fefdeb4b682b698ea3b423364af8e985c5719b"
+  },
+  {
+    "path": "transcoda/model/generation_policy.py",
+    "source_path": "transcoda/model/generation_policy.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "cf3e589049cb84530c64d7b725b697f0fab1ca0a162c6945033198847bd151e3",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "cf3e589049cb84530c64d7b725b697f0fab1ca0a162c6945033198847bd151e3"
+  },
+  {
+    "path": "transcoda/model/modeling_transcoda.py",
+    "source_path": "transcoda/model/modeling_transcoda.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "9df793816c47886ffb8031b18c4d0e567905ad0e10f502a1eae39eb1ebf66c3e",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "9df793816c47886ffb8031b18c4d0e567905ad0e10f502a1eae39eb1ebf66c3e"
+  },
+  {
+    "path": "transcoda/model/vision_frontend.py",
+    "source_path": "transcoda/model/vision_frontend.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "9e0087751c49f9061922dcc3477c36b330552e97cf9513b5340a189a8f7bd0bb",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "9e0087751c49f9061922dcc3477c36b330552e97cf9513b5340a189a8f7bd0bb"
+  },
+  {
+    "path": "transcoda/preprocessing/__init__.py",
+    "source_path": "transcoda/preprocessing/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "8c9ea47d75fa797b264581b56a8d321f09513df19f6c04ff40e2e6ff6715ffdd",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "8c9ea47d75fa797b264581b56a8d321f09513df19f6c04ff40e2e6ff6715ffdd"
+  },
+  {
+    "path": "transcoda/preprocessing/image.py",
+    "source_path": "transcoda/preprocessing/image.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "884e24f9bf12f0c3a725cddb8a2502eb0102e3971340ac35175367bed0c192f2",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "884e24f9bf12f0c3a725cddb8a2502eb0102e3971340ac35175367bed0c192f2"
+  },
+  {
+    "path": "transcoda/tokenizer_compat.py",
+    "source_path": "transcoda/tokenizer_compat.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "4d79bcf26cd6f72d289270e89a73cc7903a803b318bfa5bc92a55a6a0a9b9816",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "4d79bcf26cd6f72d289270e89a73cc7903a803b318bfa5bc92a55a6a0a9b9816"
+  },
+  {
+    "path": "transcoda/training/__init__.py",
+    "source_path": "transcoda/training/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "transcoda/training/lightning_module.py",
+    "source_path": "transcoda/training/lightning_module.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "7e6f78fd41c5f4a42dc1b6891653f895fe0a27c160ac473ad9f7c3d979ae85f3",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "7e6f78fd41c5f4a42dc1b6891653f895fe0a27c160ac473ad9f7c3d979ae85f3"
+  },
+  {
+    "path": "transcoda/training/optim/__init__.py",
+    "source_path": "transcoda/training/optim/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "6e4bf7f5a57374b6e694b2d3b545aed8f1e85fb8c639516ba41def88c854991d",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "6e4bf7f5a57374b6e694b2d3b545aed8f1e85fb8c639516ba41def88c854991d"
+  },
+  {
+    "path": "transcoda/training/optim/cosine.py",
+    "source_path": "transcoda/training/optim/cosine.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "a892cf4f9db1f4f5b2abda1e38d9016ad4e87a0eebb9414b1b85023469d5ec67",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "a892cf4f9db1f4f5b2abda1e38d9016ad4e87a0eebb9414b1b85023469d5ec67"
+  },
+  {
+    "path": "transcoda/training/optim/layerwise.py",
+    "source_path": "transcoda/training/optim/layerwise.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "20b12bdd47e1a42d8f12251b6bd418050df734892b3ea00ed5bf1685dba4f012",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "20b12bdd47e1a42d8f12251b6bd418050df734892b3ea00ed5bf1685dba4f012"
+  },
+  {
+    "path": "transcoda/training/setup.py",
+    "source_path": "transcoda/training/setup.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "9ef403af2c52280cccd6ce8e662487c0788d8d2dfe7efb97af413050c9c96594",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "9ef403af2c52280cccd6ce8e662487c0788d8d2dfe7efb97af413050c9c96594"
+  },
+  {
+    "path": "transcoda/utils/__init__.py",
+    "source_path": "transcoda/utils/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "5471b82bcbfeb56afba36ed5a851a9cd597d6c24f78f674b165636bd21fca069",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "5471b82bcbfeb56afba36ed5a851a9cd597d6c24f78f674b165636bd21fca069"
+  },
+  {
+    "path": "transcoda/utils/repro.py",
+    "source_path": "transcoda/utils/repro.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "af48e3e789c3a836b1e93d693e34bc723265f47d360839fa998b7439dc3ef617",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "af48e3e789c3a836b1e93d693e34bc723265f47d360839fa998b7439dc3ef617"
+  },
+  {
+    "path": "transcoda/validation/__init__.py",
+    "source_path": "transcoda/validation/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "f77115193fb550bf45c82ba207930b053ed1131d5c4c17425b07e554c3f3211b",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "f77115193fb550bf45c82ba207930b053ed1131d5c4c17425b07e554c3f3211b"
+  },
+  {
+    "path": "transcoda/validation/decoding.py",
+    "source_path": "transcoda/validation/decoding.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "19fa5739481bce32cf0d81a7722a01ca5849efc26c9a4d83c6a51fa880f30274",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "19fa5739481bce32cf0d81a7722a01ca5849efc26c9a4d83c6a51fa880f30274"
+  },
+  {
+    "path": "transcoda/validation/metrics/__init__.py",
+    "source_path": "transcoda/validation/metrics/__init__.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "1361dd04a6c68fd32d88a718ea1f1a6c6deff3166a2650904778f395c205dc98",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "1361dd04a6c68fd32d88a718ea1f1a6c6deff3166a2650904778f395c205dc98"
+  },
+  {
+    "path": "transcoda/validation/metrics/base.py",
+    "source_path": "transcoda/validation/metrics/base.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "f18e4e3b26d95312d486d49c55613921302ec79397909749c405d82d8f201b22",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "f18e4e3b26d95312d486d49c55613921302ec79397909749c405d82d8f201b22"
+  },
+  {
+    "path": "transcoda/validation/metrics/stored_targets.py",
+    "source_path": "transcoda/validation/metrics/stored_targets.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "76143c2e572f3e66ffd188c8dfd428eee0b3b6e69f59ad488fde5ecb6756df22",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "76143c2e572f3e66ffd188c8dfd428eee0b3b6e69f59ad488fde5ecb6756df22"
+  },
+  {
+    "path": "transcoda/validation/metrics/verosim.py",
+    "source_path": "transcoda/validation/metrics/verosim.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "84a9825c7a21313c002a5dbaa2106240fdc36070eddd61780b67757156f9b78f",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "84a9825c7a21313c002a5dbaa2106240fdc36070eddd61780b67757156f9b78f"
+  },
+  {
+    "path": "transcoda/validation/metrics/verosim_options.py",
+    "source_path": "transcoda/validation/metrics/verosim_options.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "d49ea9a9060eb002d9e51f33c110b9668c10cfa8415893b83132bb450e24c783",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "d49ea9a9060eb002d9e51f33c110b9668c10cfa8415893b83132bb450e24c783"
+  },
+  {
+    "path": "transcoda/validation/records.py",
+    "source_path": "transcoda/validation/records.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "01199b1c898b70c154a0cc3e1b8f0f3662118b14efe5115ee76706359d6773fa",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "01199b1c898b70c154a0cc3e1b8f0f3662118b14efe5115ee76706359d6773fa"
+  },
+  {
+    "path": "transcoda/validation/schedule.py",
+    "source_path": "transcoda/validation/schedule.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "53926b7ad28a1ad88eb228b7c940c84421154dcab5041aa7f36d0c153507d0df",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "53926b7ad28a1ad88eb228b7c940c84421154dcab5041aa7f36d0c153507d0df"
+  },
+  {
+    "path": "transcoda/validation/selection.py",
+    "source_path": "transcoda/validation/selection.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "8cdd774a9fe7b6f9bc4e00cc39faba4e14725aa2f613dc01ae7fe64f4278d6c7",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "8cdd774a9fe7b6f9bc4e00cc39faba4e14725aa2f613dc01ae7fe64f4278d6c7"
+  },
+  {
+    "path": "vocab/bpe3k-transcoda-v2-20260707T132218830399Z-0a2786058ada/tokenizer.json",
+    "source_path": "vocab/bpe3k-transcoda-v2-20260707T132218830399Z-0a2786058ada/tokenizer.json",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "0a2786058ada19db7ff29568f0059ab96b0ca1fb2fb3332664caf162af97aa61",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "0a2786058ada19db7ff29568f0059ab96b0ca1fb2fb3332664caf162af97aa61"
+  },
+  {
+    "path": "vocab/bpe3k-transcoda-v2-20260707T132218830399Z-0a2786058ada/tokenizer_config.json",
+    "source_path": "vocab/bpe3k-transcoda-v2-20260707T132218830399Z-0a2786058ada/tokenizer_config.json",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "2e82dbc3e20a656b022331e8b616deb37897c4544b5c4489a598793cae589c91",
+    "reason": "Model, synthetic generation, or frozen evaluation dependency",
+    "staged_sha256": "014d23dccefb1e2a51d41ee18d3760f75ce3ff72636a84a24f383f47692c3c5d"
+  },
+  {
+    "path": "vendor/musicxml2hum/LICENSE.txt",
+    "source_path": "LICENSE.txt",
+    "source_revision": "5c47c178894bbf6493ae6efb14bd4a78e5086c53",
+    "sha256_at_export": "5b9ce0cf1bdd2a212401906f29204f5971726833fbba07b619846d5de36b22a5",
+    "reason": "Patched MusicXML conversion and upstream license notices",
+    "staged_sha256": "5b9ce0cf1bdd2a212401906f29204f5971726833fbba07b619846d5de36b22a5"
+  },
+  {
+    "path": "vendor/musicxml2hum/Makefile",
+    "source_path": "Makefile",
+    "source_revision": "5c47c178894bbf6493ae6efb14bd4a78e5086c53",
+    "sha256_at_export": "87260c6305623721e8eef6bc77498cdaa4a552606637de3e3e89efc43d12f661",
+    "reason": "Patched MusicXML conversion and upstream license notices",
+    "staged_sha256": "87260c6305623721e8eef6bc77498cdaa4a552606637de3e3e89efc43d12f661"
+  },
+  {
+    "path": "vendor/musicxml2hum/include/.download",
+    "source_path": "include/.download",
+    "source_revision": "5c47c178894bbf6493ae6efb14bd4a78e5086c53",
+    "sha256_at_export": "951c84a0b1e5ab53d03d2c5c1422a059dfd2f894a6e0865e0d5c055e2ad74d65",
+    "reason": "Patched MusicXML conversion and upstream license notices",
+    "staged_sha256": "951c84a0b1e5ab53d03d2c5c1422a059dfd2f894a6e0865e0d5c055e2ad74d65"
+  },
+  {
+    "path": "vendor/musicxml2hum/include/humlib.h",
+    "source_path": "include/humlib.h",
+    "source_revision": "5c47c178894bbf6493ae6efb14bd4a78e5086c53",
+    "sha256_at_export": "f6413c0f4a537422f29d1104f4c5f37cc35197ca919550d989c0bba19d3b9101",
+    "reason": "Patched MusicXML conversion and upstream license notices",
+    "staged_sha256": "f6413c0f4a537422f29d1104f4c5f37cc35197ca919550d989c0bba19d3b9101"
+  },
+  {
+    "path": "vendor/musicxml2hum/include/pugiconfig.hpp",
+    "source_path": "include/pugiconfig.hpp",
+    "source_revision": "5c47c178894bbf6493ae6efb14bd4a78e5086c53",
+    "sha256_at_export": "ba69e9b2940e6164c098b44382aa759fd751108c647b530291df8f78c402ef04",
+    "reason": "Patched MusicXML conversion and upstream license notices",
+    "staged_sha256": "ba69e9b2940e6164c098b44382aa759fd751108c647b530291df8f78c402ef04"
+  },
+  {
+    "path": "vendor/musicxml2hum/include/pugixml.hpp",
+    "source_path": "include/pugixml.hpp",
+    "source_revision": "5c47c178894bbf6493ae6efb14bd4a78e5086c53",
+    "sha256_at_export": "92dbe52350ad93d3ca2296ea29bb7d88c8057e506d358518e85366e94ebc18d5",
+    "reason": "Patched MusicXML conversion and upstream license notices",
+    "staged_sha256": "92dbe52350ad93d3ca2296ea29bb7d88c8057e506d358518e85366e94ebc18d5"
+  },
+  {
+    "path": "vendor/musicxml2hum/src/.download",
+    "source_path": "src/.download",
+    "source_revision": "5c47c178894bbf6493ae6efb14bd4a78e5086c53",
+    "sha256_at_export": "1113246cf7e36d6b34ec43aaf3e7503b8e48198a76a237a73b583a76cf56d99b",
+    "reason": "Patched MusicXML conversion and upstream license notices",
+    "staged_sha256": "1113246cf7e36d6b34ec43aaf3e7503b8e48198a76a237a73b583a76cf56d99b"
+  },
+  {
+    "path": "vendor/musicxml2hum/src/humlib.cpp",
+    "source_path": "src/humlib.cpp",
+    "source_revision": "5c47c178894bbf6493ae6efb14bd4a78e5086c53",
+    "sha256_at_export": "3092c2f1742cca5502d9137ce0f00c090c2320ddfbcc59117da64c5a565403eb",
+    "reason": "Patched MusicXML conversion and upstream license notices",
+    "staged_sha256": "3092c2f1742cca5502d9137ce0f00c090c2320ddfbcc59117da64c5a565403eb"
+  },
+  {
+    "path": "vendor/musicxml2hum/src/musicxml2hum.cpp",
+    "source_path": "src/musicxml2hum.cpp",
+    "source_revision": "5c47c178894bbf6493ae6efb14bd4a78e5086c53",
+    "sha256_at_export": "2ec68350546626605520aff1ed68a00bc8a2bc8b347a9c72cf021f9236bace64",
+    "reason": "Patched MusicXML conversion and upstream license notices",
+    "staged_sha256": "2ec68350546626605520aff1ed68a00bc8a2bc8b347a9c72cf021f9236bace64"
+  },
+  {
+    "path": "vendor/musicxml2hum/src/pugixml.cpp",
+    "source_path": "src/pugixml.cpp",
+    "source_revision": "5c47c178894bbf6493ae6efb14bd4a78e5086c53",
+    "sha256_at_export": "e9099d7386d1da7ae81d937f3d00ddad579da710aa41f4bc39bd562098374f63",
+    "reason": "Patched MusicXML conversion and upstream license notices",
+    "staged_sha256": "e9099d7386d1da7ae81d937f3d00ddad579da710aa41f4bc39bd562098374f63"
+  },
+  {
+    "path": "tests/baselines/test_uncertainty.py",
+    "source_path": "tests/baselines/test_uncertainty.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "de19c55bbcbf4245b95c0fc96c2808364d0d0f05cd8c8085e288c0fa158ae537",
+    "reason": "Focused inference, checkpoint, failure-policy, and bootstrap verification",
+    "staged_sha256": "de19c55bbcbf4245b95c0fc96c2808364d0d0f05cd8c8085e288c0fa158ae537"
+  },
+  {
+    "path": "tests/baselines/test_scoring.py",
+    "source_path": "tests/baselines/test_scoring.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "13e26d7c7161a968d859c81dc8ffb14fbc8469d323ce3658c78c5f07fe3ffbfe",
+    "reason": "Focused inference, checkpoint, failure-policy, and bootstrap verification",
+    "staged_sha256": "13e26d7c7161a968d859c81dc8ffb14fbc8469d323ce3658c78c5f07fe3ffbfe"
+  },
+  {
+    "path": "tests/model/test_checkpoint_loader.py",
+    "source_path": "tests/model/test_checkpoint_loader.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "4c474fd0840474dcad0b684b5435920688ff3656b47b0b1ec6cf851f5eb681db",
+    "reason": "Focused inference, checkpoint, failure-policy, and bootstrap verification",
+    "staged_sha256": "4c474fd0840474dcad0b684b5435920688ff3656b47b0b1ec6cf851f5eb681db"
+  },
+  {
+    "path": "tests/test_inference_runtime.py",
+    "source_path": "tests/test_inference_runtime.py",
+    "source_revision": "f5e6d5f2ac845b43b77bb6d5f0ef7300521e2006",
+    "sha256_at_export": "04912b5ef132f8a6e1cf9d8538a48b947e4b67074320c33e057fc2c00c67d109",
+    "reason": "Focused inference, checkpoint, failure-policy, and bootstrap verification",
+    "staged_sha256": "04912b5ef132f8a6e1cf9d8538a48b947e4b67074320c33e057fc2c00c67d109"
+  },
+  {
+    "path": "transcoda/grammar/dead_end_lookahead.py",
+    "source_revision": "6312f925",
+    "reason": "V2.1 constrained decoder, including timeline rule",
+    "staged_sha256": "87426c91d02ea040afeec7a2c64ea88e3948dd8d19125456645857809748ece9"
+  },
+  {
+    "path": "transcoda/grammar/spine_lineage.py",
+    "source_revision": "6312f925",
+    "reason": "V2.1 constrained decoder, including timeline rule",
+    "staged_sha256": "5ce8af99ec3b2ae4d7a6b98056382fc2189fc353f3b9903ad0111dbd16abc332"
+  },
+  {
+    "path": "transcoda/grammar/timeline_rule.py",
+    "source_revision": "6312f925",
+    "reason": "V2.1 constrained decoder, including timeline rule",
+    "staged_sha256": "3a324f4afcf1ebc67260b57c85770f1729c0ce0c312537ccf056c0031972b3f1"
+  },
+  {
+    "path": "pipelines/datasets/generation/continuations.py",
+    "source_revision": "af54873424de33cd982bfd47ba815416b3bb3edf",
+    "reason": "V2.1 label and continuation pipeline",
+    "staged_sha256": "169b6d3069bbdb422e0c442d369942db0b09400a4276f04678a586aac29f10ae"
+  },
+  {
+    "path": "crates/generation_helpers/src/continuation_prepare.rs",
+    "source_revision": "af54873424de33cd982bfd47ba815416b3bb3edf",
+    "reason": "V2.1 label and continuation pipeline",
+    "staged_sha256": "b4df322f147c42900c66edfd5e66e46686a96fab0b10ab8a6cc8366a336f5f08"
+  },
+  {
+    "path": "crates/generation_helpers/src/meter_concat.rs",
+    "source_revision": "af54873424de33cd982bfd47ba815416b3bb3edf",
+    "reason": "V2.1 label and continuation pipeline",
+    "staged_sha256": "24686dd77fd1ca727a7a4b8cd1e12b93bcaad27210e260ad3bd7b8aa8617e901"
+  },
+  {
+    "path": "vendor/kern_parser/.gitignore",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "50fe6562f801f733ccef57875a644eb9031927a462295c4e608a12b9f4e75e5e"
+  },
+  {
+    "path": "vendor/kern_parser/Cargo.lock",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "9d75432bc7e96b1176323d3dab5cdb0a9cef2a06652ce45326f7217db3c66182"
+  },
+  {
+    "path": "vendor/kern_parser/Cargo.toml",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "f3c174996fc3c5d341626c84a912e471bea80607c9135b6178b54105ffe4c05f"
+  },
+  {
+    "path": "vendor/kern_parser/LICENSE",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "c0ea4a896d2c8c394b29f9427589996db826cd501c512279ff0ed3ef48fabbe5"
+  },
+  {
+    "path": "vendor/kern_parser/NOTICE",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "ce48161da08e3a1f5b89fbba73a8396b6e14ad9231e4c39401627c9f64974f25"
+  },
+  {
+    "path": "vendor/kern_parser/README.md",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "0fee3ecbc462668ae5dae396599546784d6cb986a579e86018715ef08bc25c9c"
+  },
+  {
+    "path": "vendor/kern_parser/THIRD_PARTY_NOTICES.md",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "dc4332b475849bca9d652ebfebb8208f43ae61a6c5d696645341915b57f04748"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/accidental_display/canonical.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "0c57bd3e51da680532b9b88185f080140df1c31474764979a5bbf014e714c34e"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/accidental_display/hidden.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "93a8e4e443df3fb85420dd9ef04e3875922a3d0080e398745cab274c72ae654e"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/accidental_display/layout.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "bf834afd7dfa0d4333d99170c4c4f069d68de351cf4ff1f9f626cbd282280f35"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/accidental_display/rest_layers.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "af389515ff89bfb22c926489d58a0290b7b76b33b84bd0fe709302b9abd53b3f"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/accidental_display/tremolo.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "26d98597531d229423a47cca69e4f3ae9d94811c37123d6a06f7a34263702132"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/accidental_display.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "a83daf05a065c6c3fa66fdc30a2f4d9c674343abad0dc7fa21c09a0329c455b5"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/diagnostics_index/clefs.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "631511c11654bcc5136ddcc4bb300bac62462acaff50094bc7a85a2d76d971b7"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/diagnostics_index/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "eb75245b5dfb2c9d612a388c47b6e3b0ae7a3dd9a5570fa6a47a8ee4c27677d6"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/diagnostics_index/pitch.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "932f13bbd0237957b67c17724805623776f4a3b079590d29d34d55d1d610747f"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/diagnostics_index/staff.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "7e568cd3fe30820c60fa0db404259dabbd929302c3aaa4334aa3dea2a2520c06"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/document_regions.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "0d4efa6da86bd5b7c4d2037795b3af5ec94b28395ba4ffab630d079ffe744db9"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/explicit_accidentals.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "3534198b5ce32d7a02f6246eda7cff4a62ed63555cbb9353d303633944712339"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/initial_time_signature.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "e533a81313ae10facf04a7c6b53d12316f060a40fa5387a094979797afeed5c6"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/line_durations.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "4774e30cf997885461decd72a88c2c5a843007c162fb95bb9378507bf9b5e4eb"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/loose_end.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "088b542a9db4dee894af747cba6d1f7c98231fe3ebe79130915186422735ae79"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/measure_spans.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "75ee38fe5e59f8e3325192ac6bc84b8867bf336274d71b6bf3a987315050a9fa"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "cf59723c9ee12f9acc17fc1f731b77d0d9ea9030d6042fe8e7faf4d1a6009562"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/render_fit/config.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "1393d76bdbf509bde506a7c533a94cf65570c69ada610cce7e0ef541eb86c90c"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/render_fit/rendering.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "062460572191abeb09bfc965fafefc7f625f067784deaac09cf68f7c7b39a09a"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/render_fit/result.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "6fbb8487f7612648f8883ad4139951fb5e88e808f7da08d3dc652e78d2e210bb"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/render_fit/sampling.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "84ec10a426cc974b1d18425e4ca51238e09d012c39459ad023d004d09f46f224"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/render_fit/scoring.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "c58ff32a0b9011de67a105b85654d50ca8f2015e585c4cf82d561fd940464d64"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/render_fit/sizing.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "c70dd73c69b7d9e7d648668df9ae1fa430510e3863e280fcd2efd0689753d2a3"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/render_fit/tests.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "17830717276691410d064f42c8a45120529dd1ca5cbcdf31c43e32f81ae11ae0"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/render_fit.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "728c26b4aad5e77b3da483c9b61c65c06c2de1dd1bd44db7edbcc1d8201a6c4a"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/rendered_metrics.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "ae55987de560366a8c64c05bca66db3059bc57805652a187e4741c670ee9c0f9"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/semantic_events.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "e27f40bd582563e8952b10dbed7948469e3ca625270b640001fb2c4c90ac66b9"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/slur_spans.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "dc62db58ee7a36ca7444d28cdeef3417d9f95dfb5cc7e91c952fd90133d23a47"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/svg_geometric_aug.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "d1d02a40a603dff2f4c35e9cf3a28c81eec9d563dfced41e6765d35bca10f4fb"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/svg_overlap.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "823836c0d0ec471362f335a76f31b4b916f814830878c2fad68b58de9ef85fb7"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/svg_whitespace.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "1db042a0526bb12ee73b7e876f16afc950534998b90bda1870ab982376f9ecb3"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/tie_chains.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "23cdae23e1bf6727f3897162f4440de35cf0d5912d4bd33c8f5753c1bb4122ad"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/unison_heads.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "7eb2eed5dbbcb4303b9098369bafc58282913f1d023b2c73f48cc3773964f0cc"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/verovio_settings.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "2fc11e480838769aff9e56ba56b70561e2429d2f0cd290db9aab91b24dbf1f94"
+  },
+  {
+    "path": "vendor/kern_parser/src/analysis/written_measures.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "1d24aaba8c302964a88bed50b46552d097d3b7e622dae9bb87124b678d6027ee"
+  },
+  {
+    "path": "vendor/kern_parser/src/ast/barline.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "2ba77b3634184b9cb3ba075ff6b4099d13da5e8d8683ec682f89ab26d5a37895"
+  },
+  {
+    "path": "vendor/kern_parser/src/ast/data.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "58548eaff8f4683cb6c99d28d8a060665851cb8dd4fc8c1e3753e5a36a2a5e67"
+  },
+  {
+    "path": "vendor/kern_parser/src/ast/document.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "d4e765e75bc338f0267f0bc8ff304e376c6156a08ec92ed723206d6f86acecd2"
+  },
+  {
+    "path": "vendor/kern_parser/src/ast/dynamics.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "fc3193ae658cc40e853898a8416d62881e170c5f15dcdc915e804a70ea683154"
+  },
+  {
+    "path": "vendor/kern_parser/src/ast/fing.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "08563388b81c96497c87fcb7a1c465ceb7117f6bf033eb482e162b37333f699e"
+  },
+  {
+    "path": "vendor/kern_parser/src/ast/harmony.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "22e7ad2c30869a0f1288d390b3105d4cbe6ef2a3d040e4af7fec5a0fe9508647"
+  },
+  {
+    "path": "vendor/kern_parser/src/ast/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "5b982e0c8b44843a5df8915096b2980862533d80cba18d2e466432d9f8b530a7"
+  },
+  {
+    "path": "vendor/kern_parser/src/ast/note.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "cf78cab01830751892582cabfb8cff7643d65fb63db0ab803f17b7cea3351415"
+  },
+  {
+    "path": "vendor/kern_parser/src/ast/origin.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "2c63dbe66cec08175b69b33acbac4690f91602c576f9d72e5cf9d3113cd9ea1a"
+  },
+  {
+    "path": "vendor/kern_parser/src/ast/rest.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "1e889fb92e89519b4ed3380b0893a17c4579d6d841b651202c6ba5b2a3481c10"
+  },
+  {
+    "path": "vendor/kern_parser/src/ast/spine.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "b768b9cb651a711f569f25080c137f29b626ecbd27f125ab20148ae89958431c"
+  },
+  {
+    "path": "vendor/kern_parser/src/ast/tandem.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "84bf6cffe6b47e9437b10dde5128f6adf2bc6997bbd6d444941f4684cee9ca50"
+  },
+  {
+    "path": "vendor/kern_parser/src/ast/text.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "e1d031d7267e281c891f7f1af179296c1222991c9d18e22ab5b771b44d89348d"
+  },
+  {
+    "path": "vendor/kern_parser/src/augmentation/apply.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "fa720420f352be8a6a98dc97339aa79b0f55031549e314bd6a0cc46c7b55cc35"
+  },
+  {
+    "path": "vendor/kern_parser/src/augmentation/config.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "30bf08c58c10617d317e976f3a363db1e025c8f29d8d544fa5321ff425088266"
+  },
+  {
+    "path": "vendor/kern_parser/src/augmentation/event.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "33ff588185fb5771c2299934faa7b82182e591ef4dd66d5e7afdee53ba35470c"
+  },
+  {
+    "path": "vendor/kern_parser/src/augmentation/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "5f342e939bee3024975c603c26bf5b8ef0c25b5dcfe34e01b7dd9d09d4a7fa90"
+  },
+  {
+    "path": "vendor/kern_parser/src/augmentation/plan.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "331caa0285a73ec8c142e128c0e706b9edbbe86a630f5d3e3bbd0dd85592b7ee"
+  },
+  {
+    "path": "vendor/kern_parser/src/augmentation/profile.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "b37c02e215d012204b115546ae893230ebdcd7ecbf664cdccb3f871ac76272f5"
+  },
+  {
+    "path": "vendor/kern_parser/src/augmentation/sample.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "0e788a3590cda693a18e2e93bad0d8e5243b7352d75e1a356f3505aa416c6add"
+  },
+  {
+    "path": "vendor/kern_parser/src/batch/input.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "3440695c78e2b487d3ad2159f450475b553164c84d90dcc874013617707c0773"
+  },
+  {
+    "path": "vendor/kern_parser/src/batch/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "f12eee252eb749e43dd3b131de7746b70878f9327f2829ed64cb6c979ef40892"
+  },
+  {
+    "path": "vendor/kern_parser/src/check/acknowledgements.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "4aab2228029cbe42f5688f9609e960d8656666b17eb52edb0f5faa13e9823e11"
+  },
+  {
+    "path": "vendor/kern_parser/src/check/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "b6940fe700def49bcab260a1428aaa087916b18a15c30784815ba44f8f79557f"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/concatenate_dir.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "eb00ef882a4a2333ad11197fc6433629b53dd2151b2827337676ba1430c7bad2"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/generate_layout_targets.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "8f87b2d5e035fe7e262ea0a94f9ee8b3f416728903ac25b6fdda02d5dd372690"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "6e7a7851a61513bd61d29c368f210e0c0cf1ef1aa6dcde7c2a3ffc0d952a02e6"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/normalize_dir.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "e8d122a0cccd1aa5d1bce197061ff234f14aeb0f59df673f96ad39d695148a43"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/quality_filter/tests.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "aed2aaee98a13028c846aab5760082a3a40cc1bcce73136350da989a7a510d11"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/quality_filter.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "dc5b9aa08443473538323a90dcf0ec287c6b64d6fcb05482fc4968adec0fa643"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/render_settings_search/output.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "88edefbda9b584a819b0873e239f8ee7d1c1c7b900577156aec94bd85709ba41"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/render_settings_search/profile.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "e18acf5baf91512cf6be4df4cc8adbe0b13684a49ee1a447655db6c1d95b455e"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/render_settings_search/row.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "6a0ae77b89af486056f2dd0af480019ce590528143d92e28c3df563488c87b04"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/render_settings_search/runner.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "f68002184dec3f30e2be9290389826fd76a50b8e48fe5a6953e404fa5f47d128"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/render_settings_search/service.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "8346938a2992f38a9aa938a95038b004d513bb506c07556a2503e99fe0aad219"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/render_settings_search/tests.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "fae859d72dd6b4d56010f114bbe005131cdc2c085916675de0e7d1634a3689b5"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/render_settings_search/worker.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "e2818c46546166d1448375cf527f19422ab6fd717fbbecb4330ca9cb07f94f99"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/render_settings_search.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "12fe4e5fb19c7e868c899801d84e99493410e9fd6fbeb16b15929cddd53c50c9"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/commands/serialize.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "32d0112f4b0d13c48446000a3b44046d88ebd2a037f13e181f7b5eefb8bac9ec"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/io.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "29a3f603bf07f7d4b2c5708ef031a38ecb702f503b1cc8afee1a81de050c2c3e"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "44dd7fc0865c4a13cc0c9d7eea2d5e56c1003f4c8c2a5bbe3dc7e2362ed81f73"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/preset.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "3eaa5c4e73794f871ec3c401dd81173c200a0d9ba07d4b040f52a9a3f3421dea"
+  },
+  {
+    "path": "vendor/kern_parser/src/cli/progress.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "c82530ec2cbba90109c73d6df16bc22b040366723457e7a78b9f2e0da6adf952"
+  },
+  {
+    "path": "vendor/kern_parser/src/concatenation/accept.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "48164587c6a9eb38ae96c51accc39272b9a0cbc6305c32e16ef73efcef87c14a"
+  },
+  {
+    "path": "vendor/kern_parser/src/concatenation/balancer.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "f5fc55b0fc9cd200b12e6707dcc49b46e0ee29c373225d36a749ca068a95b098"
+  },
+  {
+    "path": "vendor/kern_parser/src/concatenation/document.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "3df64ee128e7740c159b3e2a2d0d80fe9c73c8f80b1cbe46807d6803533d2c3e"
+  },
+  {
+    "path": "vendor/kern_parser/src/concatenation/filename.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "965d89dfa98b598e1059dc7120b71116327b91341741f51b451e87365978014a"
+  },
+  {
+    "path": "vendor/kern_parser/src/concatenation/generate.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "b55bd0d0e3b5f32780296d52cf34333a9130ef822692fa4c3c751d326122b3f9"
+  },
+  {
+    "path": "vendor/kern_parser/src/concatenation/manifest.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "a098588d4f6a8c751958ea7571efa9e651c8a3826b053ec1fab81ebe40025b7a"
+  },
+  {
+    "path": "vendor/kern_parser/src/concatenation/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "4a8d56aabdd7e2ce6c193243e3a8d2794c3968307a1335c354eb5e0419bdaec4"
+  },
+  {
+    "path": "vendor/kern_parser/src/concatenation/service.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "869553a1c2bccc11e5faf2e10e5ed281b273113c8028eadfe2ccde6ee913ad84"
+  },
+  {
+    "path": "vendor/kern_parser/src/concatenation/split_plan.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "4c84a5dc3da4464b3c40a3b8fbe209abad23defbbecbd3ae5af74e953958c8bd"
+  },
+  {
+    "path": "vendor/kern_parser/src/dataset_manifest.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "8de2fea68555c2ba71cdc25e9e32aaf45e2b83821f49a2853d1d71e96ecc183a"
+  },
+  {
+    "path": "vendor/kern_parser/src/document/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "ea61604c74e22dda39dfc28b8d1886ceb6d0d5c67e66eafcb879958cbb1c841f"
+  },
+  {
+    "path": "vendor/kern_parser/src/document_boundaries.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "33fe5ff16e86cfb497fb453b6a88168238320680fe07a77fd0ebba1e49f8087f"
+  },
+  {
+    "path": "vendor/kern_parser/src/error.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "ba7ee5585e6c4972e4985530c3717773411cb778c297f1c7034770afc9bf56a9"
+  },
+  {
+    "path": "vendor/kern_parser/src/initial_state.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "7978eefd358938e4762c7ec67fa568044479fdb0a44852a8bb8f5dca9f8c4f08"
+  },
+  {
+    "path": "vendor/kern_parser/src/layout_targets/meter_visibility.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "3186349fc0e02ea57fa2a86dbe7edfbc4bbf5cf97b3d90954819d239c6c58cf4"
+  },
+  {
+    "path": "vendor/kern_parser/src/layout_targets/staff_visibility.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "bd09c6a9e50feef1c1f7610b1f3ad105a6ec13e623e772f720a30f23922abcda"
+  },
+  {
+    "path": "vendor/kern_parser/src/layout_targets.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "f056e791242596cd92ec9e187a35b2f031032a7332e002667592554ad6b1af21"
+  },
+  {
+    "path": "vendor/kern_parser/src/lib.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "651377e2dd05edab6d939cfd7d7277ab0fadbf7efef88d7fe5f651cd4828ff6a"
+  },
+  {
+    "path": "vendor/kern_parser/src/line.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "60d094e1843e31c266d1548b0408abb32a4d570388a9a272f85a25554b9559b0"
+  },
+  {
+    "path": "vendor/kern_parser/src/main.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "2a324414bf6c741e8e7360e4e506aa92928b1140c971a9c2b15b02539a4b679b"
+  },
+  {
+    "path": "vendor/kern_parser/src/measure.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "ec95fcca7642ddb837d2465ffc18555609ab3a02938eaba94a415c22887b54f4"
+  },
+  {
+    "path": "vendor/kern_parser/src/meter.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "cf5a5e928619469a5b4945bba9fc1bb523b119933641cd8d948be37ac7955279"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/barline_spine_operations.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "c3cc8a65d03f8ada781cad0202dacf33c71021030ca833f5bc91f6522964389b"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/batch.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "25d04e086426350db94ab471d8c284c6ff5497bf7dc75253d5df1c5307dc3150"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/beam_spelling.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "315360e6dd324fbb42b904064d6bf4deb9eebe9621faaa222a14648a0bf57322"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/canceling_split_merge_regions.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "b801a6394c59e507e725bd1d6b87cc9c1a794c65b13d46fc424269c3469df236"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/canon/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "f0c4333a83fd34038d954f312e75854c4edf0c2bcbb539e124ce9cf624c6a1df"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/canon/schedule.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "0d67268211982238637b50a8b601a615895111daa77130af05558c17d9d88767"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/control_tandem_adjacency.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "4ffea7401d54ead5c5f38bdcbbc83292f6e6d563d16038a9f2ca3aaeae4f337d"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/dataset.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "6e378521d78ce1e722ba17cbd3b4cc7fa46c444355ca6542b3028d33e9eb6baf"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/dynamics.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "e4f3e60f69852998f47e38a773fee3208fc077f685e6f0f407b302b135634371"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/emitted_content_projection.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "47f269e9afadcefd92a252f8f8e2648267a5bbbe9e4d993a593f3e55fb2ce0bb"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/initial_header.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "5d0da97c2c0ad3405309f8e430b7ca186ec18871324014389b9d297bc155b910"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/interpretation_lines.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "11964c8fda0955cc513b9386fcf6fa1527a3514b908dd35c142518f8b8c8d67f"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/invisible_rest_compaction.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "7405a9284f430b7b319b8d510526199d4e8d10dc46354c33d7694f827fbc98f8"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/invisible_rest_measures.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "427edd792bdf164432915269f222ef9d49261c7e5af0e1426aed31809f2eeb98"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/invisible_rest_padding.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "90c11b7198975aa8dde1130160b53a5dbc76d3ae3644e85a5483ec78f44b8dbf"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/invisible_rest_slices.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "b5aa0585ffad72da426d67656609dcde949eade3f48925c1176e05449f442c10"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/invisible_rest_tokens.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "f29e36195d83b94e12a266112094fdfc07a433a9e59213a537ca83b28d0a203c"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/measure_grid.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "c22bff87423c9254f3a05383312af90e18bf0e0e2ada0f2f5affe93e21c61d12"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "e83d3ed8116a6d6f6c38337ce12315fdffaa56abcb19e29ec1b7330d4927166f"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/multi_measure_rests.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "155e8f5a59f0ce992fcf05566f958acd4ec51d1a4fd8205dc4b00191631d585d"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/null_lines.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "2c0b10d7f54076af51cf4ed7a1785f5b8533bfe14e14d93d6d0374ec6310799a"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/omr.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "25d21599004b086f84be56d8e4cf29f4750763d72fe4c984c313ffa63eae1204"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/redundant_state_interpretations.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "eafa7f2dec0d15f4d0a6a3435c91cc279c7cfee18a1f3fe8db1be4557e6f39e7"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/restore_final_staff_topology.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "7aaeb99126c823f8b7d5f1746d3cba3831c4dca284249567c916aa1e4c114c00"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/slurs.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "b504dd09b5a4fa8dc2dcf18be92771b9c365f22ad43f2d8ebf7dbc2adfebc775"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/spine_manipulator_lines.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "2668204733b686d6db7167eba0e47e51e75ca9e0f50ba1b380612b406033d168"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/spine_operation_interpretations.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "1f9354acbbd7e389c2d196f7d54e27dc6f4468d9202e51d6fe726f9f76d289b5"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/spine_topology.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "d1a1e13697c8b2e7463b0e7822754d1a259661ea8f68be97c438716904189092"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/superseded_interpretations.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "19ba641a4469958e8c51c932c2474f213cbcad51b39d2caf0e5b8179c908e04d"
+  },
+  {
+    "path": "vendor/kern_parser/src/normalization/ties.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "5e4560a6787c84e5c2d3afa108679ae9fe9adf5855efc4b5f5389984d4aeff78"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/barline.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "fda88ccc3ff4383a7c71dad5121abf2fbc1dfa49db9998e34acba47572361ccf"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/data.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "f682934edb0fc4db163600891d22842619e62d2044e806e3a6efc28d656b6b87"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/document.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "86615852cd5900528099c68bde2470d9c005952fc5870f1961f75049bbf5af90"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/finalize.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "798bced8cd533cc84a9298b86c7f3206f95ba4fba2771765063053742d19e29c"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/line.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "f75825e421d1af64cf25e8b477fc55a4ad6db44bf55a4b3ac40101576a8cd572"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "af98b9bcdce1fd771beeb112aa80e173f637dc49218f34e5345c3417be60cab8"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/spine_state.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "80330b661c316109ce890299e02ed45840c528db21185fc6c69ae88a01e971bc"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tandem.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "d16085dd5f69c31d013a6310bd159d87bf64cba7f3eac68a4e971ec4dad2aa73"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/barline.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "f2fbc0c8d636465861ee51954231b9459f383ac41bd5b706706481dc0d2a4f9f"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/chord.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "d1fee4f0ac237ccbe146b308a3a8729c7935a2f5e1dc3a7922cb52c51728068f"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/document.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "24078c70b0952c5fb80b12b86c8100d8d809b59eb2c01ea24736d5c0d893e06b"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/document_spines.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "6d4ed5c3db08dd4bd442c0d4529a0c5b403118f534f02219b5d7402c1e329ef9"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/dynam_tokens.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "2af0de08f1943cf06281920d6d79c3bbcc0d74900d1f72e90fa1faebe76d44b7"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/errors.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "165bb59403182ffaae9e2801f2efbf6b7a5887e7d2874da4aa33147f09335a96"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/grace.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "58cbff7901098e9ee03e8b4533f970ed3c16cd2d9893bd95605e0af9aaa40540"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/instrument.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "56ec29aa6f4aa5a87d5f5e6ec12ae5c98feb1b8f6bf8b17099cfde009c5a5a61"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/key.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "072558c406e3d64b8de967b05a51f65753b90f9523c70b8bfda997aec13fd127"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/local_comments.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "7929d9d41cfb6582fafdaf71fa2e2eeed7c0984cb601b4886302b1a4e3b87672"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/note.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "9654ff0a262b8d24bd159c5692722c9577fd5bcc0d4b5663660c59654b06bb58"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/rest.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "60c4256d19782033b4b98d7a5fac20ef52be49dbafcaf88fbbf610612fd6d8c2"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/spine.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "0ddd2470659a87179279b29b3e92006c0a4cf01fb0860743336b0d8e36bb32d4"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/system_break.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "bc4f4b7a7b4bb0eb132b9887f16f41a091f3ae382de5302dea23957bc99b6a8b"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/tandem.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "78356b9f5625d74135512c692b0bfb7f7f38c3363c2cd018e5eb9f679d89c038"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests/tandem_tokens.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "2ebd1b97ffbe620fea2edbcc395d80c4840ee58dd5ec13fabd5b8cfbf4dadbeb"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/tests.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "719659b7450270ea5bbb07c1726b33f5d53d1f8154b0d50b371344f6d442c22b"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/token/assemble.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "938b2ff9b0616c87d0328b196dbdd1715c1a60f692a9fe9cac193b790f215c52"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/token/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "5da01616e748fd1d902795d1f47344e25f83c98302a8663ec743fc05a15bdc6d"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/token/scan.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "98b9fa5e6d00bcfb9cebb890ebb7a2222365c6a245c71e163fb9336ca6adb06b"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/token/table.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "ee79aa6b98e95621ab4f28154260168a67f4b6275bc0cc03a399c9fc73d9cf20"
+  },
+  {
+    "path": "vendor/kern_parser/src/parse/token/tests.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "afe69c4ece1ad10100dd66d7e0917be1e065c2f85568df7ac7f4d005604b446b"
+  },
+  {
+    "path": "vendor/kern_parser/src/score/drawn.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "1ce5c0865483c447f2b41f63327598a7edd7569954bbddd698d8b5331d541c9f"
+  },
+  {
+    "path": "vendor/kern_parser/src/score/key_cancellation/tests.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "ef9297ac535aea3b91fe49b05a50a37021003caaea17e702a829fc78cc6b497f"
+  },
+  {
+    "path": "vendor/kern_parser/src/score/key_cancellation.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "cfbc426fb6adb3251b6ac9dcd21f95a1861abcac1910e0b84d75e7f482cbab88"
+  },
+  {
+    "path": "vendor/kern_parser/src/score/layout.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "1267c02bc503560a456dfb16b9893a9cb7fbd4241e1cb3f8069f9b949919a3ee"
+  },
+  {
+    "path": "vendor/kern_parser/src/score/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "af51d21a1a6f185cddd568904be86593b048c4bf22db12bc79106c61eb3bf07b"
+  },
+  {
+    "path": "vendor/kern_parser/src/score/staff.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "ee78520266bde27d73f2fdf5a94bb8907bbade11e0be17ef296a45e8d3c013e5"
+  },
+  {
+    "path": "vendor/kern_parser/src/score/state.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "932ea38bd51918837f902b5c8da0021e18666cb6a7d7ddd81b68d81ee7f0c579"
+  },
+  {
+    "path": "vendor/kern_parser/src/score/tests.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "9a4c36d9177a6cab350277b43f4e66c8ef6baf23291020281ad38565cd6f4b1f"
+  },
+  {
+    "path": "vendor/kern_parser/src/score/topology.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "1d84935286e882e4ae2ca748f8bb6284a0a672fe84ec8f4943abb5bfd32e4f93"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/bar_numbers.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "619fb7f0c9c60368d4072243703b492d7f74b79acf41be1de15a5c205d007bb5"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/barline.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "fdf25b17aec6cbeb3a48259074a0a632eb9d2f62a024187a27c90870301fece4"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/batch.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "6ac61463132838253766e6d57a9a673d412d3f322e64406c5a1ddb368aafe059"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/content_policy.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "d2fc3c8d9f04bef7957cf8ac1044d54bcafeeecf2c8a9b39952d7a3387d1748f"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/jsonl.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "16e02c66fc77ef55c1aced46dd7af17a566350b0919425c7474e5347efd7c365"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "a653b2b1a986fb9d043191d9cb0f9e673da5c1cbd42a6f40674f3c87e2b308e9"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/omr/document.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "7c09c90f2e0ddfd85e0cde03ea2fa8160f9cfd87bca1b7fd0df2795c9991cb98"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/omr/lines.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "0291c8ab7dff041dce92356360ff3ad5a0a57f8b5f992a58c8f90c847b8cf8e3"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/omr/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "0925faf1b4ecbacf906fd6ea556983b7adc6468644f8d0514473c5003476a049"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/omr/options.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "13a894b0c0a00b8cf3b9049135328838e7da75289ef8de75e36f9daa7d8244f9"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/omr/tokens.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "fd3557cf58351ba3b17c7bf4fb66185450866df9fff1a95537826a38f03bd60c"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/render/cross_staff.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "ad161a59d8523c86d9a9cad754db4420646049b409b64b793694650d7ba43aaa"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/render.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "17dffc14816d9aed9d261ae6b37deae52aa2606aed8f4daa0a87273ddf30f406"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/staff_signatures.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "669a0f0061f5bb00cf6b555a8c52ccd7490734c37d81285bde53e844d43a4762"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/tandem_policy.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "5e4d15421c281b3113d5ef7660664a460fbc280ded83543fea73eab73b08a376"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/token.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "915ef42ab283fbb9298895057b36d1182ec964e450fd19f94b14821ea4eab8f7"
+  },
+  {
+    "path": "vendor/kern_parser/src/serialize/transcoda_v2.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "37dec426d491e856d0c0a12647e1e94a623ebf2cfd765996f18e893328cd46bc"
+  },
+  {
+    "path": "vendor/kern_parser/src/transforms/layout.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "8059490604cf19aacffd6e7752a0873f1de0d308832193eb1ecad02922184f87"
+  },
+  {
+    "path": "vendor/kern_parser/src/transforms/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "33985bd17842a0eda13db1be45cf0594fc4373195083564d13d0d2ecf63e4dc5"
+  },
+  {
+    "path": "vendor/kern_parser/src/transforms/pad_final_measure.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "3ed5f81137777f4f30377e5bd19daf92a7fca4431a6d585b3ff0a8154d93ed6f"
+  },
+  {
+    "path": "vendor/kern_parser/src/transforms/split.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "99f83589e1fbb68385b53bba3ed6cfa4e1d37ff73836fb44b5c72df106d794cd"
+  },
+  {
+    "path": "vendor/kern_parser/src/types.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "f936d01f22407e7c48cc5ea1038cdb52229df89c243d5f8e845d282bff68307b"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/beam.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "60af08d7dc602cb2392b6b1df66696952fc457b6b210f290119f02e4b6c10901"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/clef_barline.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "3f91e8e53025c43d97a410ce6c57d2c4d1209125b71c4d92c7136d9087900237"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/cross_staff.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "c98f6dea09f666e37dbe16b02d14a27b376b3e7f02e11e9bdee319223fe9c6de"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/duration_state.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "7835add28ab4c7aa23153a0c8a08ca3842820aa18b9a43caa616f2d0c1b64398"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/dynamics.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "866d7638789ce5aa0b51b3a3264e7f925fe90ade6791e78ab1cc5689ce0915ee"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/fermata_stack.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "5f43f2dc0f4f2351942016916baa37c5e8d417b801219fbf257d6fea77a759bd"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/medium_single_page.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "024ff3f03595f15cc9d1382d837818ad884d4d4fcef49536069e861d8d40d73d"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/meter_boundary.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "00f553f94fccfb9259213568df3b3830d6f4b3f629a01acbc9db5b18a41455c6"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/mod.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "d440ae6f9014be3ff1c130a01eb6a651f7fada7186964b925d6ef403a83646ef"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/ornament.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "aefe2111cddb46d84455619773f7dd05d569d69d5ae333581f16651242af123f"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/quality_filter.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "2e9e70675e5bb91121d8617411244281ce22215465b8f40f460157405bbc7daf"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/rest_placement.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "3df1750e7a1a55c9dca25a110532e2d3abaf12171c07f1a2210f687336508fcc"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/rhythm/boundary.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "685ac22b9dc0a1e972c44b3cee439dd5c2d3b292c81705b126023af4453fdff0"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/rhythm/state.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "47bc80f51771c0bf057f593ef3b66d58c2b2935360673b4ab43de2cd073d88a0"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/rhythm.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "5a044a9a28d523836adaaeaef37539200cd3ee36435015db58a6e3315cb20187"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/runner.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "25e88354790fa7914464e242def4b3ad6ff05022211a38bfcb97f9e587bc33f6"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/slur.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "e06ce178b95ca5b2a689d02d874aca0f0322cc92090a50c15a6a7e12b8ef4e1c"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/tie.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "2f32873e4f99801cd6cc64330b1d1a55671e19107106318e52199b491c2f9585"
+  },
+  {
+    "path": "vendor/kern_parser/src/validation/token.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "8f0995d13c7697d18f6530f9511eb2978b546b14fe2616da34e0be2c0ccde4d5"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/barline_fermatas.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "f3eacc51242002691f9b2c0445758254e7692323506c26caa98df7002de21746"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/continuation_meter.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "53e3832e1dbb5c2c0d656dfe8d1b7f6636ea563aac40f2e9dbf73a8cec609aa8"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/cross_staff.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "10171364d2d02afe98f595328551a7208261ebc14c4f16bebdfd5e6a60e94c4c"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/editorial_accidental_serialization.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "3c1bfed0fc702ada03bdd46243dd1bb5abad8280bee81e813c2f7c48cc9a0236"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/label_alignment.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "90a24869f9f5c17d729bf36cd395b38d275f433cc950f460d9e8a3b9be7a4819"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/main.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "a0a9c1cf4cac5300f556a1f0a37ef2d51712d2fafd40baf2c73ef40c934b1933"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/mixed_tandem_records.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "524b646ced1bba95d5c7d0d937a10e0e2059ae05678d69fd950bd04a120b58ae"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/ottava_closer_validation.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "841f3f27c5228d17b19eaa0dff2d814d52eb463fbf72782ece861ee65a6be152"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/repetition_and_tuplet_breaks.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "b9a56faff4898c2cb2b05c2f2a9041ea745a6d160e652c9bfbafadf125aae974"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/rest_placement.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "bbc025b6e57c20edc41b64455a118525872dedec9a05df95e04033f32c20385e"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/serialize_idempotency.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "685caf0abceaff1595da2606d6295bdcc089534c9c9f4ef8907902362c06b5c6"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/staff_placement.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "90c1a3c4e32499c1ede1032987e36156bf586c9f3a21cc95bad8896b7ec33ed6"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/transcoda_v2_pipeline.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "14b1e31b3cae862d5943bffffe05aab58bae1a42c6ec15abd4c67f7c12c176fe"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/transcoda_v2_properties.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "f681f98b991813718e9dde6357cae3b2e345e1534626cb71765d4501f36d5826"
+  },
+  {
+    "path": "vendor/kern_parser/tests/it/tuplet_brackets.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "b7e031b61fad5a243c1471c09ad0576da1a824d6978246c1ec817004e21db7df"
+  },
+  {
+    "path": "vendor/kern_parser/tests/support/accidental_display_rules.rs",
+    "source_revision": "38563829dbcbd33e9df8aaca6286ad359406123a",
+    "reason": "Public data-preparation subset; derived from 4234a4f3d62948550bc2cfeb28d95f9dd231b1b0",
+    "staged_sha256": "0f85fd8497534efc4fbeda05348436dd3384c7e5b19a3bea748ba915b9995b25"
+  }
+]

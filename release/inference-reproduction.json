@@ -1,0 +1,374 @@
+{
+  "device": "cpu",
+  "selection": "Five shortest public targets by character count; three shortest PDMX and two shortest GrandStaff targets. Ties break by sample ID. A runtime reproduction sample, not representative accuracy.",
+  "input_source": "Evaluated local input manifests and images; local release snapshots decode to exactly the same RGB pixels",
+  "settings": {
+    "dtype": "fp32",
+    "max_length": 2048,
+    "repetition_penalty": 1.1,
+    "length_penalty": 1.0,
+    "beam_width": 3,
+    "constrained_strategy": "greedy",
+    "timeline_rule": true,
+    "normalize_layout": false,
+    "whitespace_trim": false
+  },
+  "comparisons": [
+    {
+      "cohort": "public",
+      "sample_id": "imslp__chopin-ballade-no1-op23-imslp731160__p0007",
+      "image_sha256": "cde432c72127bd89b8b3f925ce37b29e4341de4b0abf8a8471c5ccfd78ca6c98",
+      "embedded_source_image_sha256": "d49b4b541b1c7a09caa59cb8119f7f8a447a9c7354eb903e70c41cc7468fcb19",
+      "target_characters": 27,
+      "mode": "constrained",
+      "exact_match": true,
+      "tokens": 10,
+      "expected_sha256": "4ee0d5acfe0fad7165ee0bf88ebedb22fcbace79fa62e77a504fe4e715f51d6a",
+      "actual_sha256": "4ee0d5acfe0fad7165ee0bf88ebedb22fcbace79fa62e77a504fe4e715f51d6a"
+    },
+    {
+      "cohort": "public",
+      "sample_id": "imslp__chopin-3-ecossaises-op72-no3-imslp11073__p0003",
+      "image_sha256": "f0bf257244e23a8060803b2295431af47ab6485b584d9a61f142817634b916e7",
+      "embedded_source_image_sha256": "39d56ad748be11360a95a13ae634164b3857a71eb1192f139d4fa9e2a59d8cbf",
+      "target_characters": 87,
+      "mode": "constrained",
+      "exact_match": true,
+      "tokens": 55,
+      "expected_sha256": "3f50d72f7adfd7917315435f588d9abb2316a3a4493eef373b7283feba139c0b",
+      "actual_sha256": "3f50d72f7adfd7917315435f588d9abb2316a3a4493eef373b7283feba139c0b"
+    },
+    {
+      "cohort": "public",
+      "sample_id": "imslp__beethoven-piano-sonata-no8-op13-beethoven-ludwig-van-imslp934109__p0002",
+      "image_sha256": "1e5686d4766f32a72f587ead4d1e6f6ba888f5239c3ce655b75d9476120b157b",
+      "embedded_source_image_sha256": "d28b572886c9f57ff558a643db5d595bdfef6cd4272061f232712db41a63e806",
+      "target_characters": 139,
+      "mode": "constrained",
+      "exact_match": true,
+      "tokens": 61,
+      "expected_sha256": "df85dc4bb35a7ad3847a312acf944b10960ccaef0a830019e2146c6f3d62272a",
+      "actual_sha256": "df85dc4bb35a7ad3847a312acf944b10960ccaef0a830019e2146c6f3d62272a"
+    },
+    {
+      "cohort": "public",
+      "sample_id": "imslp__chopin-3-nouvelles-etudes-b-130-imslp1002125__p0005",
+      "image_sha256": "6a17ace956e34dd5f4877018bbb8bd1bc69ae8bb0b018abed78cc9bbdc355fc5",
+      "embedded_source_image_sha256": "a06f2c3d16e57a79634e17d4a772abc409627f87444fc6390a9adc479618a022",
+      "target_characters": 194,
+      "mode": "constrained",
+      "exact_match": true,
+      "tokens": 56,
+      "expected_sha256": "41a85a1045d08be5ed8bab921244b3e82801a7b1106bc583e381a969ae2d4d54",
+      "actual_sha256": "41a85a1045d08be5ed8bab921244b3e82801a7b1106bc583e381a969ae2d4d54"
+    },
+    {
+      "cohort": "public",
+      "sample_id": "imslp__chopin-2-mazurkas-b-16-imslp410927__p0005",
+      "image_sha256": "e6a79fd2f75ceb2902a09f46421adcf27f49ed9df93364d01f5e464b7562166d",
+      "embedded_source_image_sha256": "c01f9cb70cfe026bfbda28ebcacdfc25319651ca7ce98bd1d43e62635afbb6a6",
+      "target_characters": 527,
+      "mode": "constrained",
+      "exact_match": true,
+      "tokens": 243,
+      "expected_sha256": "073872ddc922567b1ea4ab13b30eac70e90de48afb89a82d96cfb3f95b467069",
+      "actual_sha256": "073872ddc922567b1ea4ab13b30eac70e90de48afb89a82d96cfb3f95b467069"
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-pdmx-concat_001559_6609ee645ce6",
+      "image_sha256": "8586dd43996cf8bc9bb866266cad50c55d740f1ed65624fad507e45fec00439d",
+      "embedded_source_image_sha256": "43cc094b7e52d45485ec5ddf35999fbb7699f39a657f8309ace9161ee8ad09a1",
+      "target_characters": 114,
+      "mode": "constrained",
+      "exact_match": true,
+      "tokens": 56,
+      "expected_sha256": "59e385f28146ee2673bab064d0c57f80869a89f5fe3ec8bde145afc20b20b0c1",
+      "actual_sha256": "59e385f28146ee2673bab064d0c57f80869a89f5fe3ec8bde145afc20b20b0c1"
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-pdmx-concat_000822_a55ccb19ebc2",
+      "image_sha256": "0482eba9a7b6959d8ea72bd807de6484a48b1f0c808f45ffeade7ed99387c714",
+      "embedded_source_image_sha256": "975a344233f33c6994b35b14c4db7fdca0629ebd8124cb6eb73d19344b2c4b6e",
+      "target_characters": 135,
+      "mode": "constrained",
+      "exact_match": true,
+      "tokens": 70,
+      "expected_sha256": "e22f9deeda9ab793ad43530a904b612383426464cd71ba87378d04d145327956",
+      "actual_sha256": "e22f9deeda9ab793ad43530a904b612383426464cd71ba87378d04d145327956"
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-pdmx-concat_001066_7e1047adb1fa",
+      "image_sha256": "636d1e33b69a9a2417e512d57809dddec62453ac4a07aa1ac442fd567c1ad6a9",
+      "embedded_source_image_sha256": "1479f1f003daf7af68235171afa40a2212a20188d15de22328decceab098aa81",
+      "target_characters": 161,
+      "mode": "constrained",
+      "exact_match": true,
+      "tokens": 82,
+      "expected_sha256": "eaa31577681254decec58398a1a7b7dff1f5e3b74d1d3c3662175cc82cd0935e",
+      "actual_sha256": "eaa31577681254decec58398a1a7b7dff1f5e3b74d1d3c3662175cc82cd0935e"
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-grandstaff-concat_000692_f8f8bf7af71b",
+      "image_sha256": "29646a0f43a1fab432e4660e97b78ca1211317fc993ac65e13ec6c853045ad85",
+      "embedded_source_image_sha256": "281ef73de44145f80b5f38eb5738bdcf69d21e7dcfda4aa24cdf818ebf2101b1",
+      "target_characters": 192,
+      "mode": "constrained",
+      "exact_match": true,
+      "tokens": 105,
+      "expected_sha256": "43ec14c9cd0ab6e5fdbb3382743a475a97d7a53558f38b4fa0818b97ae1c5815",
+      "actual_sha256": "43ec14c9cd0ab6e5fdbb3382743a475a97d7a53558f38b4fa0818b97ae1c5815"
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-grandstaff-concat_000966_6235ee37ab8e",
+      "image_sha256": "d0b6be3d2515338beb75fc7fab583398fabc05937f1fcf4fdbcb7b75fc09e61c",
+      "embedded_source_image_sha256": "0ef28d6cfd71f4079467eea1f30c3b809527d4b9bcd4e54d3355e4b57d1c66fe",
+      "target_characters": 201,
+      "mode": "constrained",
+      "exact_match": true,
+      "tokens": 91,
+      "expected_sha256": "e682ea841bde9b6bd70ad07c4ce6da4d2037aab5f03fc3f8e699495624d4d081",
+      "actual_sha256": "e682ea841bde9b6bd70ad07c4ce6da4d2037aab5f03fc3f8e699495624d4d081"
+    },
+    {
+      "cohort": "public",
+      "sample_id": "imslp__chopin-ballade-no1-op23-imslp731160__p0007",
+      "image_sha256": "cde432c72127bd89b8b3f925ce37b29e4341de4b0abf8a8471c5ccfd78ca6c98",
+      "embedded_source_image_sha256": "d49b4b541b1c7a09caa59cb8119f7f8a447a9c7354eb903e70c41cc7468fcb19",
+      "target_characters": 27,
+      "mode": "beam",
+      "exact_match": true,
+      "tokens": 10,
+      "expected_sha256": "4ee0d5acfe0fad7165ee0bf88ebedb22fcbace79fa62e77a504fe4e715f51d6a",
+      "actual_sha256": "4ee0d5acfe0fad7165ee0bf88ebedb22fcbace79fa62e77a504fe4e715f51d6a"
+    },
+    {
+      "cohort": "public",
+      "sample_id": "imslp__chopin-3-ecossaises-op72-no3-imslp11073__p0003",
+      "image_sha256": "f0bf257244e23a8060803b2295431af47ab6485b584d9a61f142817634b916e7",
+      "embedded_source_image_sha256": "39d56ad748be11360a95a13ae634164b3857a71eb1192f139d4fa9e2a59d8cbf",
+      "target_characters": 87,
+      "mode": "beam",
+      "exact_match": true,
+      "tokens": 42,
+      "expected_sha256": "faa2d74661e5757a36c16342b5c2804611138f09bcc2e9743078e6714c99e314",
+      "actual_sha256": "faa2d74661e5757a36c16342b5c2804611138f09bcc2e9743078e6714c99e314"
+    },
+    {
+      "cohort": "public",
+      "sample_id": "imslp__beethoven-piano-sonata-no8-op13-beethoven-ludwig-van-imslp934109__p0002",
+      "image_sha256": "1e5686d4766f32a72f587ead4d1e6f6ba888f5239c3ce655b75d9476120b157b",
+      "embedded_source_image_sha256": "d28b572886c9f57ff558a643db5d595bdfef6cd4272061f232712db41a63e806",
+      "target_characters": 139,
+      "mode": "beam",
+      "exact_match": true,
+      "tokens": 60,
+      "expected_sha256": "84f1308c0e4308656a7a2a8ed7765b2f48b08af84b16523f46e585a23debc06e",
+      "actual_sha256": "84f1308c0e4308656a7a2a8ed7765b2f48b08af84b16523f46e585a23debc06e"
+    },
+    {
+      "cohort": "public",
+      "sample_id": "imslp__chopin-3-nouvelles-etudes-b-130-imslp1002125__p0005",
+      "image_sha256": "6a17ace956e34dd5f4877018bbb8bd1bc69ae8bb0b018abed78cc9bbdc355fc5",
+      "embedded_source_image_sha256": "a06f2c3d16e57a79634e17d4a772abc409627f87444fc6390a9adc479618a022",
+      "target_characters": 194,
+      "mode": "beam",
+      "exact_match": true,
+      "tokens": 56,
+      "expected_sha256": "41a85a1045d08be5ed8bab921244b3e82801a7b1106bc583e381a969ae2d4d54",
+      "actual_sha256": "41a85a1045d08be5ed8bab921244b3e82801a7b1106bc583e381a969ae2d4d54"
+    },
+    {
+      "cohort": "public",
+      "sample_id": "imslp__chopin-2-mazurkas-b-16-imslp410927__p0005",
+      "image_sha256": "e6a79fd2f75ceb2902a09f46421adcf27f49ed9df93364d01f5e464b7562166d",
+      "embedded_source_image_sha256": "c01f9cb70cfe026bfbda28ebcacdfc25319651ca7ce98bd1d43e62635afbb6a6",
+      "target_characters": 527,
+      "mode": "beam",
+      "exact_match": true,
+      "tokens": 327,
+      "expected_sha256": "17528f47ff33b92ccc9ba170101b48a5753ad801fea29cfa66616ade270804ca",
+      "actual_sha256": "17528f47ff33b92ccc9ba170101b48a5753ad801fea29cfa66616ade270804ca"
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-pdmx-concat_001559_6609ee645ce6",
+      "image_sha256": "8586dd43996cf8bc9bb866266cad50c55d740f1ed65624fad507e45fec00439d",
+      "embedded_source_image_sha256": "43cc094b7e52d45485ec5ddf35999fbb7699f39a657f8309ace9161ee8ad09a1",
+      "target_characters": 114,
+      "mode": "beam",
+      "exact_match": true,
+      "tokens": 56,
+      "expected_sha256": "59e385f28146ee2673bab064d0c57f80869a89f5fe3ec8bde145afc20b20b0c1",
+      "actual_sha256": "59e385f28146ee2673bab064d0c57f80869a89f5fe3ec8bde145afc20b20b0c1"
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-pdmx-concat_000822_a55ccb19ebc2",
+      "image_sha256": "0482eba9a7b6959d8ea72bd807de6484a48b1f0c808f45ffeade7ed99387c714",
+      "embedded_source_image_sha256": "975a344233f33c6994b35b14c4db7fdca0629ebd8124cb6eb73d19344b2c4b6e",
+      "target_characters": 135,
+      "mode": "beam",
+      "exact_match": true,
+      "tokens": 70,
+      "expected_sha256": "e22f9deeda9ab793ad43530a904b612383426464cd71ba87378d04d145327956",
+      "actual_sha256": "e22f9deeda9ab793ad43530a904b612383426464cd71ba87378d04d145327956"
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-pdmx-concat_001066_7e1047adb1fa",
+      "image_sha256": "636d1e33b69a9a2417e512d57809dddec62453ac4a07aa1ac442fd567c1ad6a9",
+      "embedded_source_image_sha256": "1479f1f003daf7af68235171afa40a2212a20188d15de22328decceab098aa81",
+      "target_characters": 161,
+      "mode": "beam",
+      "exact_match": true,
+      "tokens": 82,
+      "expected_sha256": "eaa31577681254decec58398a1a7b7dff1f5e3b74d1d3c3662175cc82cd0935e",
+      "actual_sha256": "eaa31577681254decec58398a1a7b7dff1f5e3b74d1d3c3662175cc82cd0935e"
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-grandstaff-concat_000692_f8f8bf7af71b",
+      "image_sha256": "29646a0f43a1fab432e4660e97b78ca1211317fc993ac65e13ec6c853045ad85",
+      "embedded_source_image_sha256": "281ef73de44145f80b5f38eb5738bdcf69d21e7dcfda4aa24cdf818ebf2101b1",
+      "target_characters": 192,
+      "mode": "beam",
+      "exact_match": true,
+      "tokens": 105,
+      "expected_sha256": "43ec14c9cd0ab6e5fdbb3382743a475a97d7a53558f38b4fa0818b97ae1c5815",
+      "actual_sha256": "43ec14c9cd0ab6e5fdbb3382743a475a97d7a53558f38b4fa0818b97ae1c5815"
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-grandstaff-concat_000966_6235ee37ab8e",
+      "image_sha256": "d0b6be3d2515338beb75fc7fab583398fabc05937f1fcf4fdbcb7b75fc09e61c",
+      "embedded_source_image_sha256": "0ef28d6cfd71f4079467eea1f30c3b809527d4b9bcd4e54d3355e4b57d1c66fe",
+      "target_characters": 201,
+      "mode": "beam",
+      "exact_match": true,
+      "tokens": 91,
+      "expected_sha256": "e682ea841bde9b6bd70ad07c4ce6da4d2037aab5f03fc3f8e699495624d4d081",
+      "actual_sha256": "e682ea841bde9b6bd70ad07c4ce6da4d2037aab5f03fc3f8e699495624d4d081"
+    }
+  ],
+  "exact_match_counts": [
+    {
+      "cohort": "public",
+      "mode": "constrained",
+      "pages": 5,
+      "matches": 5
+    },
+    {
+      "cohort": "public",
+      "mode": "beam",
+      "pages": 5,
+      "matches": 5
+    },
+    {
+      "cohort": "synthetic",
+      "mode": "constrained",
+      "pages": 5,
+      "matches": 5
+    },
+    {
+      "cohort": "synthetic",
+      "mode": "beam",
+      "pages": 5,
+      "matches": 5
+    }
+  ],
+  "input_manifest_checks": [
+    {
+      "cohort": "public",
+      "sample_id": "imslp__chopin-ballade-no1-op23-imslp731160__p0007",
+      "manifest_image_sha256": "cde432c72127bd89b8b3f925ce37b29e4341de4b0abf8a8471c5ccfd78ca6c98",
+      "source_image_sha256": "cde432c72127bd89b8b3f925ce37b29e4341de4b0abf8a8471c5ccfd78ca6c98",
+      "inference_image_sha256": "cde432c72127bd89b8b3f925ce37b29e4341de4b0abf8a8471c5ccfd78ca6c98",
+      "rgb_pixels_equal": true
+    },
+    {
+      "cohort": "public",
+      "sample_id": "imslp__chopin-3-ecossaises-op72-no3-imslp11073__p0003",
+      "manifest_image_sha256": "f0bf257244e23a8060803b2295431af47ab6485b584d9a61f142817634b916e7",
+      "source_image_sha256": "f0bf257244e23a8060803b2295431af47ab6485b584d9a61f142817634b916e7",
+      "inference_image_sha256": "f0bf257244e23a8060803b2295431af47ab6485b584d9a61f142817634b916e7",
+      "rgb_pixels_equal": true
+    },
+    {
+      "cohort": "public",
+      "sample_id": "imslp__beethoven-piano-sonata-no8-op13-beethoven-ludwig-van-imslp934109__p0002",
+      "manifest_image_sha256": "1e5686d4766f32a72f587ead4d1e6f6ba888f5239c3ce655b75d9476120b157b",
+      "source_image_sha256": "1e5686d4766f32a72f587ead4d1e6f6ba888f5239c3ce655b75d9476120b157b",
+      "inference_image_sha256": "1e5686d4766f32a72f587ead4d1e6f6ba888f5239c3ce655b75d9476120b157b",
+      "rgb_pixels_equal": true
+    },
+    {
+      "cohort": "public",
+      "sample_id": "imslp__chopin-3-nouvelles-etudes-b-130-imslp1002125__p0005",
+      "manifest_image_sha256": "6a17ace956e34dd5f4877018bbb8bd1bc69ae8bb0b018abed78cc9bbdc355fc5",
+      "source_image_sha256": "6a17ace956e34dd5f4877018bbb8bd1bc69ae8bb0b018abed78cc9bbdc355fc5",
+      "inference_image_sha256": "6a17ace956e34dd5f4877018bbb8bd1bc69ae8bb0b018abed78cc9bbdc355fc5",
+      "rgb_pixels_equal": true
+    },
+    {
+      "cohort": "public",
+      "sample_id": "imslp__chopin-2-mazurkas-b-16-imslp410927__p0005",
+      "manifest_image_sha256": "e6a79fd2f75ceb2902a09f46421adcf27f49ed9df93364d01f5e464b7562166d",
+      "source_image_sha256": "e6a79fd2f75ceb2902a09f46421adcf27f49ed9df93364d01f5e464b7562166d",
+      "inference_image_sha256": "e6a79fd2f75ceb2902a09f46421adcf27f49ed9df93364d01f5e464b7562166d",
+      "rgb_pixels_equal": true
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-pdmx-concat_001559_6609ee645ce6",
+      "manifest_image_sha256": "43cc094b7e52d45485ec5ddf35999fbb7699f39a657f8309ace9161ee8ad09a1",
+      "source_image_sha256": "43cc094b7e52d45485ec5ddf35999fbb7699f39a657f8309ace9161ee8ad09a1",
+      "inference_image_sha256": "8586dd43996cf8bc9bb866266cad50c55d740f1ed65624fad507e45fec00439d",
+      "rgb_pixels_equal": true
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-pdmx-concat_000822_a55ccb19ebc2",
+      "manifest_image_sha256": "975a344233f33c6994b35b14c4db7fdca0629ebd8124cb6eb73d19344b2c4b6e",
+      "source_image_sha256": "975a344233f33c6994b35b14c4db7fdca0629ebd8124cb6eb73d19344b2c4b6e",
+      "inference_image_sha256": "0482eba9a7b6959d8ea72bd807de6484a48b1f0c808f45ffeade7ed99387c714",
+      "rgb_pixels_equal": true
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-pdmx-concat_001066_7e1047adb1fa",
+      "manifest_image_sha256": "1479f1f003daf7af68235171afa40a2212a20188d15de22328decceab098aa81",
+      "source_image_sha256": "1479f1f003daf7af68235171afa40a2212a20188d15de22328decceab098aa81",
+      "inference_image_sha256": "636d1e33b69a9a2417e512d57809dddec62453ac4a07aa1ac442fd567c1ad6a9",
+      "rgb_pixels_equal": true
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-grandstaff-concat_000692_f8f8bf7af71b",
+      "manifest_image_sha256": "281ef73de44145f80b5f38eb5738bdcf69d21e7dcfda4aa24cdf818ebf2101b1",
+      "source_image_sha256": "281ef73de44145f80b5f38eb5738bdcf69d21e7dcfda4aa24cdf818ebf2101b1",
+      "inference_image_sha256": "29646a0f43a1fab432e4660e97b78ca1211317fc993ac65e13ec6c853045ad85",
+      "rgb_pixels_equal": true
+    },
+    {
+      "cohort": "synthetic",
+      "sample_id": "cr-test-grandstaff-concat_000966_6235ee37ab8e",
+      "manifest_image_sha256": "0ef28d6cfd71f4079467eea1f30c3b809527d4b9bcd4e54d3355e4b57d1c66fe",
+      "source_image_sha256": "0ef28d6cfd71f4079467eea1f30c3b809527d4b9bcd4e54d3355e4b57d1c66fe",
+      "inference_image_sha256": "d0b6be3d2515338beb75fc7fab583398fabc05937f1fcf4fdbcb7b75fc09e61c",
+      "rgb_pixels_equal": true
+    }
+  ],
+  "manifest_file_hashes_verified": true,
+  "rerun": {
+    "status": "pass",
+    "exact_matches": 20,
+    "evaluated_image_hashes_rechecked": 10,
+    "checkpoint_sha256": "7016c0c9bb5896ccf2e64624d566427b9e3a524fa57d8ae649609f5aa562a5bf",
+    "driver_sha256": "c8c25c04d38e7bf9a9f249046be52f1d4390a5e4d04b0c49a3202409b8ad5174"
+  }
+}
